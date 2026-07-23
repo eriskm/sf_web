@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview UI: Manajemen User - Sukabumi Flasher</title>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --primary: #0066ff;
+            --primary-hover: #0052cc;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 32px 40px;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+        }
+
+        .container {
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        /* Top Header & Breadcrumb */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 28px;
+        }
+
+        .title-area h1 {
+            font-size: 1.75em;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .title-area p {
+            font-size: 0.92em;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        .breadcrumb {
+            font-size: 0.88em;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb a {
+            color: var(--text-sub);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover { color: var(--primary); }
+        .breadcrumb span.active { color: var(--primary); font-weight: 600; }
+
+        /* Stats Cards (5 Grid Items with left colorful squircle icon) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(1, 1fr); }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.purple { background: #6366f1; color: white; }
+        .stat-icon.red { background: #ef4444; color: white; }
+        .stat-icon.blue { background: #0080ff; color: white; }
+        .stat-icon.green { background: #10b981; color: white; }
+        .stat-icon.orange { background: #f59e0b; color: white; }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-content .stat-label {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-content .stat-number {
+            font-size: 1.65em;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+            margin: 4px 0;
+        }
+
+        .stat-content .stat-sub {
+            font-size: 0.78em;
+            color: var(--text-muted);
+        }
+
+        /* Tambah User Card (Form Section) */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 26px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-header .icon-user-add {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .card-header h2 {
+            font-size: 1.15em;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Form Horizontal Grid layout exactly like reference image */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1.5fr 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .form-row { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 0.92em;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-toggle-pw {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 2px;
+        }
+
+        .btn-toggle-pw:hover { color: var(--text-main); }
+
+        /* Status Pill Switch */
+        .status-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 42px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .switch-text {
+            font-size: 0.92em;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .btn-add-submit {
+            margin-top: 20px;
+            width: 100%;
+            padding: 13px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.98em;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-add-submit:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 255, 0.35);
+        }
+
+        /* Table Card Section */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 280px;
+            flex: 1;
+            max-width: 380px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9em;
+            outline: none;
+            background: #ffffff;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-box .icon-search {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            font-size: 0.9em;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-main);
+            font-weight: 500;
+            outline: none;
+            min-width: 160px;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-sub);
+            font-weight: 700;
+            font-size: 0.82em;
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px 18px;
+            font-size: 0.92em;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85em;
+            color: var(--text-main);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .username-text {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Role Pill Badges (exactly matching user.png colors) */
+        .role-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78em;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+
+        .role-admin { background: #ffe5e5; color: #ef4444; }
+        .role-teknisi { background: #e5f2ff; color: #0066ff; }
+        .role-kasir { background: #e5fbe5; color: #10b981; }
+        .role-cs { background: #fef9c3; color: #ca8a04; }
+        .role-owner { background: #f3e8ff; color: #9333ea; }
+
+        /* Status Dot Pills */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.86em;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-aktif { color: #10b981; }
+        .status-aktif .status-dot { background-color: #10b981; }
+
+        .status-nonaktif { color: #ef4444; }
+        .status-nonaktif .status-dot { background-color: #ef4444; }
+
+        /* Action Menu Button & Dropdown */
+        .action-cell {
+            position: relative;
+        }
+
+        .btn-action-dot {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action-dot:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 18px;
+            top: 45px;
+            background: white;
+            min-width: 175px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            padding: 6px;
+            z-index: 100;
+        }
+
+        .dropdown-menu.show { display: block; animation: fadeIn 0.15s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: var(--text-main);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover { background: #f8fafc; }
+        .dropdown-item.danger { color: #ef4444; }
+        .dropdown-item.danger:hover { background: #fef2f2; }
+
+        /* Pagination Bottom */
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .footer-info {
+            font-size: 0.88em;
+            color: var(--text-sub);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 6px;
+        }
+
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.88em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: zoomIn 0.2s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Top Header & Breadcrumb -->
+    <div class="top-header">
+        <div class="title-area">
+            <h1>Manajemen User</h1>
+            <p>Kelola akun user dan hak akses sistem</p>
+        </div>
+        <div class="breadcrumb">
+            <a href="/dashboard">Dashboard</a>
+            <span>›</span>
+            <a href="#">Pengaturan</a>
+            <span>›</span>
+            <span class="active">User & Akses</span>
+        </div>
+    </div>
+
+    <!-- 5 Stats Cards exactly like user.png -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon purple">👥</div>
+            <div class="stat-content">
+                <span class="stat-label">Total User</span>
+                <span class="stat-number" id="countTotal">18</span>
+                <span class="stat-sub">Semua pengguna terdaftar</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">🛡️</div>
+            <div class="stat-content">
+                <span class="stat-label">Admin</span>
+                <span class="stat-number" id="countAdmin">2</span>
+                <span class="stat-sub">Memiliki akses penuh</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">👨‍🔧</div>
+            <div class="stat-content">
+                <span class="stat-label">Teknisi</span>
+                <span class="stat-number" id="countTeknisi">9</span>
+                <span class="stat-sub">Menangani perbaikan</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">🛒</div>
+            <div class="stat-content">
+                <span class="stat-label">Kasir</span>
+                <span class="stat-number" id="countKasir">4</span>
+                <span class="stat-sub">Transaksi & pembayaran</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">🎧</div>
+            <div class="stat-content">
+                <span class="stat-label">CS / Lainnya</span>
+                <span class="stat-number" id="countCS">3</span>
+                <span class="stat-sub">Layanan pelanggan</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tambah User Baru Section (Horizontal Card) -->
+    <div class="card">
+        <div class="card-header">
+            <div class="icon-user-add">👤</div>
+            <h2>Tambah User Baru</h2>
+        </div>
+
+        <form id="formAddUser" onsubmit="handleFormSubmit(event)">
+            <div class="form-row">
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="inputUsername" placeholder="Contoh: asep_teknisi" required>
+                </div>
+
+                <!-- Password + Toggle Eye -->
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-input" id="inputPassword" placeholder="Minimal 6 karakter" required>
+                        <button type="button" class="btn-toggle-pw" onclick="togglePassword('inputPassword', this)">👁</button>
+                    </div>
+                </div>
+
+                <!-- Hak Akses (Role) -->
+                <div class="form-group">
+                    <label class="form-label">Hak Akses (Role)</label>
+                    <select class="form-select" id="inputRole">
+                        <option value="TEKNISI">Teknisi</option>
+                        <option value="KASIR">Kasir</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="CS / LAINNYA">CS / Lainnya</option>
+                        <option value="OWNER">Owner</option>
+                    </select>
+                </div>
+
+                <!-- Status Switch -->
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="status-switch-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="inputStatus" checked onchange="updateSwitchText()">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="switch-text" id="switchText">Aktif</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-add-submit">
+                <span>+</span> Tambah User
+            </button>
+        </form>
+    </div>
+
+    <!-- Table Daftar User Card -->
+    <div class="card">
+        <!-- Toolbar: Search, Role filter, Status filter, Export button -->
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <span class="icon-search">🔍</span>
+                    <input type="text" id="inputSearch" placeholder="Cari username / nama lengkap..." onkeyup="filterTableData()">
+                </div>
+                <select class="filter-select" id="filterRole" onchange="filterTableData()">
+                    <option value="ALL">Semua Role</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="TEKNISI">Teknisi</option>
+                    <option value="KASIR">Kasir</option>
+                    <option value="CS / LAINNYA">CS / Lainnya</option>
+                    <option value="OWNER">Owner</option>
+                </select>
+                <select class="filter-select" id="filterStatus" onchange="filterTableData()">
+                    <option value="ALL">Semua Status</option>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Nonaktif">Nonaktif</option>
+                </select>
+            </div>
+            <button class="btn-export" onclick="alert('Mengunduh data user format Excel/CSV [Demo]')">
+                📥 Export
+            </button>
+        </div>
+
+        <!-- Table Data -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>Username</th>
+                        <th>Nama Lengkap</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Terakhir Login</th>
+                        <th style="text-align: center; width: 80px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Row 1 -->
+                    <tr data-role="ADMIN" data-status="Aktif">
+                        <td>1</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#fee2e2; color:#dc2626;">AD</div>
+                                <span class="username-text">admin</span>
+                            </div>
+                        </td>
+                        <td>Administrator</td>
+                        <td><span class="role-pill role-admin">ADMIN</span></td>
+                        <td><span class="status-pill status-aktif"><span class="status-dot"></span> Aktif</span></td>
+                        <td style="color:#64748b;">Hari ini 08:25</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 1)">⋮</button>
+                            <div class="dropdown-menu" id="dd-1">
+                                <div class="dropdown-item" onclick="openEdit('admin', 'Administrator', 'ADMIN')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('admin')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="alert('Admin utama tidak bisa dinonaktifkan!')">🚫 Nonaktifkan</div>
+                                <div class="dropdown-item danger" onclick="alert('Admin utama tidak boleh dihapus!')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Row 2 -->
+                    <tr data-role="TEKNISI" data-status="Aktif">
+                        <td>2</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#e0f2fe; color:#0284c7;">ER</div>
+                                <span class="username-text">erik</span>
+                            </div>
+                        </td>
+                        <td>Erik Setiawan</td>
+                        <td><span class="role-pill role-teknisi">TEKNISI</span></td>
+                        <td><span class="status-pill status-aktif"><span class="status-dot"></span> Aktif</span></td>
+                        <td style="color:#64748b;">Kemarin 14:30</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 2)">⋮</button>
+                            <div class="dropdown-menu" id="dd-2">
+                                <div class="dropdown-item" onclick="openEdit('erik', 'Erik Setiawan', 'TEKNISI')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('erik')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="toggleStatusRow(this)">🚫 Nonaktifkan</div>
+                                <div class="dropdown-item danger" onclick="deleteUserRow(this, 'erik')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Row 3 -->
+                    <tr data-role="KASIR" data-status="Aktif">
+                        <td>3</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#dcfce7; color:#16a34a;">EJ</div>
+                                <span class="username-text">eja</span>
+                            </div>
+                        </td>
+                        <td>Eja Pratama</td>
+                        <td><span class="role-pill role-kasir">KASIR</span></td>
+                        <td><span class="status-pill status-aktif"><span class="status-dot"></span> Aktif</span></td>
+                        <td style="color:#64748b;">2 hari lalu</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 3)">⋮</button>
+                            <div class="dropdown-menu" id="dd-3">
+                                <div class="dropdown-item" onclick="openEdit('eja', 'Eja Pratama', 'KASIR')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('eja')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="toggleStatusRow(this)">🚫 Nonaktifkan</div>
+                                <div class="dropdown-item danger" onclick="deleteUserRow(this, 'eja')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Row 4 -->
+                    <tr data-role="TEKNISI" data-status="Aktif">
+                        <td>4</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#e0f2fe; color:#0284c7;">AD</div>
+                                <span class="username-text">ahmad.dana</span>
+                            </div>
+                        </td>
+                        <td>Ahmad Dana</td>
+                        <td><span class="role-pill role-teknisi">TEKNISI</span></td>
+                        <td><span class="status-pill status-aktif"><span class="status-dot"></span> Aktif</span></td>
+                        <td style="color:#64748b;">3 hari lalu</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 4)">⋮</button>
+                            <div class="dropdown-menu" id="dd-4">
+                                <div class="dropdown-item" onclick="openEdit('ahmad.dana', 'Ahmad Dana', 'TEKNISI')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('ahmad.dana')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="toggleStatusRow(this)">🚫 Nonaktifkan</div>
+                                <div class="dropdown-item danger" onclick="deleteUserRow(this, 'ahmad.dana')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Row 5 -->
+                    <tr data-role="TEKNISI" data-status="Aktif">
+                        <td>5</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#e0f2fe; color:#0284c7;">RZ</div>
+                                <span class="username-text">reza</span>
+                            </div>
+                        </td>
+                        <td>Reza Maulana</td>
+                        <td><span class="role-pill role-teknisi">TEKNISI</span></td>
+                        <td><span class="status-pill status-aktif"><span class="status-dot"></span> Aktif</span></td>
+                        <td style="color:#64748b;">Kemarin 09:15</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 5)">⋮</button>
+                            <div class="dropdown-menu" id="dd-5">
+                                <div class="dropdown-item" onclick="openEdit('reza', 'Reza Maulana', 'TEKNISI')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('reza')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="toggleStatusRow(this)">🚫 Nonaktifkan</div>
+                                <div class="dropdown-item danger" onclick="deleteUserRow(this, 'reza')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Row 6 -->
+                    <tr data-role="TEKNISI" data-status="Nonaktif">
+                        <td>6</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar" style="background:#f1f5f9; color:#94a3b8;">DR</div>
+                                <span class="username-text">deri</span>
+                            </div>
+                        </td>
+                        <td>Deri Kurniawan</td>
+                        <td><span class="role-pill role-teknisi">TEKNISI</span></td>
+                        <td><span class="status-pill status-nonaktif"><span class="status-dot"></span> Nonaktif</span></td>
+                        <td style="color:#64748b;">1 minggu lalu</td>
+                        <td class="action-cell" style="text-align: center;">
+                            <button class="btn-action-dot" onclick="toggleDropdownMenu(event, 6)">⋮</button>
+                            <div class="dropdown-menu" id="dd-6">
+                                <div class="dropdown-item" onclick="openEdit('deri', 'Deri Kurniawan', 'TEKNISI')">✏ Edit User</div>
+                                <div class="dropdown-item" onclick="openReset('deri')">🔑 Reset Password</div>
+                                <div class="dropdown-item" onclick="toggleStatusRow(this)">🟢 Aktifkan</div>
+                                <div class="dropdown-item danger" onclick="deleteUserRow(this, 'deri')">🗑 Hapus User</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer Pagination -->
+        <div class="table-footer">
+            <div class="footer-info">Menampilkan 1 - 6 dari 18 data</div>
+            <div class="pagination">
+                <button class="page-btn">«</button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">»</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reset Password -->
+<div class="modal-overlay" id="modalReset">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight: 800; margin-bottom: 12px;">🔑 Reset Password User</h3>
+        <p style="font-size: 0.9em; color: var(--text-sub); margin-bottom: 18px;">
+            Atur ulang password untuk akun <strong id="resetTarget" style="color:var(--primary);"></strong>. Password lama otomatis diganti demi keamanan.
+        </p>
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label">Password Baru</label>
+            <div class="input-wrapper">
+                <input type="password" class="form-input" id="inputResetPw" placeholder="Minimal 6 karakter">
+                <button type="button" class="btn-toggle-pw" onclick="togglePassword('inputResetPw', this)">👁</button>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-export" onclick="closeAllModals()">Batal</button>
+            <button type="button" class="btn-add-submit" style="width: auto; margin:0; padding: 10px 20px;" onclick="alert('Password berhasil direset!'); closeAllModals();">Simpan Password</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit User -->
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight: 800; margin-bottom: 16px;">✏️ Edit Data User</h3>
+        <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" id="editUsername" disabled style="background:#f8fafc; color:#94a3b8;">
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Nama Lengkap</label>
+            <input type="text" class="form-input" id="editFullname">
+        </div>
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label">Hak Akses (Role)</label>
+            <select class="form-select" id="editRole">
+                <option value="TEKNISI">Teknisi</option>
+                <option value="KASIR">Kasir</option>
+                <option value="ADMIN">Admin</option>
+                <option value="CS / LAINNYA">CS / Lainnya</option>
+                <option value="OWNER">Owner</option>
+            </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-export" onclick="closeAllModals()">Batal</button>
+            <button type="button" class="btn-add-submit" style="width: auto; margin:0; padding: 10px 20px;" onclick="alert('Data user berhasil diperbarui!'); closeAllModals();">Perbarui Data</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Toggle Show/Hide Password
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "🙈";
+            btn.style.color = "#0066ff";
+        } else {
+            input.type = "password";
+            btn.textContent = "👁";
+            btn.style.color = "#94a3b8";
+        }
+    }
+
+    // Status Switch Text Toggle
+    function updateSwitchText() {
+        const checked = document.getElementById('inputStatus').checked;
+        document.getElementById('switchText').innerText = checked ? "Aktif" : "Nonaktif";
+        document.getElementById('switchText').style.color = checked ? "#0f172a" : "#ef4444";
+    }
+
+    // Action Dropdown Menu
+    function toggleDropdownMenu(event, id) {
+        event.stopPropagation();
+        document.querySelectorAll('.dropdown-menu').forEach(m => {
+            if (m.id !== 'dd-' + id) m.classList.remove('show');
+        });
+        document.getElementById('dd-' + id).classList.toggle('show');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    });
+
+    // Real-Time Table Filter
+    function filterTableData() {
+        const query = document.getElementById('inputSearch').value.toLowerCase();
+        const roleFilter = document.getElementById('filterRole').value;
+        const statusFilter = document.getElementById('filterStatus').value;
+        const rows = document.querySelectorAll('#userTableBody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowRole = row.getAttribute('data-role');
+            const rowStatus = row.getAttribute('data-status');
+
+            const matchQuery = text.includes(query);
+            const matchRole = (roleFilter === 'ALL' || rowRole === roleFilter);
+            const matchStatus = (statusFilter === 'ALL' || rowStatus === statusFilter);
+
+            if (matchQuery && matchRole && matchStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Modals
+    function openReset(username) {
+        document.getElementById('resetTarget').innerText = username;
+        document.getElementById('inputResetPw').value = '';
+        document.getElementById('modalReset').style.display = 'flex';
+    }
+
+    function openEdit(username, fullname, role) {
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editFullname').value = fullname;
+        document.getElementById('editRole').value = role;
+        document.getElementById('modalEdit').style.display = 'flex';
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    // Add User Demo Submit
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const username = document.getElementById('inputUsername').value;
+        const role = document.getElementById('inputRole').value;
+        const isActive = document.getElementById('inputStatus').checked;
+
+        const roleStyles = {
+            'ADMIN': { class: 'role-admin', text: 'ADMIN' },
+            'TEKNISI': { class: 'role-teknisi', text: 'TEKNISI' },
+            'KASIR': { class: 'role-kasir', text: 'KASIR' },
+            'CS / LAINNYA': { class: 'role-cs', text: 'CS / LAINNYA' },
+            'OWNER': { class: 'role-owner', text: 'OWNER' }
+        };
+
+        const rInfo = roleStyles[role];
+        const tbody = document.getElementById('userTableBody');
+        const rowCount = tbody.rows.length + 1;
+        const initials = username.substring(0, 2).toUpperCase();
+
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-role', role);
+        tr.setAttribute('data-status', isActive ? 'Aktif' : 'Nonaktif');
+
+        tr.innerHTML = `
+            <td>${rowCount}</td>
+            <td>
+                <div class="user-cell">
+                    <div class="avatar" style="background:#e0f2fe; color:#0284c7;">${initials}</div>
+                    <span class="username-text">${username}</span>
+                </div>
+            </td>
+            <td>${username} (Staf Baru)</td>
+            <td><span class="role-pill ${rInfo.class}">${rInfo.text}</span></td>
+            <td><span class="status-pill ${isActive ? 'status-aktif' : 'status-nonaktif'}"><span class="status-dot"></span> ${isActive ? 'Aktif' : 'Nonaktif'}</span></td>
+            <td style="color:#64748b;">Baru saja dibuat</td>
+            <td class="action-cell" style="text-align: center;">
+                <button class="btn-action-dot" onclick="toggleDropdownMenu(event, ${rowCount})">⋮</button>
+                <div class="dropdown-menu" id="dd-${rowCount}">
+                    <div class="dropdown-item" onclick="openEdit('${username}', '${username}', '${role}')">✏ Edit User</div>
+                    <div class="dropdown-item" onclick="openReset('${username}')">🔑 Reset Password</div>
+                    <div class="dropdown-item" onclick="toggleStatusRow(this)">${isActive ? '🚫 Nonaktifkan' : '🟢 Aktifkan'}</div>
+                    <div class="dropdown-item danger" onclick="deleteUserRow(this, '${username}')">🗑 Hapus User</div>
+                </div>
+            </td>
+        `;
+
+        tbody.prepend(tr);
+        alert('✅ User baru "' + username + '" berhasil ditambahkan [Demo Mockup]');
+        document.getElementById('formAddUser').reset();
+        updateSwitchText();
+    }
+
+    function toggleStatusRow(btn) {
+        const row = btn.closest('tr');
+        const span = row.querySelector('.status-pill');
+        if (row.getAttribute('data-status') === 'Aktif') {
+            row.setAttribute('data-status', 'Nonaktif');
+            span.className = 'status-pill status-nonaktif';
+            span.innerHTML = '<span class="status-dot"></span> Nonaktif';
+            btn.innerText = '🟢 Aktifkan';
+        } else {
+            row.setAttribute('data-status', 'Aktif');
+            span.className = 'status-pill status-aktif';
+            span.innerHTML = '<span class="status-dot"></span> Aktif';
+            btn.innerText = '🚫 Nonaktifkan';
+        }
+    }
+
+    function deleteUserRow(btn, username) {
+        if (confirm('Yakin ingin menghapus user ' + username + '?')) {
+            btn.closest('tr').remove();
+        }
+    }
+</script>
+</body>
+</html>

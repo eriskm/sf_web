@@ -1,0 +1,26 @@
+{
+  "grants": [
+    {
+      "user_id": 1646882270,
+      "chat_id": 1646882270,
+      "granted_at": 1778045167.4314575,
+      "source": "pairing_code",
+      "paired_by": 1646882270,
+      "username": null,
+      "chat_title": null,
+      "via": "pairing_code"
+    }
+  ],
+  "pairing_codes": [
+    {
+      "code": "C97027",
+      "created_at": 1778045066.6434157,
+      "expires_at": 1778045966.6434157,
+      "created_by": 1646882270,
+      "note": "",
+      "max_uses": 1,
+      "uses": 0
+    }
+  ],
+  "used_bootstrap_codes": []
+}

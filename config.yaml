@@ -1,0 +1,60 @@
+project_name: openclaw-lite
+project_root: C:\Users\user\OneDrive\Documents\Sukabumi Flasher\SF_WEB
+workspace_dir: C:\Users\user\OneDrive\Documents\Sukabumi Flasher\SF_WEB\workspace
+data_dir: C:\Users\user\OneDrive\Documents\Sukabumi Flasher\SF_WEB\data
+logs_dir: C:\Users\user\OneDrive\Documents\Sukabumi Flasher\SF_WEB\logs
+backups_dir: C:\Users\user\OneDrive\Documents\Sukabumi Flasher\SF_WEB\backups
+history_limit: 0
+tool_loop_limit: 0
+system_prompt: You are OpenClaw Lite, a local AI platform inspired by OpenClaw. You
+  can manage providers, create/reload skills, inspect and modify your own files, and
+  work through Telegram with owner-only administration.
+telegram:
+  enabled: true
+  bot_token: '8700970866:AAEHP92xzdRYrL-I5jo9q8Edn6dlEa_Zewk'
+  owner_user_ids: [1646882270]
+  owner_chat_ids: []
+  allowed_user_ids: []
+  allowed_chat_ids: []
+  parse_mode: HTML
+  pairing:
+    enabled: true
+    code_ttl_sec: 900
+    bootstrap_code: ''
+    bootstrap_one_time: true
+shell:
+  default_mode: safe
+  timeout_seconds: 45
+  max_output_chars: 0
+  safe_allowed_commands:
+  - pwd
+  - ls
+  - echo
+  - cat
+  - head
+  - tail
+  - grep
+  - rg
+  - find
+  - python
+  - python3
+  - pip
+  - pip3
+  - which
+  - env
+  - uname
+  - id
+providers:
+  default: gemini
+  items:
+    openai:
+      type: openai
+      enabled: true
+      api_key: ''
+      base_url: https://api.openai.com/v1
+      default_model: gpt-4.1-mini
+    gemini:
+      type: gemini
+      enabled: true
+      api_key: 'AIzaSyA_jkWl87Ahd3n-aVYAVq7zfjoOGU12GEg'
+      default_model: gemini-2.5-flash

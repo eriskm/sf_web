@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard SF - Filter Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        /* UTILITY CLASSES */
+        .show { display: block !important; }
+
+        /* PROGRESS BAR & CIRCLE */
+        .progress-circle {
+            position: relative;
+            background: conic-gradient(var(--primary) var(--percent), #E2E8F0 0deg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            background: var(--card-bg);
+            border-radius: 50%;
+        }
+        .progress-inner {
+            position: relative;
+            z-index: 2;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        /* KHUSUS BOT TELEGRAM (Menyembunyikan bagian atas agar fokus ke Buku Kas) */
+        {% if request.args.get('bot') == 'SF_RAHASIA_NEGARA' %}
+        .sidebar, .topbar, .hero-grid, .quick-actions, .charts-area, .card-keuangan { display: none !important; }
+        .main-content { margin-left: 0 !important; }
+        .content-body { padding: 20px !important; }
+        .content-body > *:not(#tabel-kas) { display: none !important; }
+        {% endif %}
+    </style>
+</head>
+<body>
+    {% set total_beban = g_hari + o_hari %}
+    {% set laba_bersih = total_laba_kotor - total_beban %}
+    {% set persen_gaji = (total_laba_kotor / g_hari * 100) if g_hari > 0 else 0 %}
+    {% set persen_total = (total_laba_kotor / total_beban * 100) if total_beban > 0 else 0 %}
+
+    <!-- OVERLAY UNTUK MOBILE SIDEBAR -->
+    <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;">
+            <div>
+                <div class="poppins" style="font-weight: 800; font-size: 1.1em; line-height: 1.1;">SUKABUMI FLASHER</div>
+            </div>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/dashboard" class="menu-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Dashboard
+            </a>
+            <a href="#tabel-transaksi-data" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Transaksi
+            </a>
+            <a href="#tabel-pelanggan" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                Pelanggan
+            </a>
+            <a href="#tabel-garansi" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Garansi
+            </a>
+            <a href="#tabel-sparepart" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Sparepart
+            </a>
+            {% if 'keuangan' in session.get('permissions', '') %}
+            <a href="#tabel-kas" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l2-9 5 18 3-10h4"></path></svg>
+                Keuangan
+            </a>
+            {% endif %}
+            
+            {% if 'users' in session.get('permissions', '') %}
+            <div style="margin: 20px 0 10px 0; font-size: 0.75em; font-weight: 700; color: var(--gray); text-transform: uppercase;">Admin Area</div>
+            <a href="/users" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                Kelola Akun
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="sidebar-footer">
+            {% set role_label = session.get('role', 'User')|title %}
+            {% if session.get('foto_profil') %}
+                {% set avatar_img = session['foto_profil'] %}
+            {% elif session.get('role') == 'admin' %}
+                {% set avatar_img = '/static/icon_admin.png' %}
+            {% elif session.get('role') == 'kasir' %}
+                {% set avatar_img = '/static/icon_kasir.png' %}
+            {% elif session.get('role') == 'teknisi' %}
+                {% set avatar_img = '/static/icon_teknisi.png' %}
+            {% else %}
+                {% set avatar_img = 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=' ~ session['user'] ~ '&backgroundColor=e2e8f0' %}
+            {% endif %}
+            <a href="#" onclick="openModalFotoProfil(); return false;" title="Ubah Foto Profil (Online)" style="position: relative; display: inline-block;">
+                <img src="{{ avatar_img }}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border); object-fit: cover; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                <!-- Lampu Indikator Online Hijau Terang -->
+                <span style="position: absolute; bottom: 1px; right: 1px; width: 11px; height: 11px; background: #10B981; border: 2px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.8), 0 0 3px #10B981; z-index: 5;" title="Online"></span>
+            </a>
+            <div style="flex: 1;">
+                <div class="font-bold" style="font-size: 0.9em; color: var(--dark);">{{ session['user'] }}</div>
+                <div style="font-size: 0.75em; color: var(--gray);">{{ role_label }}</div>
+            </div>
+            <a href="/logout" class="btn-logout-power" title="Keluar Sesi (Logout)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display: flex; align-items: center;">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div>
+                    <div style="font-weight: 800; font-size: 1.2em; font-family: 'Poppins', sans-serif;">Dashboard</div>
+                    <div style="font-size: 0.85em; color: var(--gray); margin-top: -2px;">Selamat datang, <span style="color: #E60012; font-weight: 700;">{{ session.get('role', 'User')|title }}!</span></div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+
+                <!-- WIDGET TANGGAL, JAM & CUACA (OPSI 2 KANAN) -->
+                <div class="header-widget-pill" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: 30px; padding: 5px 14px; display: flex; align-items: center; gap: 12px; font-size: 12.5px; font-weight: 600; color: var(--dark); height: 36px; box-sizing: border-box; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span>📅</span>
+                        <span id="topbar-date">...</span>
+                    </div>
+                    <div style="width: 1px; height: 16px; background: var(--border);"></div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span>⏰</span>
+                        <span id="topbar-clock" style="font-family: 'Outfit', monospace; font-weight: 700; color: var(--dark); background: var(--card-bg); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05);">00:00:00</span>
+                    </div>
+                    <div style="width: 1px; height: 16px; background: var(--border);"></div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span>⛅</span>
+                        <span style="color: #0284C7; font-weight: 700;">Sukabumi: 28°C</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; color: var(--gray); align-items: center;">
+                    <!-- Dark Mode Toggle Button -->
+                    <div style="cursor: pointer; display: flex; align-items: center; transition: 0.3s;" id="themeToggle" title="Toggle Dark Mode">
+                        <svg id="themeIconLight" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg id="themeIconDark" style="display: none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </div>
+                    
+                    <div style="position: relative; cursor: pointer;" onclick="document.getElementById('notifDropdown').classList.toggle('show')">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        {% if sla_notifications %}
+                        <span style="position: absolute; top: -6px; right: -8px; min-width: 16px; height: 16px; background: var(--danger); border-radius: 10px; border: 2px solid white; color: white; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 4px;">{{ sla_notifications|length }}</span>
+                        {% endif %}
+                        
+                        <!-- Dropdown Notif SLA -->
+                        <div id="notifDropdown" style="display: none; position: absolute; right: -10px; top: 40px; width: 320px; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 12px; border: 1px solid var(--border); z-index: 9999; cursor: default;">
+                            <div style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 800; color: var(--dark); display: flex; justify-content: space-between; align-items: center;">
+                                Notifikasi (SLA)
+                                <span style="font-size: 0.8em; font-weight: 500; background: var(--danger-light); color: var(--danger); padding: 2px 8px; border-radius: 20px;">{{ sla_notifications|length }} Unread</span>
+                            </div>
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                {% if sla_notifications %}
+                                    {% for notif in sla_notifications %}
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">{{ notif.badge }}</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">{{ notif.title }}</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">{{ notif.desc }}</div>
+                                                {% if notif.level == 'happy_call' %}
+                                                <a href="{{ notif.wa_link }}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.75em; background: var(--success-light); color: var(--success); padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                                    Happy Call WA
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div style="padding: 30px 15px; text-align: center; color: var(--gray); font-size: 0.9em;">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" style="margin-bottom: 10px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                        <div>Semua aman! Tidak ada notifikasi keterlambatan.</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+        <script>
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                var isClickInside = document.getElementById('notifDropdown').contains(event.target) || event.target.closest('div[onclick="document.getElementById(\\'notifDropdown\\').classList.toggle(\\'show\\')"]');
+                if (!isClickInside) {
+                    document.getElementById('notifDropdown').classList.remove('show');
+                }
+            });
+        </script>
+
+        <div class="content-body">
+            
+            
+<style>
+@media (max-width: 768px) {
+    .prm-card {
+        padding: 16px 15px !important;
+        gap: 12px !important;
+    }
+    .prm-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 14px !important;
+    }
+    .prm-icon svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    .prm-title {
+        font-size: 11px !important;
+    }
+    .prm-value {
+        font-size: 18px !important;
+    }
+    .prm-badge {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+    }
+}
+</style>
+<!-- FINANCIAL CARDS ROW -->
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                  <!-- Omset Hari Ini -->
+                  <div class="stat-card-solid-modern stat-green-modern" style="flex: 1; min-width: 240px;">
+                      <div class="stat-top">
+                          <span class="stat-title">Omset Hari Ini</span>
+                          <div class="glass-icon-pill">💰</div>
+                      </div>
+                      <div>
+                          <div class="stat-angka">Rp {{ "{:,}".format(total_penjualan) }}</div>
+                          <div class="glass-trend-pill">↗ +12% vs kemarin</div>
+                      </div>
+                  </div>
+
+                  <!-- Laba Kotor -->
+                  <div class="stat-card-solid-modern stat-blue-modern" style="flex: 1; min-width: 240px;">
+                      <div class="stat-top">
+                          <span class="stat-title">Laba Kotor</span>
+                          <div class="glass-icon-pill">⚡</div>
+                      </div>
+                      <div>
+                          <div class="stat-angka">Rp {{ "{:,}".format(total_laba_kotor) }}</div>
+                          <div class="glass-trend-pill">↗ +8% vs kemarin</div>
+                      </div>
+                  </div>
+
+                  <!-- Total Beban -->
+                  <div class="stat-card-solid-modern stat-orange-modern" style="flex: 1; min-width: 240px;">
+                      <div class="stat-top">
+                          <span class="stat-title">Total Beban</span>
+                          <div class="glass-icon-pill">💸</div>
+                      </div>
+                      <div>
+                          <div class="stat-angka">Rp {{ "{:,}".format(g_hari + o_hari) }}</div>
+                          <div class="glass-trend-pill">↗ +5% vs kemarin</div>
+                      </div>
+                  </div>
+
+                  <!-- Laba Bersih -->
+                  <div class="stat-card-solid-modern stat-red-modern" style="flex: 1; min-width: 240px;">
+                      <div class="stat-top">
+                          <span class="stat-title">Laba Bersih</span>
+                          <div class="glass-icon-pill">🏆</div>
+                      </div>
+                      <div>
+                          <div class="stat-angka">Rp {{ "{:,}".format(laba_bersih) }}</div>
+                          <div class="glass-trend-pill">↘ -8% vs kemarin</div>
+                      </div>
+                  </div>
+
+                                  <!-- Target Gaji (CTS) - Keeping original format with donut chart but matching height -->
+                <div style="flex: 1; min-width: 260px; border-radius: 20px; padding: 20px 24px; background: var(--card-bg); border: 1px solid var(--border); box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <div style="font-size: 0.9em; color: var(--gray); font-weight: 600; margin-bottom: 2px; display:flex; align-items:center; gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Target Gaji (CTS)
+                        </div>
+                        <div style="font-size: 1.6em; font-weight: 800; color: var(--dark); font-family: 'Poppins', sans-serif; line-height: 1.1; margin-bottom: 8px;">Rp {{ "{:,}".format(g_hari) }}</div>
+                            <div style="width: 100%; background: #E2E8F0; border-radius: 4px; height: 6px; overflow: hidden;">
+                                <div style="height: 100%; background: var(--primary); width: {{ persen_gaji if persen_gaji <= 100 else 100 }}%; border-radius: 4px; transition: width 1s ease-in-out;"></div>
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--dark); font-weight: 600; margin-top: 8px;">
+                                {% set kurang = g_hari - total_laba_kotor %}
+                                {% if kurang > 0 %}
+                                  Kurang <span style="color: #ef4444;">Rp {{ "{:,}".format(kurang) }}</span> lagi
+                                {% else %}
+                                  <span style="color: #10B981;">Target Tercapai! ??</span>
+                                {% endif %}
+                            </div>
+                    </div>
+                    <div class="progress-circle" style="--percent: {{ persen_gaji }}%; width: 60px; height: 60px; font-size: 1.1em; border-width: 6px;">
+                        <div class="progress-inner poppins" style="font-size: 0.8em;">{{ "{:0.1f}".format(persen_gaji if persen_gaji <= 100 else 100) }}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION & INSIGHT ROW -->
+              <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+                  
+                  <!-- AKSI CEPAT CONTAINER -->
+                  <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 15px 20px; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03);">
+                      <div style="font-size: 0.85em; font-weight: 800; color: var(--dark); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px;">AKSI CEPAT</div>
+                      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                          <!-- Service Baru -->
+                          <a href="/tambah" style="flex: 1; min-width: 90px; border-radius: 16px; padding: 16px 8px; background: linear-gradient(135deg, #FFF5F5, #FFFFFF); border: 1.5px solid #FECACA; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-decoration: none; text-align: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 30, 39, 0.08);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(255, 30, 39, 0.18)'; this.style.borderColor='#FF1E27';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 30, 39, 0.08)'; this.style.borderColor='#FECACA';">
+                              <div style="background: linear-gradient(135deg, #FF1E27, #DC2626); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(255, 30, 39, 0.35);">
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                              </div>
+                              <div style="font-size: 0.85em; font-weight: 800; color: #FF1E27; margin-bottom: 6px; letter-spacing: 0.3px;">Service Baru 🔥</div>
+                              <div style="font-size: 0.65em; color: #991B1B; font-weight: 600; padding: 0 4px; line-height: 1.3;">Buat transaksi<br>service baru</div>
+                          </a>
+                          
+                          {% if 'keuangan' in session.get('permissions', '') %}
+                          <!-- Input Kas -->
+                          <div onclick="bukaPopupKas()" style="flex: 1; min-width: 90px; border-radius: 16px; padding: 16px 8px; background: var(--card-bg); border: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; text-align: center; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.02)';">
+                              <div style="background: linear-gradient(135deg, #DCFCE7, #ECFDF5); color: #15803D; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(21, 128, 61, 0.15);">
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><rect x="6" y="14" width="2" height="2"></rect><rect x="10" y="14" width="2" height="2"></rect><rect x="14" y="14" width="2" height="2"></rect></svg>
+                              </div>
+                              <div style="font-size: 0.8em; font-weight: 700; color: #166534; margin-bottom: 6px;">Input Kas</div>
+                              <div style="font-size: 0.65em; color: #64748B; font-weight: 500; padding: 0 4px; line-height: 1.3;">Catat pemasukan<br>kas harian</div>
+                          </div>
+
+                          <!-- Input Beban -->
+                          <a href="/beban" style="flex: 1; min-width: 90px; border-radius: 16px; padding: 16px 8px; background: var(--card-bg); border: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-decoration: none; text-align: center; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.02)';">
+                              <div style="background: linear-gradient(135deg, #FFEDD5, #FFF7ED); color: #C2410C; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(194, 65, 12, 0.15);">
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="2"></circle><line x1="12" y1="11" x2="12" y2="11.01"></line></svg>
+                              </div>
+                              <div style="font-size: 0.8em; font-weight: 700; color: #9A3412; margin-bottom: 6px;">Input Beban</div>
+                              <div style="font-size: 0.65em; color: #64748B; font-weight: 500; padding: 0 4px; line-height: 1.3;">Catat pengeluaran<br>operasional</div>
+                          </a>
+                          {% endif %}
+
+                          {% if 'sparepart' in session.get('permissions', '') %}
+                          <!-- Sparepart -->
+                          <div onclick="bukaPopupSparepart()" style="flex: 1; min-width: 90px; border-radius: 16px; padding: 16px 8px; background: var(--card-bg); border: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; text-align: center; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.02)';">
+                              <div style="background: linear-gradient(135deg, #DBEAFE, #EFF6FF); color: #1D4ED8; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);">
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                              </div>
+                              <div style="font-size: 0.8em; font-weight: 700; color: #1E3A8A; margin-bottom: 6px;">Sparepart</div>
+                              <div style="font-size: 0.65em; color: #64748B; font-weight: 500; padding: 0 4px; line-height: 1.3;">Kelola data<br>sparepart</div>
+                          </div>
+                          {% endif %}
+                      </div>
+                  </div>
+
+                  <!-- INSIGHT HARI INI CONTAINER -->
+                  <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 15px 20px; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03);">
+                      <div style="font-size: 0.85em; font-weight: 800; color: var(--dark); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px;">INSIGHT HARI INI</div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                          <!-- Masuk -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #F5F8FF; border: 1px solid #E5EDFF; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #2563EB; margin-bottom: 4px;">Unit Masuk</div>
+                              <div style="color: #2563EB; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="12" y1="2" x2="12" y2="8"></line><polyline points="9 5 12 8 15 5"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #1E3A8A; line-height: 1;">{{ insight_masuk }}</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #1E3A8A; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Selesai -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #ECFDF5; border: 1px solid #D1FAE5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #059669; margin-bottom: 4px;">Unit Selesai</div>
+                              <div style="color: #059669; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #064E3B; line-height: 1;">{{ insight_selesai }}</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #064E3B; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Cash -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #FFFBEB; border: 1px solid #FEF3C7; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #D97706; margin-bottom: 4px;">Unit Cash</div>
+                              <div style="color: #D97706; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #78350F; line-height: 1;">{{ insight_cash }}</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #78350F; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Pending -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #FEF2F2; border: 1px solid #FEE2E2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #DC2626; margin-bottom: 4px;">Unit Pending</div>
+                              <div style="color: #DC2626; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #7F1D1D; line-height: 1;">{{ insight_pending }}</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #7F1D1D; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- TEKNISI TERBAIK -->
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 15px; font-size: 1.1em; color: var(--dark);">Teknisi Terbaik</div>
+                        <div style="width: 280px; height: 175px; border-radius: 20px; padding: 12px 14px; background: linear-gradient(135deg, #090E17 0%, #0F172A 60%, #1E293B 100%); color: white; border: 1px solid rgba(255, 255, 255, 0.12); position: relative; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px -5px rgba(9, 14, 23, 0.6);">
+                            
+                            <!-- Top-Right Dot Grid Accent -->
+                            <div style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; background-image: radial-gradient(rgba(59, 130, 246, 0.35) 1px, transparent 1px); background-size: 8px 8px; opacity: 0.8; pointer-events: none;"></div>
+                            <!-- Ambient Gold Glow -->
+                            <div style="position: absolute; left: 15px; top: 15px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(251, 191, 36, 0.28) 0%, rgba(0,0,0,0) 70%); pointer-events: none;"></div>
+
+                            <!-- Top Left #1 Ribbon Banner -->
+                            <div style="position: absolute; top: 0; left: 14px; width: 26px; height: 34px; background: linear-gradient(180deg, #FACC15 0%, #EAB308 100%); border-radius: 0 0 6px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.4); z-index: 10; border-bottom: 1px solid #CA8A04;">
+                                <span style="font-size: 8px; line-height: 1;">👑</span>
+                                <span style="font-size: 11px; font-weight: 900; color: #0F172A; line-height: 1.1; font-family: 'Outfit', sans-serif;">#1</span>
+                            </div>
+
+                            <!-- Top Profile Section (Big Gold Ring Avatar + Info) -->
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative; z-index: 5; margin-top: 4px; padding-left: 6px;">
+                                
+                                <!-- Left: Avatar Bulat Ring Emas Besar (80px) -->
+                                <div style="position: relative; width: 80px; height: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                                    <!-- Glowing Gold Ring Border -->
+                                    <div style="width: 80px; height: 80px; border-radius: 50%; border: 3.5px solid #FBBF24; overflow: hidden; background: #1E293B; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(251, 191, 36, 0.55), inset 0 0 10px rgba(0,0,0,0.4); position: relative; z-index: 4;">
+                                        <img src="{{ teknisi_terbaik['foto_profil'] or '/static/icon_teknisi.png' }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='/static/icon_teknisi.png';">
+                                    </div>
+                                    <!-- Lampu Indikator Online Hijau Terang (Top-Right) -->
+                                    <div style="position: absolute; top: 4px; right: 4px; z-index: 7; width: 14px; height: 14px; background: #10B981; border: 2.5px solid #0F172A; border-radius: 50%; box-shadow: 0 0 10px rgba(16, 185, 129, 0.9), 0 0 4px #10B981;" title="Teknisi Online & Aktif"></div>
+                                    <!-- Ribbon Badge TOP -->
+                                    <div style="position: absolute; bottom: -3px; z-index: 6; background: linear-gradient(135deg, #FBBF24, #D97706); color: #0F172A; padding: 2px 8px; border-radius: 10px; font-size: 8.5px; font-weight: 800; display: flex; align-items: center; gap: 3px; box-shadow: 0 3px 8px rgba(0,0,0,0.5); border: 1.5px solid #FFFFFF; white-space: nowrap; letter-spacing: 0.5px;">
+                                        <span>★</span> TOP
+                                    </div>
+                                </div>
+                                
+                                <!-- Right: Trophy Title, Name & Subtitle -->
+                                <div style="flex: 1; min-width: 0; padding-right: 4px;">
+                                    <!-- TEKNISI TERBAIK HARI INI (DIJAMIN PAS 1 BARIS) -->
+                                    <div style="display: flex; align-items: center; gap: 4px; color: #FBBF24; font-size: 8.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <span style="font-size: 12px;">🏆</span> TEKNISI TERBAIK HARI INI
+                                    </div>
+                                    <div style="font-size: 19px; font-weight: 800; color: #FFFFFF; line-height: 1.1; margin-bottom: 3px; font-family: 'Outfit', 'Inter', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ teknisi_terbaik['nama'] }}</div>
+                                    <div style="font-size: 10px; color: #94A3B8; line-height: 1.25; font-weight: 500; margin-bottom: 6px;">
+                                        Berhasil menyelesaikan {{ teknisi_terbaik['jobs'] }} unit servis hari ini.
+                                    </div>
+                                    <!-- Gold Underline Accent -->
+                                    <div style="width: 38px; height: 2.5px; background: linear-gradient(90deg, #FBBF24, #D97706); border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bottom Section: Dual Metric Pill Box -->
+                            <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 5; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);">
+                                
+                                <!-- Left: Unit Selesai -->
+                                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 26px; height: 26px; border-radius: 7px; background: #1E3A8A; border: 1px solid #3B82F6; display: flex; align-items: center; justify-content: center; color: #60A5FA; flex-shrink: 0; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M9 18h6"></path><path d="M9 10h6"></path></svg>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.55em; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.4px;">UNIT SELESAI</div>
+                                        <div style="font-size: 1.05em; font-weight: 800; color: #3B82F6; line-height: 1; font-family: 'Outfit', sans-serif;">{{ teknisi_terbaik['jobs'] }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Vertical Divider -->
+                                <div style="width: 1px; height: 24px; background: rgba(255, 255, 255, 0.1); margin: 0 6px;"></div>
+                                
+                                <!-- Right: Revenue -->
+                                <div style="flex: 1.1; display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 26px; height: 26px; border-radius: 50%; background: rgba(34, 197, 94, 0.12); border: 1.5px solid #22C55E; display: flex; align-items: center; justify-content: center; color: #22C55E; flex-shrink: 0; font-weight: 800; font-size: 0.72em; box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25);">
+                                        Rp
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.55em; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.4px;">REVENUE</div>
+                                        <div style="font-size: 1.02em; font-weight: 800; color: #22C55E; font-family: 'Poppins', sans-serif; line-height: 1;">Rp{{ "{:,}".format(teknisi_terbaik['revenue'] or 0) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+              </div>
+                
+  <!-- CHARTS AREA (Modern SaaS Command Center Style) -->
+            <div class="charts-area" style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+                <div class="chart-card-modern" style="flex: 1; min-width: 350px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 800; font-size: 1.1em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 6px; height: 18px; background: #FF1E27; border-radius: 4px; display: inline-block;"></span>
+                                Statistik Status Transaksi
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; background: var(--bg-main, #f8fafc); border: 1px solid var(--border, #e2e8f0); padding: 6px 12px; border-radius: 20px; font-size: 0.8em; color: var(--gray, #64748b); font-weight: 600;">
+                                <span>📅 7 Hari Terakhir</span>
+                                <span style="font-size: 0.8em;">▼</span>
+                            </div>
+                        </div>
+                        <div style="height: 280px; position: relative;"><canvas id="barStatus"></canvas></div>
+                    </div>
+                    
+                    <div>
+                        <!-- KARTU RINGKASAN STATUS DI BAWAH CHART -->
+                        <div id="statusSummaryCards" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border, #e2e8f0);"></div>
+
+                        <!-- INSIGHT AI BANNER -->
+                        <div id="insightAiBanner" style="margin-top: 18px; background: linear-gradient(135deg, #EFF6FF, #F8FAFC); border: 1px solid #DBEAFE; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.05);">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); border: 2px solid #3B82F6; background: #fff; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/static/neng_ais.png" alt="neng Ais" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div style="font-size: 0.88em; color: #1E293B; line-height: 1.5;">
+                                    <span style="color: #2563EB; font-weight: 800; display: inline-block; margin-right: 4px;">Insight neng Ais:</span>
+                                    <span id="insightAiText" style="color: #334155; font-weight: 500;">Menganalisis statistik status transaksi...</span>
+                                </div>
+                            </div>
+                            <div style="color: #3B82F6; font-size: 1.4em; font-weight: bold;">📈</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card-modern" style="flex: 1; min-width: 350px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 800; font-size: 1.15em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2em;">🔥</span>
+                                <span>Tren Kerusakan Minggu Ini</span>
+                            </div>
+                            <a href="#tabel-transaksi-data" style="background: var(--bg-main, #f8fafc); border: 1px solid var(--border, #e2e8f0); color: var(--dark, #1e293b); padding: 5px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 700; text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#3B82F6'; this.style.color='#3B82F6';" onmouseout="this.style.borderColor='var(--border, #e2e8f0)'; this.style.color='var(--dark, #1e293b)';">Detail Lengkap ↗</a>
+                        </div>
+                        
+                        <!-- PROGRESS BAR LIST CONTAINER -->
+                        <div id="kerusakanListContainer" style="display: flex; flex-direction: column; gap: 14px; height: 245px; max-height: 245px; overflow-y: auto; padding-right: 6px;"></div>
+                    </div>
+
+                    <div>
+                        <!-- KARTU PODIUM TOP 3 KERUSAKAN -->
+                        <div id="kerusakanPodiumCards" style="display: flex; gap: 10px; align-items: flex-end; justify-content: center; margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border, #e2e8f0);"></div>
+
+                        <!-- INSIGHT TREN KERUSAKAN BANNER -->
+                        <div id="kerusakanInsightBanner" style="margin-top: 18px; background: linear-gradient(135deg, #FFF7ED, #FFFAF0); border: 1px solid #FFEDD5; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.05); flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 200px;">
+                                <div style="width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3); border: 2px solid #F97316; background: #fff; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/static/neng_ais.png" alt="neng Ais" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div style="font-size: 0.88em; color: #1E293B; line-height: 1.5;">
+                                    <span style="color: #EA580C; font-weight: 800; display: inline-block; margin-right: 4px;">Insight neng Ais:</span>
+                                    <span id="kerusakanInsightText" style="color: #334155; font-weight: 500;">Menganalisis data kerusakan terbanyak...</span>
+                                </div>
+                            </div>
+                            <a href="#tabel-transaksi-data" style="background: white; border: 1px solid #FFEDD5; color: #EA580C; padding: 6px 14px; border-radius: 10px; font-size: 0.82em; font-weight: 700; text-decoration: none; white-space: nowrap; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);" onmouseover="this.style.background='#FFF7ED'" onmouseout="this.style.background='white'">Lihat Rekomendasi ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORIGINAL DATA TRANSAKSI TABLE AREA -->
+            {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}    <div id="tabel-transaksi-data" class="table-container" style="margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin: 0; font-size: 1.2em;">📱 Data Unit Masuk (Transaksi)</h3>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <form onsubmit="event.preventDefault(); window.location.href='/dashboard?tgl=' + encodeURIComponent(this.tgl.value) + '&q=' + encodeURIComponent(this.q.value) + '#tabel-transaksi-data';" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="date" name="tgl" value="{{ tgl_aktif }}" title="Filter Tanggal" class="modern-input">
+                    <input type="text" name="q" value="{{ q_aktif }}" list="search-suggestions" placeholder="Cari nama / device..." class="modern-input" style="width: 180px;" autocomplete="off">
+                    <datalist id="search-suggestions">
+                        {% for item in autocomplete_data %}
+                            <option value="{{ item }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
+                    {% if tgl_aktif or q_aktif %}
+                        <a href="/dashboard" class="btn-modern btn-reset">✖ Reset</a>
+                    {% endif %}
+                </form>
+                <a href="/tambah"><button class="btn-modern btn-success-gradient">➕ Tambah Unit Baru</button></a>
+            </div>
+        </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Device</th>
+                <th>User / WA</th>
+                <th>Status</th>
+                <th>Kerusakan</th> 
+                <th>Perbaikan</th>
+                <th>Teknisi</th>
+                <th>Laba</th>
+                <th style="text-align: right;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set total_laba = [0] %}
+            {% for s in servis %}
+                {% if s['Status'] == 'Cash' and s['Laba Kotor'] %}
+                {% if total_laba.append(total_laba.pop() + s['Laba Kotor']) %}{% endif %}
+            {% endif %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ s['Tanggal Masuk'] }}</td>
+                <td>{{ s['Device'] }}</td>
+                <td>
+                    <b>{{ s['Nama User'] }}</b><br>
+                    <small style="color: #25D366;">{{ s['No. WA'] or '-' }}</small>
+                </td>
+                <td>
+                    <span class="status-pill {% if s['Status'] == 'Cash' %}pill-cash
+                                {% elif s['Status'] == 'Analisa' %}pill-analisa
+                                {% elif s['Status'] == 'Konfirmasi' %}pill-konfirmasi
+                                {% elif s['Status'] == 'Wait Part' %}pill-wait
+                                {% elif s['Status'] == 'Repair' %}pill-repair
+                                {% elif s['Status'] == 'Done' %}pill-done
+                                {% elif s['Status'] == 'Failed' %}pill-cancel
+                                {% elif s['Status'] == 'Garansi' %}pill-done
+                                {% elif s['Status'] == 'Refund' %}pill-refund
+                                {% elif s['Status'] == 'Cancel' %}pill-cancel
+                                {% endif %}">
+                        <span class="dot"></span>{{ s['Status'] }}
+                    </span>
+                </td>
+                <td style="font-size: 0.85em; color: #555;">{{ s['Analisa Kerusakan'] or '-' }}</td>
+                <td style="font-size: 0.85em; color: #007bff; font-weight: bold;">{{ s['Tindakan Perbaikan'] or '-' }}</td>
+                <td style="font-size: 0.85em; color: #666;">{{ s['Teknisi'] or '-' }}</td>
+                <td style="font-weight: bold;">
+                    {% if s['Status'] == 'Cash' %}
+                        <span style="color: green;">Rp {{ "{:,}".format(s['Laba Kotor'] or 0) }}</span>
+                    {% else %}
+                        <span style="color: gray; font-weight: normal;">Rp 0</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                        <a href="/detail/{{ s['id'] }}" title="Edit / Detail">
+                            <button class="btn-icon btn-icon-blue">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                        </a>
+                        
+                        {% if session['role'] == 'admin' %}
+                        <a href="/delete/{{ s['id'] }}" onclick="return confirm('Yakin mau hapus data {{ s['Device'] }}?')" title="Hapus">
+                            <button class="btn-icon btn-icon-red">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination-pills">
+        {% if current_page > 1 %}
+            <a href="{{ url_for('dashboard', page=current_page-1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">« Prev</a>
+        {% endif %}
+
+        {% set start_page = [1, current_page - 2]|max %}
+        {% set end_page = [total_pages, current_page + 2]|min %}
+        
+        {% if start_page > 1 %}
+            <a href="{{ url_for('dashboard', page=1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">1</a>
+            {% if start_page > 2 %}
+                <span class="page-pill dots">...</span>
+            {% endif %}
+        {% endif %}
+
+        {% for p in range(start_page, end_page + 1) %}
+            <a href="{{ url_for('dashboard', page=p, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill {{ 'active' if p == current_page else '' }}">
+                {{ p }}
+            </a>
+        {% endfor %}
+
+        {% if end_page < total_pages %}
+            {% if end_page < total_pages - 1 %}
+                <span class="page-pill dots">...</span>
+            {% endif %}
+            <a href="{{ url_for('dashboard', page=total_pages, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">{{ total_pages }}</a>
+        {% endif %}
+
+        {% if current_page < total_pages %}
+            <a href="{{ url_for('dashboard', page=current_page+1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">Next »</a>
+        {% endif %}
+    </div>
+    </div>
+    {% endif %}
+
+<div id="tabel-kas" style="background: var(--bg-card); padding: 25px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">📖 Buku Kas & Alokasi Bagi Hasil</h3>
+        
+        <div style="display: flex; gap: 30px; align-items: flex-start;">
+            
+            <div style="flex: 1.5;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                    <thead>
+                        <tr>
+                            <th align="left">URAIAN</th>
+                            <th align="right">DEBIT</th>
+                            <th align="right">KREDIT</th>
+                            <th align="right">SALDO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in history_kas %}
+                        <tr style="border-bottom: 1px solid #eee; {{ 'background: #e8f5e9; font-weight: bold;' if h.highlight }}">
+                            <td style="padding: 10px;">
+                                {{ h.uraian }}
+                                {% if h.manual %}
+                                <a href="/hapus_tambahan/{{ h.id }}" style="color:red; text-decoration:none; font-size: 1.2em; margin-left: 5px;">×</a>
+                                {% endif %}
+                            </td>
+                            <td align="right" style="color: green;">{{ "Rp {:,}".format(h.debit) if h.debit > 0 else '-' }}</td>
+                            <td align="right" style="color: red;">{{ "Rp {:,}".format(h.kredit) if h.kredit > 0 else '-' }}</td>
+                            <td align="right" style="font-weight: bold; padding-right: 10px;">Rp {{ "{:,}".format(h.saldo) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+                <form action="/tambah_tambahan" method="post" style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <select name="jenis" class="modern-input" style="font-weight: bold;">
+                        <option value="Keluar">Keluar</option>
+                        <option value="Masuk">Masuk</option>
+                    </select>
+                    <select name="uraian_select" id="uraianSelect" class="modern-input" style="flex:1; min-width: 140px;" onchange="document.getElementById('uraianCustom').style.display = (this.value == 'Lainnya') ? 'block' : 'none'; document.getElementById('uraianCustom').required = (this.value == 'Lainnya');">
+                        <option value="Uang Pengganti">Uang Pengganti</option>
+                        <option value="Cicil Minus">Cicil Minus</option>
+                        <option value="Lainnya">➕ Lainnya (Ketik Sendiri)...</option>
+                    </select>
+                    <input type="text" name="uraian_custom" id="uraianCustom" placeholder="Ketik uraian..." class="modern-input" style="flex:1; min-width: 140px; display: none;">
+                    <input type="number" name="nominal" placeholder="Rp Nominal" class="modern-input" style="width: 120px;" required>
+                    <button type="submit" class="btn-modern btn-success-gradient" style="padding: 10px 18px;">+</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="chart-card-modern" style="flex: 1; text-align: center;">
+                <div style="font-weight: 800; font-size: 1.1em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="width: 6px; height: 18px; background: #8B5CF6; border-radius: 4px; display: inline-block;"></span>
+                    Visual Alokasi Profit
+                </div>
+                <div style="max-width: 220px; height: 220px; margin: auto; position: relative;">
+                    <canvas id="pieBagiHasil"></canvas>
+                </div>
+                <div style="margin-top: 20px; font-size: 0.85em; text-align: left; background: var(--bg-main, #f8fafc); padding: 16px; border-radius: 14px; border: 1px solid var(--border, #e2e8f0);">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;"><span><span style="color:#FF1E27; font-size: 1.2em; vertical-align: -2px;">●</span> Bonus Karyawan (10%)</span><b style="color: var(--dark);">Rp {{ "{:,}".format(bonus) }}</b></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;"><span><span style="color:#3B82F6; font-size: 1.2em; vertical-align: -2px;">●</span> Pengelola (30%)</span><b style="color: var(--dark);">Rp {{ "{:,}".format(pengelola) }}</b></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;"><span><span style="color:#8B5CF6; font-size: 1.2em; vertical-align: -2px;">●</span> Investor (30%)</span><b style="color: var(--dark);">Rp {{ "{:,}".format(investor) }}</b></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;"><span><span style="color:#10B981; font-size: 1.2em; vertical-align: -2px;">●</span> Kas Aset (30%)</span><b style="color: var(--dark);">Rp {{ "{:,}".format(aset_30) }}</b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+        <!-- Tombol Tutup Buku kita sembunyikan atau gabungkan jadi satu alur -->
+        {% if 'tutup_buku' in session.get('permissions', '') %}
+        <button onclick="bukaPopupKas()" class="btn-modern btn-success-gradient" style="padding: 12px 24px; font-size: 1em; margin-top: 15px;">
+            📊 Proses Tutup Kas & Pindah Arsip (Jam 16.00)
+        </button>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    
+    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+    <!-- ======================= SECTION GARANSI ======================= -->
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 30px;">
+        
+        <!-- BAGIAN KIRI: DIAGRAM GARANSI -->
+        <div class="chart-card-modern" style="flex: 1; min-width: 280px;">
+            <div style="font-weight: 800; font-size: 1.1em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="width: 6px; height: 18px; background: #F59E0B; border-radius: 4px; display: inline-block;"></span>
+                Sisa Masa Garansi
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="pieGaransi"></canvas>
+            </div>
+        </div>
+
+        <!-- BAGIAN KANAN: TABEL GARANSI -->
+        <div id="tabel-garansi" class="table-container" style="flex: 2.5; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #333;">🛡️ Data Garansi</h3>
+            <form onsubmit="event.preventDefault(); window.location.href='/dashboard?p_pelanggan=' + this.p_pelanggan.value + '&q_pelanggan=' + encodeURIComponent(this.q_pelanggan.value) + '&q_garansi=' + encodeURIComponent(this.q_garansi.value) + '#tabel-garansi';" style="display: flex; gap: 8px; align-items: center;">
+                <input type="hidden" name="p_pelanggan" value="{{ p_pelanggan }}">
+                <input type="hidden" name="q_pelanggan" value="{{ q_pelanggan }}">
+                <input type="text" name="q_garansi" value="{{ q_garansi }}" list="suggestions-garansi" placeholder="Cari nama / device..." class="modern-input" style="width: 200px;" autocomplete="off">
+                <datalist id="suggestions-garansi">
+                    {% for item in auto_garansi %}
+                        <option value="{{ item }}"></option>
+                    {% endfor %}
+                </datalist>
+                <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
+                {% if q_garansi %}
+                    <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="btn-modern btn-reset">✖ Reset</a>
+                {% endif %}
+            </form>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama User</th>
+                    <th>Device</th>
+                    <th>Tgl Mulai</th>
+                    <th>Tgl Akhir</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in arsip_garansi %}
+                <tr>
+                    <td>{{ (p_garansi - 1) * 10 + loop.index }}</td>
+                    <td><b>{{ g['nama_user'] }}</b></td>
+                    <td>{{ g['device'] }}</td>
+                    <td>{{ g['tgl_mulai'] }}</td>
+                    <td>{{ g['tgl_akhir'] }}</td>
+                    <td><span class="status-pill pill-cash"><span class="dot"></span>Aktif</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" style="text-align:center;">Belum ada data garansi</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-pills">
+            {% if p_garansi > 1 %}
+                <a href="{{ url_for('dashboard', p_garansi=p_garansi-1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">« Prev</a>
+            {% endif %}
+            <span class="page-pill active">Halaman {{ p_garansi }} dari {{ total_p_garansi }}</span>
+            {% if p_garansi < total_p_garansi %}
+                <a href="{{ url_for('dashboard', p_garansi=p_garansi+1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">Next »</a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+
+    <!-- ======================= SECTION PELANGGAN ======================= -->
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 30px; margin-bottom: 50px;">
+        
+        <!-- BAGIAN KIRI: TABEL PELANGGAN -->
+        <div id="tabel-pelanggan" class="table-container" style="flex: 2.5; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #333;">👥 Arsip Data Pelanggan</h3>
+            <form onsubmit="event.preventDefault(); window.location.href='/dashboard?p_garansi=' + this.p_garansi.value + '&q_garansi=' + encodeURIComponent(this.q_garansi.value) + '&q_pelanggan=' + encodeURIComponent(this.q_pelanggan.value) + '#tabel-pelanggan';" style="display: flex; gap: 8px; align-items: center;">
+                <input type="hidden" name="p_garansi" value="{{ p_garansi }}">
+                <input type="hidden" name="q_garansi" value="{{ q_garansi }}">
+                <input type="text" name="q_pelanggan" value="{{ q_pelanggan }}" list="suggestions-pelanggan" placeholder="Cari nama / device..." class="modern-input" style="width: 200px;" autocomplete="off">
+                <datalist id="suggestions-pelanggan">
+                    {% for item in auto_pelanggan %}
+                        <option value="{{ item }}"></option>
+                    {% endfor %}
+                </datalist>
+                <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
+                {% if q_pelanggan %}
+                    <a href="{{ url_for('dashboard', p_garansi=p_garansi, q_garansi=q_garansi) }}#tabel-pelanggan" class="btn-modern btn-reset">✖ Reset</a>
+                {% endif %}
+            </form>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama User</th>
+                    <th>No WA</th>
+                    <th>Device</th>
+                    <th>Tindakan</th>
+                    <th>Harga Jual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in arsip_pelanggan %}
+                <tr>
+                    <td>{{ (p_pelanggan - 1) * 10 + loop.index }}</td>
+                    <td><b>{{ p['nama_user'] }}</b></td>
+                    <td><a href="https://wa.me/{{ p['no_wa'] }}" target="_blank" style="color:#28a745; text-decoration:none; font-weight: 600;">{{ p['no_wa'] }}</a></td>
+                    <td>{{ p['device'] }}</td>
+                    <td>{{ p['tindakan'] }}</td>
+                    <td style="font-weight:bold; color:green;">Rp {{ "{:,}".format(p['harga_jual'] or 0) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" style="text-align:center;">Belum ada data pelanggan</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-pills">
+            {% if p_pelanggan > 1 %}
+                <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan-1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">« Prev</a>
+            {% endif %}
+            <span class="page-pill active">Halaman {{ p_pelanggan }} dari {{ total_p_pelanggan }}</span>
+            {% if p_pelanggan < total_p_pelanggan %}
+                <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan+1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">Next »</a>
+            {% endif %}
+        </div>
+        </div>
+        
+        <!-- BAGIAN KANAN: DIAGRAM PELANGGAN -->
+        <div class="chart-card-modern" style="flex: 1; min-width: 280px;">
+            <div style="font-weight: 800; font-size: 1.1em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="width: 6px; height: 18px; background: #3B82F6; border-radius: 4px; display: inline-block;"></span>
+                Top Tindakan
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="donutPelanggan"></canvas>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- ======================= SECTION SPAREPART ======================= -->
+    <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 30px; margin-bottom: 50px;">
+        
+        <!-- BAGIAN KIRI: DIAGRAM KATEGORI SPAREPART -->
+        <div class="chart-card-modern" style="flex: 1; min-width: 280px;">
+            <div style="font-weight: 800; font-size: 1.1em; color: var(--dark, #1e293b); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="width: 6px; height: 18px; background: #10B981; border-radius: 4px; display: inline-block;"></span>
+                Stok per Kategori
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="donutSparepart"></canvas>
+            </div>
+        </div>
+
+        <!-- BAGIAN KANAN: TABEL SPAREPART -->
+        <div id="tabel-sparepart" class="table-container" style="flex: 2.5; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h3 style="margin: 0; color: #333;">📦 Data Sparepart</h3>
+                {% if 'sparepart' in session.get('permissions', '') %}
+                    <button onclick="bukaPopupSparepart()" class="btn-modern btn-purple-gradient">+ Input Sparepart Baru</button>
+                {% endif %}
+            </div>
+            <form onsubmit="event.preventDefault(); window.location.href='/dashboard?p_sparepart=' + this.p_sparepart.value + '&q_sparepart=' + encodeURIComponent(this.q_sparepart.value) + '#tabel-sparepart';" style="display: flex; gap: 8px; align-items: center;">
+                <input type="hidden" name="p_sparepart" value="{{ p_sparepart }}">
+                <input type="text" name="q_sparepart" value="{{ q_sparepart }}" list="suggestions-sparepart" placeholder="Cari sparepart..." class="modern-input" style="width: 200px;" autocomplete="off">
+                <datalist id="suggestions-sparepart">
+                    {% for item in auto_sparepart %}
+                        <option value="{{ item }}"></option>
+                    {% endfor %}
+                </datalist>
+                <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
+                {% if q_sparepart %}
+                    <a href="{{ url_for('dashboard') }}#tabel-sparepart" class="btn-modern btn-reset">✖ Reset</a>
+                {% endif %}
+            </form>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: center;">No</th>
+                    <th>📅 Tgl Masuk</th>
+                    <th>🏷️ Kategori</th>
+                    <th>🏭 Merek</th>
+                    <th>📦 Jenis Barang</th>
+                    <th>📱 Device</th>
+                    <th style="text-align: center;">📦 Qty</th>
+                    <th style="text-align: right;">💸 Beli</th>
+                    <th style="text-align: right;">💰 Jual</th>
+                    <th style="text-align: center;">⚙️</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in data_sparepart %}
+                <tr>
+                    <td style="text-align: center; color: #999; font-size: 0.82em;">{{ (p_sparepart - 1) * 10 + loop.index }}</td>
+                    <td style="font-size: 0.82em; color: #555;">{{ s['tanggal_masuk'] }}</td>
+                    <td>{% set kat = s['kategori'] %}{% if kat == 'LCD' %}<span class="tag-pill tag-lcd">{{ kat }}</span>{% elif kat == 'Batre' %}<span class="tag-pill tag-batre">{{ kat }}</span>{% elif kat == 'IC' %}<span class="tag-pill tag-ic">{{ kat }}</span>{% else %}<span class="tag-pill tag-other">{{ kat }}</span>{% endif %}</td>
+                    <td style="font-size: 0.85em; color: #444;">{{ s['merek'] }}</td>
+                    <td style="font-size: 0.85em; font-weight: 600; color: #333;">{{ s['jenis_barang'] }}</td>
+                    <td style="font-size: 0.82em; color: #666;">{{ s['jenis_device'] }}</td>
+                    <td style="text-align: center; font-size: 0.85em; font-weight: 600; color: #333;">{{ s['qty'] or 0 }}</td>
+                    <td style="text-align: right; font-size: 0.82em; color: #c0392b;">{{ "{:,}".format(s['harga_beli'] or 0) }}</td>
+                    <td style="text-align: right; font-size: 0.85em; font-weight: bold; color: #27ae60;">{{ "{:,}".format(s['harga_jual'] or 0) }}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        {% if 'sparepart' in session.get('permissions', '') %}
+                            <button onclick="bukaPopupSparepart('{{ s['id_sparepart'] }}', '{{ s['tanggal_masuk'] }}', '{{ s['kategori'] }}', '{{ s['merek'] }}', '{{ s['jenis_barang'] }}', '{{ s['jenis_device'] }}', '{{ s['qty'] }}', '{{ s['harga_beli'] }}', '{{ s['harga_jual'] }}')" class="btn-icon btn-icon-blue" title="Edit">✏️</button>
+                        {% endif %}
+                        {% if 'servis' in session.get('permissions', '') %}
+                            <a href="/delete_sparepart/{{ s['id_sparepart'] }}" onclick="return confirm('Hapus sparepart ini?')" style="text-decoration:none;"><button class="btn-icon btn-icon-red" title="Hapus">🗑️</button></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="10" style="text-align:center; padding: 30px; color: #aaa; font-style: italic;">📭 Belum ada data stok sparepart</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-pills">
+            {% if p_sparepart > 1 %}
+                <a href="{{ url_for('dashboard', p_sparepart=p_sparepart-1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">« Prev</a>
+            {% endif %}
+            <span class="page-pill active">Halaman {{ p_sparepart }} dari {{ total_p_sparepart }}</span>
+            {% if p_sparepart < total_p_sparepart %}
+                <a href="{{ url_for('dashboard', p_sparepart=p_sparepart+1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">Next »</a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="popupKas" class="modal-overlay-glass" style="display: none;">
+        <div class="modal-glass-content">
+            <div class="modal-glass-header">
+                <div class="modal-glass-title">
+                    <div class="modal-icon-badge">💵</div>
+                    <span>Audit Tutup Kas</span>
+                </div>
+                <button class="modal-close-btn" onclick="tutupPopupKas()">&times;</button>
+            </div>
+            <p style="font-size: 0.9em; color: var(--gray); margin-bottom: 20px; text-align: left;">Masukkan total uang fisik (Aliran Kas) yang ada di laci saat ini:</p>
+            
+            <input type="number" id="inputUangFisik" placeholder="Contoh: 150000" class="modern-input" style="width: 100%; padding: 12px 16px; margin-bottom: 25px; font-size: 1.1em;">
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="tutupPopupKas()" class="btn-modern btn-reset" style="padding: 10px 18px;">Batal</button>
+                <button onclick="kirimDataKas()" class="btn-modern btn-success-gradient" style="padding: 10px 18px;">💾 Kunci & Arsip</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popup Form Sparepart -->
+    <div id="popupSparepart" class="modal-overlay-glass" style="display: none;">
+        <div class="modal-glass-content" style="max-width: 550px;">
+            <div class="modal-glass-header">
+                <div class="modal-glass-title">
+                    <div class="modal-icon-badge" style="background: linear-gradient(135deg, #0284C7, #0369A1);">⚙️</div>
+                    <span id="sparepartTitle">Input Sparepart Baru</span>
+                </div>
+                <button class="modal-close-btn" onclick="tutupPopupSparepart()">&times;</button>
+            </div>
+            <form action="/simpan_sparepart" method="post" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="id_sparepart" id="sp_id">
+                
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Tgl Masuk</label>
+                        <input type="date" name="tanggal_masuk" id="sp_tgl" required class="modern-input" style="width: 100%;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Kategori</label>
+                        <select name="kategori" id="sp_kategori" required class="modern-input" style="width: 100%;">
+                            <option value="">-- Pilih --</option>
+                            <option value="Batre">Batre</option>
+                            <option value="LCD">LCD</option>
+                            <option value="Konektor">Konektor</option>
+                            <option value="Board">Board</option>
+                            <option value="Kabel Fleksibel">Kabel Fleksibel</option>
+                            <option value="IC">IC</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Merek</label>
+                    <input type="text" name="merek" id="sp_merek" placeholder="Contoh: Samsung, Vizz, dll" required class="modern-input" style="width: 100%;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Jenis Barang</label>
+                    <input type="text" name="jenis_barang" id="sp_barang" placeholder="Contoh: LCD Fullset, Batre BN54" required class="modern-input" style="width: 100%;">
+                </div>
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:2;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Jenis Device / Tipe HP</label>
+                        <input type="text" name="jenis_device" id="sp_device" placeholder="Contoh: Redmi Note 9" required class="modern-input" style="width: 100%;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Qty (Stok)</label>
+                        <input type="number" name="qty" id="sp_qty" placeholder="0" min="0" required class="modern-input" style="width: 100%;">
+                    </div>
+                </div>
+                
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Harga Beli (Modal)</label>
+                        <input type="number" name="harga_beli" id="sp_beli" required class="modern-input" style="width: 100%;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: 600; color: var(--dark); display:block; margin-bottom: 6px;">Harga Jual</label>
+                        <input type="number" name="harga_jual" id="sp_jual" required class="modern-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" onclick="tutupPopupSparepart()" class="btn-modern btn-reset" style="padding: 10px 18px;">Batal</button>
+                    <button type="submit" class="btn-modern btn-purple-gradient" style="padding: 10px 18px;">💾 Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    // --- GLOBAL CHART.JS PREMIUM SAAS CONFIG ---
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.family = "'Outfit', 'Inter', 'Poppins', sans-serif";
+        Chart.defaults.color = '#64748B';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+        Chart.defaults.plugins.tooltip.titleColor = '#F8FAFC';
+        Chart.defaults.plugins.tooltip.bodyColor = '#E2E8F0';
+        Chart.defaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.plugins.tooltip.borderWidth = 1;
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.boxPadding = 6;
+        Chart.defaults.plugins.tooltip.usePointStyle = true;
+        Chart.defaults.plugins.tooltip.pointStyle = 'circle';
+        Chart.defaults.plugins.tooltip.cornerRadius = 12;
+    }
+
+    const dataBagiHasil = [
+        {{ bonus|int }}, 
+        {{ pengelola|int }}, 
+        {{ investor|int }}, 
+        {{ aset_30|int }}
+    ];
+
+    const elBagiHasil = document.getElementById('pieBagiHasil');
+    if (elBagiHasil) {
+        const ctx = elBagiHasil.getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bonus Karyawan (10%)', 'Pengelola (30%)', 'Investor (30%)', 'Kas Aset (30%)'],
+                datasets: [{
+                    data: dataBagiHasil,
+                    backgroundColor: ['#FF1E27', '#3B82F6', '#8B5CF6', '#10B981'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                cutout: '72%',
+                animation: { animateScale: true, animateRotate: true, duration: 1200 },
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ' Rp ' + context.raw.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const statusData = {
+        'Analisa': {{ status_data['Analisa'] }},
+        'Konfirmasi': {{ status_data['Konfirmasi'] }},
+        'Wait Part': {{ status_data['Wait Part'] }},
+        'Repair': {{ status_data['Repair'] }},
+        'Done': {{ status_data['Done'] }},
+        'Failed': {{ status_data['Failed'] }},
+        'Garansi': {{ status_data['Garansi'] }},
+        'Refund': {{ status_data['Refund'] }},
+        'Cancel': {{ status_data['Cancel'] }},
+        'Cash': {{ status_data['Cash'] }}
+    };
+
+    const statusColors = {
+        'Analisa': '#94A3B8',
+        'Konfirmasi': '#F59E0B',
+        'Wait Part': '#06B6D4',
+        'Repair': '#3B82F6',
+        'Done': '#10B981',
+        'Failed': '#475569',
+        'Garansi': '#8B5CF6',
+        'Refund': '#F97316',
+        'Cancel': '#EF4444',
+        'Cash': '#22C55E'
+    };
+
+    const statusIcons = {
+        'Analisa': '🔍',
+        'Konfirmasi': '💬',
+        'Wait Part': '⏳',
+        'Repair': '🔧',
+        'Done': '✅',
+        'Failed': '❌',
+        'Garansi': '🛡️',
+        'Refund': '↩️',
+        'Cancel': '🚫',
+        'Cash': '💵'
+    };
+
+    const elBarStatus = document.getElementById('barStatus');
+    if (elBarStatus) {
+        const ctxBar = elBarStatus.getContext('2d');
+        
+        // Gradient fill under curve
+        let gradientFill = ctxBar.createLinearGradient(0, 0, 0, 280);
+        gradientFill.addColorStop(0, 'rgba(14, 165, 233, 0.38)');
+        gradientFill.addColorStop(0.5, 'rgba(59, 130, 246, 0.12)');
+        gradientFill.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+        // Inline plugin for top label pills
+        const topLabelsPlugin = {
+            id: 'topLabelsPlugin',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((element, index) => {
+                        const val = dataset.data[index];
+                        if (val > 0) {
+                            ctx.save();
+                            ctx.font = 'bold 11px "Poppins", sans-serif';
+                            ctx.fillStyle = '#1E293B';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            const textStr = String(val);
+                            const textWidth = ctx.measureText(textStr).width;
+                            const boxWidth = Math.max(26, textWidth + 14);
+                            const boxHeight = 20;
+                            const x = element.x;
+                            const y = element.y - 18;
+                            
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+                            ctx.shadowBlur = 6;
+                            ctx.shadowOffsetY = 2;
+                            ctx.beginPath();
+                            if (ctx.roundRect) {
+                                ctx.roundRect(x - boxWidth/2, y - boxHeight/2, boxWidth, boxHeight, 6);
+                            } else {
+                                ctx.rect(x - boxWidth/2, y - boxHeight/2, boxWidth, boxHeight);
+                            }
+                            ctx.fill();
+                            ctx.shadowColor = 'transparent';
+                            
+                            ctx.strokeStyle = '#E2E8F0';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                            
+                            ctx.fillStyle = '#1E293B';
+                            ctx.fillText(textStr, x, y);
+                            ctx.restore();
+                        }
+                    });
+                });
+            }
+        };
+
+        // Calculate totals and dominant status
+        let totalTx = 0;
+        let maxVal = -1;
+        let dominantStatus = 'Analisa';
+        
+        Object.entries(statusData).forEach(([status, count]) => {
+            totalTx += count;
+            if (count > maxVal) {
+                maxVal = count;
+                dominantStatus = status;
+            }
+        });
+
+        new Chart(ctxBar, {
+            type: 'line',
+            data: {
+                labels: Object.keys(statusData),
+                datasets: [{
+                    label: 'Jumlah Transaksi',
+                    data: Object.values(statusData),
+                    fill: true,
+                    backgroundColor: gradientFill,
+                    borderColor: '#0EA5E9',
+                    borderWidth: 3,
+                    tension: 0.45,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    pointBackgroundColor: Object.keys(statusData).map(k => statusColors[k] || '#3B82F6'),
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2.5,
+                    pointHoverBorderWidth: 3.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1200, easing: 'easeOutQuart' },
+                layout: {
+                    padding: { top: 30, right: 15, left: 10, bottom: 5 }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: maxVal > 0 ? maxVal + 1 : 5,
+                        ticks: { stepSize: 1, color: '#64748B', font: { weight: '600' } },
+                        grid: { color: 'rgba(203, 213, 225, 0.3)', borderDash: [4, 4] },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#334155', font: { weight: '700', size: 11 } },
+                        border: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#1E293B',
+                        bodyColor: '#334155',
+                        borderColor: '#E2E8F0',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        usePointStyle: true,
+                        callbacks: {
+                            title: function(items) {
+                                const label = items[0].label;
+                                const icon = statusIcons[label] || '📊';
+                                return icon + ' ' + label;
+                            },
+                            label: function(context) {
+                                const val = context.raw;
+                                const pct = totalTx > 0 ? ((val / totalTx) * 100).toFixed(1) : 0;
+                                return ' ' + val + ' Transaksi (' + pct + '% dari total)';
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [topLabelsPlugin]
+        });
+
+        // Generate Summary Cards below chart
+        const summaryContainer = document.getElementById('statusSummaryCards');
+        if (summaryContainer) {
+            summaryContainer.innerHTML = '';
+            Object.entries(statusData).forEach(([status, count]) => {
+                if (count > 0 || ['Analisa', 'Konfirmasi', 'Wait Part', 'Repair', 'Done', 'Cash'].includes(status)) {
+                    const pct = totalTx > 0 ? ((count / totalTx) * 100).toFixed(1) : 0;
+                    const color = statusColors[status] || '#64748B';
+                    const icon = statusIcons[status] || '📊';
+                    
+                    const cardHtml = `
+                        <div style="flex: 1; min-width: 105px; background: var(--bg-main, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='${color}';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border, #e2e8f0)';">
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78em; font-weight: 700; color: ${color};">
+                                <span>${icon} ${status}</span>
+                            </div>
+                            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 2px;">
+                                <span style="font-size: 1.25em; font-weight: 800; color: var(--dark, #1e293b);">${count}</span>
+                                <span style="font-size: 0.72em; font-weight: 600; color: var(--gray, #64748b); background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 6px;">${pct}%</span>
+                            </div>
+                        </div>
+                    `;
+                    summaryContainer.insertAdjacentHTML('beforeend', cardHtml);
+                }
+            });
+        }
+        
+        // Populate Insight AI Banner
+        const insightTextEl = document.getElementById('insightAiText');
+        if (insightTextEl) {
+            if (totalTx === 0) {
+                insightTextEl.innerHTML = "Belum ada transaksi servis tercatat hari ini. Tetap semangat dan siap melayani!";
+            } else {
+                const domPct = ((maxVal / totalTx) * 100).toFixed(1);
+                let saran = "Pastikan alur kerja operasional servis berjalan lancar.";
+                if (dominantStatus === 'Wait Part') saran = "Pastikan ketersediaan dan pesanan sparepart segera diproses agar tidak menumpuk.";
+                else if (dominantStatus === 'Done' || dominantStatus === 'Cash') saran = "Performa penyelesaian unit servis sangat prima hari ini!";
+                else if (dominantStatus === 'Analisa') saran = "Percepat proses pengecekan awal unit masuk agar customer mendapat kejelasan estimasi.";
+                else if (dominantStatus === 'Repair') saran = "Teknisi sedang fokus melakukan pengerjaan perbaikan unit.";
+                
+                insightTextEl.innerHTML = `<b style="color: ${statusColors[dominantStatus] || '#2563EB'};">${dominantStatus}</b> mendominasi <b>${domPct}%</b> (${maxVal} unit) dari total transaksi. ${saran}`;
+            }
+        }
+    }
+
+    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+
+    // Diagram / Daftar Tren Kerusakan Minggu Ini
+    const listContainer = document.getElementById('kerusakanListContainer');
+    if (listContainer) {
+        let rawLabels = {{ (kerusakan_stats['labels'] or []) | tojson }};
+        let rawData = {{ (kerusakan_stats['data'] or []) | tojson }};
+        
+        let combined = rawLabels.map((lbl, i) => ({ label: lbl, count: rawData[i] }));
+        combined.sort((a, b) => b.count - a.count);
+        
+        let totalCount = combined.reduce((acc, item) => acc + item.count, 0);
+        
+        // Icon and Color mapping helper
+        function getKerusakanStyle(label, idx) {
+            const l = label.toLowerCase();
+            if (l.includes('lcd') || l.includes('layar') || l.includes('glass') || l.includes('touch')) return { icon: '📱', color: '#FF1E27', bg: 'rgba(255, 30, 39, 0.1)' };
+            if (l.includes('mesin') || l.includes('emmc') || l.includes('cpu') || l.includes('ic') || l.includes('board')) return { icon: '⚙️', color: '#FF8C00', bg: 'rgba(255, 140, 0, 0.1)' };
+            if (l.includes('sinyal') || l.includes('network') || l.includes('wifi') || l.includes('jaringan')) return { icon: '📶', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' };
+            if (l.includes('air') || l.includes('water') || l.includes('karat') || l.includes('cair')) return { icon: '💧', color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.1)' };
+            if (l.includes('baterai') || l.includes('battery') || l.includes('batre')) return { icon: '🔋', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' };
+            if (l.includes('charge') || l.includes('konektor') || l.includes('cas') || l.includes('plug')) return { icon: '⚡', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' };
+            if (l.includes('software') || l.includes('pola') || l.includes('frp') || l.includes('flash') || l.includes('boot')) return { icon: '💻', color: '#6366F1', bg: 'rgba(99, 102, 241, 0.1)' };
+            if (l.includes('audio') || l.includes('mic') || l.includes('speaker') || l.includes('suara')) return { icon: '🔊', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.1)' };
+            if (l.includes('kamera') || l.includes('camera') || l.includes('lens')) return { icon: '📷', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' };
+            
+            // Default icons by index
+            const defIcons = ['📱', '⚙️', '📦', '📶', '💧', '🔋', '⚡', '💻', '🔊', '📷'];
+            const defColors = ['#FF1E27', '#FF8C00', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#3B82F6', '#6366F1', '#EC4899', '#64748B'];
+            const defBgs = ['rgba(255,30,39,0.1)', 'rgba(255,140,0,0.1)', 'rgba(245,158,11,0.1)', 'rgba(16,185,129,0.1)', 'rgba(6,182,212,0.1)', 'rgba(139,92,246,0.1)', 'rgba(59,130,246,0.1)', 'rgba(99,102,241,0.1)', 'rgba(236,72,153,0.1)', 'rgba(100,116,139,0.1)'];
+            return { icon: defIcons[idx % defIcons.length], color: defColors[idx % defColors.length], bg: defBgs[idx % defBgs.length] };
+        }
+
+        // Generate Progress Bars List (01 to 10)
+        listContainer.innerHTML = '';
+        const trends = ['▲ 12%', '▼ 5%', '▲ 8%', '▼ 3%', '▲ 2%', '▲ 15%', '▼ 2%', '▲ 5%', '▲ 4%', '▼ 1%'];
+        const trendColors = ['#10B981', '#EF4444', '#10B981', '#EF4444', '#10B981', '#10B981', '#EF4444', '#10B981', '#10B981', '#EF4444'];
+        const trendBgs = ['rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)', 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)', 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)', 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'];
+
+        const maxDisplay = Math.max(10, combined.length);
+        for (let i = 0; i < maxDisplay; i++) {
+            const item = combined[i] || { label: i === 5 ? 'Baterai' : i === 6 ? 'Charging' : i === 7 ? 'Software' : i === 8 ? 'Audio' : i === 9 ? 'Kamera' : 'Lainnya', count: 0 };
+            const style = getKerusakanStyle(item.label, i);
+            const count = item.count;
+            const pct = totalCount ? Math.round((count / totalCount) * 100) : 0;
+            const rankStr = (i + 1) < 10 ? '0' + (i + 1) : String(i + 1);
+            
+            // Trend badge
+            let trendHtml = '';
+            if (count > 0) {
+                trendHtml = `<span style="font-size: 0.72em; font-weight: 700; color: ${trendColors[i % 10]}; background: ${trendBgs[i % 10]}; padding: 2px 6px; border-radius: 6px; margin-left: 6px; display: inline-block;">${trends[i % 10]}</span>`;
+            } else {
+                trendHtml = `<span style="font-size: 0.72em; font-weight: 600; color: #94A3B8; margin-left: 6px;">(0%)</span>`;
+            }
+
+            const barColor = count > 0 ? style.color : '#E2E8F0';
+            const textColor = count > 0 ? 'var(--dark, #1e293b)' : '#94A3B8';
+            const iconBg = count > 0 ? style.bg : 'rgba(148, 163, 185, 0.1)';
+            const iconColor = count > 0 ? style.color : '#94A3B8';
+
+            const itemHtml = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.88em;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 130px; max-width: 150px;">
+                        <div style="width: 32px; height: 32px; border-radius: 8px; background: ${iconBg}; color: ${iconColor}; display: flex; align-items: center; justify-content: center; font-size: 1.15em; flex-shrink: 0;">${style.icon}</div>
+                        <span style="font-weight: 700; color: ${textColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.label}">${rankStr}. ${item.label}</span>
+                    </div>
+                    
+                    <div style="flex: 1; background: var(--bg-main, #f1f5f9); height: 10px; border-radius: 6px; overflow: hidden; margin: 0 5px;">
+                        <div style="width: ${pct}%; background: ${barColor}; height: 100%; border-radius: 6px; transition: width 1s ease;"></div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: flex-end; min-width: 110px; text-align: right;">
+                        <div style="line-height: 1.2;">
+                            <span style="font-weight: 800; color: ${textColor}; font-size: 0.95em;">${count} Unit</span><br>
+                            <span style="font-size: 0.78em; color: #64748b; font-weight: 600;">${pct}%</span>
+                        </div>
+                        ${trendHtml}
+                    </div>
+                </div>
+            `;
+            listContainer.insertAdjacentHTML('beforeend', itemHtml);
+        }
+
+        // Generate Podium Top 3 Cards
+        const podiumContainer = document.getElementById('kerusakanPodiumCards');
+        if (podiumContainer && combined.length > 0) {
+            podiumContainer.innerHTML = '';
+            
+            const top1 = combined[0] || { label: 'LCD', count: 0 };
+            const top2 = combined[1] || { label: 'Mesin', count: 0 };
+            const top3 = combined[2] || { label: 'Lainnya', count: 0 };
+            
+            const s1 = getKerusakanStyle(top1.label, 0);
+            const s2 = getKerusakanStyle(top2.label, 1);
+            const s3 = getKerusakanStyle(top3.label, 2);
+            
+            const p1 = totalCount ? Math.round((top1.count / totalCount) * 100) : 0;
+            const p2 = totalCount ? Math.round((top2.count / totalCount) * 100) : 0;
+            const p3 = totalCount ? Math.round((top3.count / totalCount) * 100) : 0;
+
+            // #2 Silver (Left)
+            const card2 = `
+                <div style="flex: 1; min-width: 100px; background: var(--bg-main, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 16px; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; font-weight: 800; color: #64748B;">
+                        <span>🥈 #2 ${top2.label}</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px;">
+                        <span style="font-size: 1.3em; font-weight: 800; color: var(--dark, #1e293b);">${top2.count} <span style="font-size: 0.6em; font-weight: 600; color: #64748B;">Unit</span></span>
+                        <span style="font-size: 0.72em; font-weight: 700; color: #64748B;">${p2}%</span>
+                    </div>
+                    <div style="font-size: 0.72em; font-weight: 700; color: #EF4444; text-align: right;">▼ 5%</div>
+                </div>
+            `;
+
+            // #1 Gold (Center - Taller / Highlighted)
+            const card1 = `
+                <div style="flex: 1.15; min-width: 110px; background: linear-gradient(135deg, #FEFCE8, #FFFBEB); border: 2px solid #FDE047; border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; transition: 0.2s; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.12); transform: translateY(-4px);" onmouseover="this.style.transform='translateY(-7px)'" onmouseout="this.style.transform='translateY(-4px)'">
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85em; font-weight: 800; color: #D97706;">
+                        <span>🏆 #1 ${top1.label}</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px;">
+                        <span style="font-size: 1.45em; font-weight: 800; color: #92400E;">${top1.count} <span style="font-size: 0.55em; font-weight: 700; color: #B45309;">Unit</span></span>
+                        <span style="font-size: 0.75em; font-weight: 800; color: #D97706; background: rgba(245, 158, 11, 0.15); padding: 2px 6px; border-radius: 6px;">${p1}%</span>
+                    </div>
+                    <div style="font-size: 0.75em; font-weight: 800; color: #10B981; text-align: right;">▲ 12%</div>
+                </div>
+            `;
+
+            // #3 Bronze (Right)
+            const card3 = `
+                <div style="flex: 1; min-width: 100px; background: var(--bg-main, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 16px; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; font-weight: 800; color: #B45309;">
+                        <span>🥉 #3 ${top3.label}</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px;">
+                        <span style="font-size: 1.3em; font-weight: 800; color: var(--dark, #1e293b);">${top3.count} <span style="font-size: 0.6em; font-weight: 600; color: #64748B;">Unit</span></span>
+                        <span style="font-size: 0.72em; font-weight: 700; color: #64748B;">${p3}%</span>
+                    </div>
+                    <div style="font-size: 0.72em; font-weight: 700; color: #10B981; text-align: right;">▲ 8%</div>
+                </div>
+            `;
+
+            podiumContainer.innerHTML = card2 + card1 + card3;
+        }
+
+        // Populate Tren Kerusakan Banner
+        const kerInsightTextEl = document.getElementById('kerusakanInsightText');
+        if (kerInsightTextEl) {
+            if (combined.length === 0 || totalCount === 0) {
+                kerInsightTextEl.innerHTML = "Belum ada data kerusakan tercatat dalam periode ini.";
+            } else {
+                const top1 = combined[0];
+                const pct1 = totalCount ? Math.round((top1.count / totalCount) * 100) : 0;
+                let saran = "Disarankan menambah stok sparepart populer agar proses servis tidak tertunda.";
+                if (combined.length >= 2 && combined[1].count > 0) {
+                    const top2 = combined[1];
+                    const pct2 = totalCount ? Math.round((top2.count / totalCount) * 100) : 0;
+                    kerInsightTextEl.innerHTML = `Kerusakan <b style="color: #EA580C;">${top1.label} (${pct1}%)</b> dan <b style="color: #D97706;">${top2.label} (${pct2}%)</b> mendominasi minggu ini. ${saran}`;
+                } else {
+                    kerInsightTextEl.innerHTML = `Kerusakan <b style="color: #EA580C;">${top1.label} (${pct1}%)</b> mendominasi servis minggu ini. ${saran}`;
+                }
+            }
+        }
+    }
+    {% endif %}
+
+// Fungsi Pengingat Otomatis Jam 16.00 (Sekarang buka popup Kas)
+setInterval(() => {
+    const sekarang = new Date();
+    if (sekarang.getHours() === 16 && sekarang.getMinutes() === 0) {
+        alert("Waktu sudah masuk jam 16.00 (Cut-off). Waktunya Tutup Kas & Buku!");
+        bukaPopupKas();
+    }
+}, 60000);
+
+    // Diagram Garansi
+    const elGaransi = document.getElementById('pieGaransi');
+    if (elGaransi) {
+        const ctxGaransi = elGaransi.getContext('2d');
+        new Chart(ctxGaransi, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sisa ≤ 1 Bulan', 'Sisa 1-2 Bulan', 'Sisa > 2 Bulan'],
+                datasets: [{
+                    data: [{{ garansi_stats['1_bulan']|default(0) }}, {{ garansi_stats['2_bulan']|default(0) }}, {{ garansi_stats['3_bulan']|default(0) }}],
+                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12, weight: '700' }, padding: 15, usePointStyle: true, pointStyle: 'circle' }
+                    }
+                },
+                animation: { animateScale: true, animateRotate: true, duration: 1200 }
+            }
+        });
+    }
+
+    // Diagram Pelanggan (Top Tindakan)
+    const elPelanggan = document.getElementById('donutPelanggan');
+    if (elPelanggan) {
+        const ctxPelanggan = elPelanggan.getContext('2d');
+        new Chart(ctxPelanggan, {
+            type: 'doughnut',
+            data: {
+                labels: {{ (pelanggan_stats['labels'] or []) | tojson }},
+                datasets: [{
+                    data: {{ (pelanggan_stats['data'] or []) | tojson }},
+                    backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#FF1E27', '#8B5CF6'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12, weight: '700' }, padding: 15, usePointStyle: true, pointStyle: 'circle' }
+                    }
+                },
+                animation: { animateScale: true, animateRotate: true, duration: 1200 }
+            }
+        });
+    }
+
+    // Diagram Sparepart (Kategori)
+    const elSparepart = document.getElementById('donutSparepart');
+    if (elSparepart) {
+        const sparepartLabels = {{ (sparepart_stats['labels'] or []) | tojson }};
+        const sparepartColorMap = {
+            'LCD': '#3B82F6',
+            'Batre': '#10B981',
+            'IC': '#FF1E27',
+            'Konektor': '#06B6D4',
+            'Board': '#F59E0B',
+            'Kabel Fleksibel': '#8B5CF6',
+            'Lainnya': '#64748B'
+        };
+        const sparepartColors = sparepartLabels.map(label => sparepartColorMap[label] || '#94A3B8');
+        const ctxSparepart = elSparepart.getContext('2d');
+        new Chart(ctxSparepart, {
+            type: 'doughnut',
+            data: {
+                labels: sparepartLabels,
+                datasets: [{
+                    data: {{ (sparepart_stats['data'] or []) | tojson }},
+                    backgroundColor: sparepartColors,
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12, weight: '700' }, padding: 15, usePointStyle: true, pointStyle: 'circle' }
+                    }
+                },
+                animation: { animateScale: true, animateRotate: true, duration: 1200 }
+            }
+        });
+    }
+
+function bukaPopupKas() {
+    document.getElementById('popupKas').style.display = 'flex';
+    document.getElementById('inputUangFisik').value = ''; 
+    document.getElementById('inputUangFisik').focus();
+}
+
+function tutupPopupKas() {
+    document.getElementById('popupKas').style.display = 'none';
+}
+
+// Fungsi Gabungan: Tutup Kas DULU, baru Tutup Buku!
+function kirimDataKas() {
+    let uangFisik = document.getElementById('inputUangFisik').value;
+    let totalSaldo = {{ saldo_terakhir or 0 }}; 
+    
+    if (uangFisik === '' || uangFisik < 0) {
+        alert("Nominal uang fisik tidak boleh kosong bro!");
+        return;
+    }
+
+    let kasAsetBaru = totalSaldo - uangFisik;
+
+    if(confirm(`Yakin mau eksekusi siklus 16.00?\n\nTotal Saldo Sistem: Rp ${totalSaldo.toLocaleString('id-ID')}\nUang Fisik (Laci): Rp ${Number(uangFisik).toLocaleString('id-ID')}\n-----------------------------\nKas Aset Baru: Rp ${kasAsetBaru.toLocaleString('id-ID')}\n\nSetelah klik OK, data akan otomatis diarsip ke Lemari Baja.`)) {
+        
+        // Langsung sembunyikan popup biar user ngga nungguin
+        tutupPopupKas();
+        
+        // Ubah cursor jadi loading biar tahu lagi proses (karena ada proses screenshot & kirim Telegram yang makan waktu)
+        document.body.style.cursor = 'wait';
+          
+          let btn = document.querySelector('#popupKas button:nth-child(2)');
+          if(btn) {
+              btn.innerText = 'Tunggu 10-20 Detik...';
+              btn.style.backgroundColor = '#6c757d';
+              btn.disabled = true;
+          }
+          
+          // Tampilkan overlay loading layar penuh
+          let loader = document.createElement('div');
+          loader.id = 'fullScreenLoader';
+          loader.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-family:Poppins,sans-serif;';
+          loader.innerHTML = '<div style="font-size:2em;margin-bottom:20px;">dY?~</div><h2>Sedang Memproses Tutup Kas...</h2><p>Mohon jangan menutup atau me-refresh halaman ini.<br>Proses ini memakan waktu sekitar 15-20 detik.</p>';
+          document.body.appendChild(loader);
+
+
+        // 1. Ambil screenshot kondisi akhir hari ini (Tutup Buku) & kirim Telegram
+        // Menggunakan .catch() dan .finally() agar jika Telegram error, DB tetap dieksekusi
+        fetch('/telegram_tutup_buku', { method: 'POST' })
+        .catch(e => {
+            console.warn("Peringatan: Telegram Tutup Buku error, namun eksekusi DB tetap dilanjutkan.", e);
+        })
+        .finally(() => {
+            // 2. Eksekusi semua logika database (mindahin arsip, hapus data lama, set kas baru)
+            fetch('/eksekusi_db', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uang_fisik: uangFisik, total_saldo: totalSaldo })
+            })
+            .then(response => {
+                if(!response.ok) throw new Error("Gagal eksekusi database");
+                return response.text();
+            })
+            .then(msgDB => {
+                window.msgDB = msgDB;
+                // 3. Ambil screenshot kondisi awal besok (Buka Buku) & kirim Telegram
+                return fetch('/telegram_buka_buku', { method: 'POST' })
+                    .catch(e => console.warn("Peringatan: Telegram Buka Buku error.", e));
+            })
+            .then(() => {
+                document.body.style.cursor = 'default';
+                alert("Siklus Selesai Sepenuhnya!\n\n" + window.msgDB + "\n\nJika ada notifikasi Telegram gagal, harap abaikan, data aman.");
+                location.reload(); 
+            })
+            .catch(error => {
+                document.body.style.cursor = 'default';
+                console.error('Error:', error);
+                alert("Terjadi kesalahan sistem saat Eksekusi DB: " + error.message);
+            });
+        });
+    }
+}
+
+function bukaPopupSparepart(id='', tgl='', kategori='', merek='', barang='', device='', qty='', beli='', jual='') {
+    document.getElementById('popupSparepart').style.display = 'flex';
+    document.getElementById('sp_id').value = id;
+    
+    // Jika tgl kosong (mode tambah baru), set ke hari ini
+    if (!tgl) {
+        let today = new Date();
+        tgl = today.toISOString().split('T')[0];
+    }
+    document.getElementById('sp_tgl').value = tgl;
+    
+    document.getElementById('sp_kategori').value = kategori;
+    document.getElementById('sp_merek').value = merek;
+    document.getElementById('sp_barang').value = barang;
+    document.getElementById('sp_device').value = device;
+    document.getElementById('sp_qty').value = qty;
+    document.getElementById('sp_beli').value = beli;
+    document.getElementById('sp_jual').value = jual;
+    
+    document.getElementById('sparepartTitle').innerText = id ? 'Edit Data Sparepart' : 'Input Sparepart Baru';
+}
+
+function tutupPopupSparepart() {
+    document.getElementById('popupSparepart').style.display = 'none';
+}
+
+// Visual feedback: Ubah kursor jadi loading saat submit form (proses kirim telegram)
+document.addEventListener('submit', function() {
+    document.body.style.cursor = 'wait';
+    const buttons = document.querySelectorAll('button[type="submit"]');
+    buttons.forEach(btn => {
+        btn.style.opacity = '0.7';
+        btn.innerText = '⏳ Sedang Proses...';
+    });
+});
+</script>
+    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+    {% endif %}
+
+    {% if request.args.get('wa_done') %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var waId = "{{ request.args.get('wa_done') }}";
+            if(confirm("Status unit telah diubah menjadi Done!\n\nApakah Anda ingin mengirim pesan WhatsApp ke konsumen untuk mengambil Hp-nya?")) {
+                window.open("/wa_selesai/" + waId, "_blank");
+            }
+            // Hapus parameter wa_done dari URL agar tidak muncul lagi saat di-refresh
+            var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({path:newUrl}, '', newUrl);
+        });
+    </script>
+    {% endif %}
+
+    {% if request.args.get('cash_done') %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var cashId = "{{ request.args.get('cash_done') }}";
+            if(confirm("🎉 Pembayaran Unit Selesai (Status CASH)! 💰\n\nApakah Anda ingin langsung mencetak Nota Garansi & Struk Pembayaran untuk konsumen?")) {
+                window.open("/nota_bridge/" + cashId + "?type=garansi", "_blank");
+            }
+            // Hapus parameter cash_done dari URL agar tidak muncul lagi saat di-refresh
+            var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({path:newUrl}, '', newUrl);
+        });
+    </script>
+    {% endif %}
+    <!-- Tutup content-body dan main-content -->
+        </div> 
+    </main>
+
+    <script>
+        // --- DARK MODE LOGIC ---
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIconLight = document.getElementById('themeIconLight');
+        const themeIconDark = document.getElementById('themeIconDark');
+        const htmlEl = document.documentElement;
+        
+        // 1. Cek dari LocalStorage saat halaman dimuat
+        const savedTheme = localStorage.getItem('sfs_theme');
+        if (savedTheme === 'dark') {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeIconLight.style.display = 'none';
+            themeIconDark.style.display = 'block';
+        }
+
+        // 2. Aksi saat tombol ditekan
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            
+            // Animasi rotasi kecil
+            themeToggle.style.transform = 'scale(0.8) rotate(90deg)';
+            setTimeout(() => { themeToggle.style.transform = 'scale(1) rotate(0deg)'; }, 200);
+
+            if (currentTheme === 'dark') {
+                htmlEl.removeAttribute('data-theme');
+                localStorage.setItem('sfs_theme', 'light');
+                themeIconLight.style.display = 'block';
+                themeIconDark.style.display = 'none';
+            } else {
+                htmlEl.setAttribute('data-theme', 'dark');
+                localStorage.setItem('sfs_theme', 'dark');
+                themeIconLight.style.display = 'none';
+                themeIconDark.style.display = 'block';
+            }
+        });
+    </script>
+    <!-- SCRIPT AUTO REFRESH (AJAX POLLING) -->
+    <script>
+        let lastDbUpdate = null;
+        function checkAutoUpdate() {
+            // Jangan refresh jika user sedang mengetik sesuatu di search bar atau input form
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) {
+                return; 
+            }
+            fetch('/api/check_update')
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        if (lastDbUpdate === null) {
+                            lastDbUpdate = data.last_update; // Set pertama kali
+                        } else if (lastDbUpdate !== data.last_update) {
+                            // Ada perubahan di database, reload halaman untuk menampilkan data terbaru
+                            console.log("Data terbaru terdeteksi, merefresh halaman...");
+                            window.location.reload();
+                        }
+                    }
+                })
+                .catch(e => console.error("Error auto-update:", e));
+        }
+        setInterval(checkAutoUpdate, 5000); // Cek setiap 5 detik
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+    </script>
+
+    <!-- WIDGET ROBOT AIS -->
+    <script src="{{ url_for('static', filename='robot_ais_widget.js') }}"></script>
+
+    <!-- MODAL FOTO PROFIL -->
+    <div id="modalFotoProfil" class="modal-overlay-glass" style="display: none;">
+        <div class="modal-glass-content" style="max-width: 400px;">
+            <div class="modal-glass-header">
+                <div class="modal-glass-title">
+                    <div class="modal-icon-badge" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9);">📸</div>
+                    <span>Ubah Foto Profil</span>
+                </div>
+                <button class="modal-close-btn" onclick="document.getElementById('modalFotoProfil').style.display='none'">&times;</button>
+            </div>
+            <form id="formFotoProfil" onsubmit="uploadFotoProfil(event)">
+                <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                    <label for="fotoProfilInput" style="cursor: pointer; display: inline-block;">
+                        <img id="previewFotoProfil" src="{{ avatar_img }}" alt="Preview" style="width: 120px; height: 120px; border-radius: 50%; border: 3px dashed var(--border); object-fit: cover; margin-bottom: 15px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                        <br>
+                        <span class="tag-pill" style="background: #E0E7FF; color: #4338CA; font-weight: 700; padding: 6px 14px; border-radius: 20px;">✨ Pilih Foto Baru</span>
+                    </label>
+                    <input type="file" id="fotoProfilInput" name="foto" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="previewImage(event)">
+                </div>
+                <button type="submit" class="btn-modern btn-purple-gradient" style="width: 100%; padding: 12px; font-size: 1em;">💾 Simpan Foto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openModalFotoProfil() {
+        document.getElementById('modalFotoProfil').style.display = 'flex';
+    }
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){
+            var output = document.getElementById('previewFotoProfil');
+            output.src = reader.result;
+        };
+        if(event.target.files[0]){
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    }
+
+    async function uploadFotoProfil(event) {
+        event.preventDefault();
+        const fileInput = document.getElementById('fotoProfilInput');
+        if(!fileInput.files[0]) {
+            alert('Pilih foto terlebih dahulu!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('foto', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/upload_foto_profil', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if(data.success) {
+                location.reload();
+            } else {
+                alert('Gagal: ' + data.message);
+            }
+        } catch (err) {
+            alert('Terjadi kesalahan saat upload.');
+        }
+        }
+
+        // SCRIPT LIVE CLOCK & DATE UNTUK HEADER TOPBAR
+        function updateTopbarClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const clockEl = document.getElementById('topbar-clock');
+            if (clockEl) clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const dateStr = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            
+            const dateEl = document.getElementById('topbar-date');
+            if (dateEl) dateEl.textContent = dateStr;
+        }
+        setInterval(updateTopbarClock, 1000);
+        updateTopbarClock();
+    </script>
+
+    {% if new_unit_popup %}
+    <!-- V4 Modern Top-Right Toast Notification (Gantikan Popup Center) -->
+    <div id="toastNewUnit" style="position: fixed; top: 24px; right: 24px; z-index: 999999; background: #FFFFFF; border: 1.5px solid #10B981; border-left: 6px solid #10B981; border-radius: 12px; padding: 16px 20px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2); max-width: 390px; width: 100%; animation: slideInToast 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; display: flex; flex-direction: column; gap: 12px; font-family: 'Inter', sans-serif;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: #D1FAE5; color: #059669; font-weight: 800; font-size: 1.2em; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">✓</div>
+                <div>
+                    <strong style="display: block; font-size: 0.96em; color: #0F172A; font-weight: 700;">✅ Unit Berhasil Didaftarkan</strong>
+                    <span style="font-size: 0.82em; color: #64748B;">No Servis : <b style="color: #059669; font-family: monospace;">SF-250710-{{ '%06d' % new_unit_popup.id|int if new_unit_popup.id|int is number else new_unit_popup.id }}</b></span>
+                </div>
+            </div>
+            <button type="button" onclick="dismissToast()" style="background: transparent; border: none; font-size: 1.5em; color: #94A3B8; cursor: pointer; padding: 0 4px; line-height: 1;">&times;</button>
+        </div>
+        
+        <div style="font-size: 0.84em; color: #334155; padding-top: 6px; border-top: 1px dashed #CBD5E1; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 500;">📱 <b>{{ new_unit_popup.device }}</b> ({{ new_unit_popup.user }})</span>
+            <a href="/nota_bridge/{{ new_unit_popup.id }}?type=penerimaan" target="_blank" onclick="dismissToast()" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.92em; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.1);">
+                🖨️ Cetak Nota
+            </a>
+        </div>
+    </div>
+    <style>
+        @keyframes slideInToast {
+            from { opacity: 0; transform: translateX(60px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOutToast {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(60px); }
+        }
+    </style>
+    <script>
+        function dismissToast() {
+            const t = document.getElementById('toastNewUnit');
+            if (t) {
+                t.style.animation = 'fadeOutToast 0.25s ease forwards';
+                setTimeout(() => t.remove(), 260);
+            }
+        }
+        // Auto-dismiss setelah 9 detik
+        setTimeout(dismissToast, 9000);
+    </script>
+    {% endif %}
+</body>
+</html>
+
+<script>
+// Auto-inject data-labels for mobile responsive tables
+document.querySelectorAll('table').forEach(table => {
+    let headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.replace(/[\n\r]/g, ' ').trim());
+    table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(tr => {
+        Array.from(tr.querySelectorAll('td')).forEach((td, i) => {
+            if(headers[i]) td.setAttribute('data-label', headers[i]);
+        });
+    });
+});
+</script>
+

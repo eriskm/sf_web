@@ -1,0 +1,13 @@
+async def handle_message_akuntan(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_text = update.message.text
+    if ALLOWED_TELEGRAM_IDS and user_id not in ALLOWED_TELEGRAM_IDS: return
+
+    try:
+        # Gunakan AIS Engine untuk logika respons
+        jawaban = AISBotLogic.proses_pesan_akuntan(user_text)
+        await update.message.reply_text(jawaban, parse_mode='HTML')
+    except Exception as e:
+        print(f"[ERROR AKUNTAN]: {str(e)}")
+        await update.message.reply_text(f"🤖 Akuntan Error: {str(e)}")
+

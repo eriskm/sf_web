@@ -1,0 +1,162 @@
+<line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+        cur_mysql.execute(f"SELECT COUNT(*) as total FROM arsip_garansi {where_g}", params_g)
+        total_garansi = cur_mysql.fetchone()['total']
+        total_p_garansi = (total_garansi + 9) // 10 if total_garansi > 0 else 1
+        cur_mysql.execute(f"SELECT * FROM arsip_garansi {where_g} ORDER BY id_garansi DESC LIMIT 10 OFFSET %s", params_g + [offset_garansi])
+        arsip_garansi = cur_mysql.fetchall()
+
+        # Pagination & Filter Pelanggan
+        p_pelanggan = request.args.get('p_pelanggan', 1, type=int)
+        offset_pelanggan = (p_pelanggan - 1) * 10
+        
+        where_p = ""
+        params_p = []
+        if q_pelanggan:
+            where_p = "WHERE nama_user LIKE %s OR device LIKE %s"
+            params_p = [f"%{q_pelanggan}%", f"%{q_pelanggan}%"]
+
+        cur_mysql.execute(f"SELECT COUNT(*) as total FROM arsip_pelanggan {where_p}", params_p)
+        total_pelanggan = cur_mysql.fetchone()['total']
+        total_p_pelanggan = (total_pelanggan + 9) // 10 if total_pelanggan > 0 else 1
+        cur_mysql.execute(f"SELECT * FROM arsip_pelanggan {where_p} ORDER BY id_arsip DESC LIMIT 10 OFFSET %s", params_p + [offset_pelanggan])
+        arsip_pelanggan = cur_mysql.fetchall()
+
+        # Pagination & Filter Sparepart
+        p_sparepart = request.args.get('p_sparepart', 1, type=int)
+        offset_sparepart = (p_sparepart - 1) * 10
+        where_s = ""
+        params_s = []
+        if q_sparepart:
+            where_s = "WHERE kategori LIKE %s OR merek LIKE %s OR jenis_barang LIKE %s OR jenis_device LIKE %s"
+            params_s = [f"%{q_sparepart}%", f"%{q_sparepart}%", f"%{q_sparepart}%", f"%{q_sparepart}%"]
+            
+        cur_mysql.execute(f"SELECT COUNT(*) as total FROM data_sparepart {where_s}", params_s)
+        total_sparepart = cur_mysql.fetchone()['total']
+        total_p_sparepart = (total_sparepart + 9) // 10 if total_sparepart > 0 else 1
+        cur_mysql.execute(f"SELECT * FROM data_sparepart {where_s} ORDER BY id_sparepart DESC LIMIT 10 OFFSET %s", params_s + [offset_sparepart])
+        data_sparepart = cur_mysql.fetchall()
+
+        # 4. Ambil Statistik Kategori Sparepart
+        cur_mysql.execute("""
+            SELECT kategori, SUM(qty) as jumlah 
+            FROM data_sparepart 
+            WHERE kategori IS NOT NULL AND TRIM(kategori) != ''
+            GROUP BY kategori 
+            ORDER BY jumlah DESC
+        """)
+        kat_rows = cur_mysql.fetchall()
+        sparepart_stats = {
+            'labels': [row['kategori'] for row in kat_rows],
+            'data': [row['jumlah'] for row in kat_rows]
+        }
+        
+        # Autocomplete Garansi
+        cur_mysql.execute("SELECT DISTINCT nama_user FROM arsip_garansi WHERE nama_user IS NOT NULL")
+        g_nama = cur_mysql.fetchall()
+        cur_mysql.execute("SELECT DISTINCT device FROM arsip_garansi WHERE device IS NOT NULL")
+        g_device = cur_mysql.fetchall()
+        auto_garansi = list(set([row['nama_user'] for row in g_nama] + [row['device'] for row in g_device]))
+
+        # Autocomplete Pelanggan
+        cur_mysql.execute("SELECT DISTINCT nama_user FROM arsip_pelanggan WHERE nama_user IS NOT NULL")
+        p_nama = cur_mysql.fetchall()
+        cur_mysql.execute("SELECT DISTINCT device FROM arsip_pelanggan WHERE device IS NOT NULL")
+        p_device = cur_mysql.fetchall()
+        auto_pelanggan = list(set([row['nama_user'] for row in p_nama] + [row['device'] for row in p_device]))
+        
+        # Autocomplete Sparepart
+        cur_mysql.execute("SELECT DISTINCT jenis_barang FROM data_sparepart WHERE jenis_barang IS NOT NULL")
+        s_barang = cur_mysql.fetchall()
+        cur_mysql.execute("SELECT DISTINCT jenis_device FROM data_sparepart WHERE jenis_device IS NOT NULL")
+        s_device = cur_mysql.fetchall()
+        auto_sparepart = list(set([row['jenis_barang'] for row in s_barang] + [row['jenis_device'] for row in s_device]))
+
+        db_mysql.close()
+    except Exception as e:
+        print(f"Error load arsip: {e}")
+        arsip_garansi = []
+        arsip_pelanggan = []
+        data_sparepart = []
+        p_garansi = 1
+        p_pelanggan = 1
+        p_sparepart = 1
+        total_p_garansi = 1
+        total_p_pelanggan = 1
+        total_p_sparepart = 1
+        q_garansi = ''
+        q_pelanggan = ''
+        q_sparepart = ''
+        auto_garansi = []
+        auto_pelanggan = []
+        auto_sparepart = []
+        garansi_stats = {'1_bulan': 0, '2_bulan': 0, '3_bulan': 0}
+        pelanggan_stats = {'labels': [], 'data': []}
+        sparepart_stats = {'labels': [], 'data': []}
+
+    # 7.5 CEK NOTIFIKASI SLA (Tidak Ada Update)
+    sla_notifications = []
+    try:
+        cur_sla = conn.execute("SELECT rowid, * FROM servis WHERE Status NOT IN ('Cash', 'Cancel', 'Done', 'Refund') AND updated_at IS NOT NULL")
+        now_dt = datetime.now()
+        for row in cur_sla.fetchall():
+            row_dict = dict(row)
+            updated_str = row_dict.get('updated_at')
+            if updated_str:
+                try:
+                    up_dt = datetime.strptime(updated_str, '%Y-%m-%d %H:%M:%S')
+                    diff = now_dt - up_dt
+                    hours_diff = diff.total_seconds() / 3600
+                    
+                    wa_number = row_dict.get('No. WA', '')
+                    if wa_number and wa_number.startswith('0'):
+                        wa_number = '62' + wa_number[1:]
+                    wa_link = f"https://wa.me/{wa_number}" if wa_number else "#"
+                    
+                    dev_name = row_dict.get('Device', 'Unknown')
+                    
+                    if hours_diff >= 168:
+                        if int(row_dict.get('flag_kritis', 0)) == 0:
+                            tok = '8604967039:AAFbBMb5sMGulDDbGKMAvLsL4Q9uc_cTQvk'
+                            cid = '-1003742654600'
+                            pesan_tele = f"🚨 *KASUS KRITIS (Mandek >7 Hari)*\nDevice: {dev_name}\nStatus: {row_dict.get('Status')}\nTeknisi: {row_dict.get('Teknisi')}\nSegera tindak lanjuti!"
+                            try:
+                                import requests
+                                requests.post(f"https://api.telegram.org/bot{tok}/sendMessage", data={'chat_id': cid, 'text': pesan_tele, 'parse_mode': 'Markdown'})
+                                conn.execute("UPDATE servis SET flag_kritis = 1 WHERE rowid = ?", (row_dict['rowid'],))
+                                conn.commit()
+                            except Exception as e:
+                                print("Gagal kirim notif kritis tele:", e)
+                        sla_notifications.append({'level': 'kritis', 'badge': '🚨', 'title': f"[{int(hours_diff//24)} Hari] {dev_name}", 'desc': 'Kritis (Telah diekskalasi)', 'wa_link': wa_link})
+                    elif hours_diff >= 72:
+                        sla_notifications.append({'level': 'owner', 'badge': '🔴', 'title': f"[72 Jam] {dev_name}", 'desc': 'Eskalasi Admin', 'wa_link': wa_link})
+                    elif hours_diff >= 48:
+                        sla_notifications.append({'level': 'happy_call', 'badge': '🟠', 'title': f"[48 Jam] {dev_name}", 'desc': 'Happy Call / Customer Update', 'wa_link': wa_link})
+                    elif hours_diff >= 24:
+                        sla_notifications.append({'level': 'teknisi', 'badge': '🟡', 'title': f"[24 Jam] {dev_name}", 'desc': 'Reminder Teknisi', 'wa_link': wa_link})
+                except Exception as e:
+                    pass
+    except Exception as e:
+        print("Error SLA notif:", e)
+
+    # 8. RETURN DENGAN NAMA VARIABEL YANG PAS
+    return render_template('dashboard.html', 
+                           sla_notifications=sla_notifications,
+                           servis=servis_clean, 
+                           current_page=page, 
+                           total_pages=total_pages,
+                           history_kas=history_kas, 
+                           kas_awal=kas_awal_tampilan,
+                           total_penjualan=total_penjualan,
+                           total_modal_barang=t_modal_barang,
+                           total_modal_jasa=t_modal_jasa,
+                           total_modal_lain=t_modal_lain,
+                           g_hari=g_hari, 
+                           o_hari=o_hari,
+                           laba_bersih=laba_bersih_calc,
+                           bonus=bonus, 
+                           aset_30=aset_30,
+                           pengelola=pengelola, 
+                           investor=investor,
+                           t_tambahan=t_tambahan,
+                           tgl_aktif=tgl_filter,
+                           q_aktif=q_filter,

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview V1: Manajemen Hak Akses & User - Sukabumi Flasher</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            padding: 30px 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Navigation */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95em;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            color: var(--text-primary);
+            border-color: #cbd5e1;
+            transform: translateX(-3px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8em;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #0f172a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Top Stats Cards (SaaS Style V1 with Top Border) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card .label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card .value {
+            font-size: 1.9em;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-top: 8px;
+        }
+
+        /* Main Content Layout (Grid: Form Left/Top, Table Right/Bottom) */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 26px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h2 {
+            font-size: 1.25em;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header p {
+            font-size: 0.88em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 0.95em;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-toggle-pw {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .btn-toggle-pw:hover {
+            color: var(--text-primary);
+        }
+
+        /* Checkbox & Switch */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.92em;
+            color: var(--text-primary);
+            user-select: none;
+            margin-top: 6px;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* Dynamic Permission Preview Box */
+        .permission-box {
+            margin-top: 16px;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.84em;
+        }
+
+        .permission-box h4 {
+            font-size: 0.95em;
+            color: #334155;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .perm-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            color: var(--text-secondary);
+        }
+
+        .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .perm-item.allow { color: #15803d; font-weight: 600; }
+        .perm-item.deny { color: #94a3b8; text-decoration: line-through; }
+
+        /* Submit Button */
+        .btn-submit {
+            margin-top: 22px;
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.98em;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        /* Table & Filters Section */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.92em;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+
+        .filter-box {
+            width: 200px;
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.82em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 0.92em;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Pill Badges for Hak Akses */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.84em;
+            font-weight: 700;
+        }
+
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-teknisi { background: #e0f2fe; color: #0284c7; }
+        .badge-kasir { background: #dcfce7; color: #16a34a; }
+        .badge-cs { background: #fef9c3; color: #ca8a04; }
+        .badge-owner { background: #f3e8ff; color: #9333ea; }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.86em;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-active { color: #16a34a; }
+        .status-active .status-dot { background-color: #22c55e; box-shadow: 0 0 6px #22c55e; }
+
+        .status-inactive { color: #dc2626; }
+        .status-inactive .status-dot { background-color: #ef4444; }
+
+        /* Action Dropdown Menu */
+        .action-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn-action {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            min-width: 170px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            z-index: 100;
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        .dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.88em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+
+        /* Modal Popup Prototype */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: zoomIn 0.2s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="header-title">
+            <span style="font-size:1.8em;">⚡</span>
+            <h1>Manajemen Hak Akses & Pengguna (Desain V1 - Vertical & Checklist)</h1>
+        </div>
+        <a href="/users_mockup_v2" class="btn-back" style="background:#3b82f6; color:white; border:none;">
+            👉 Lihat Desain V2 (Sesuai user.png) →
+        </a>
+    </div>
+
+    <!-- 8. Statistik Atas (SaaS Header Cards V1) -->
+    <div class="stats-grid">
+        <div class="stat-card" style="border-top: 4px solid #3b82f6;">
+            <div class="label"><span>Total User</span> 👥</div>
+            <div class="value" id="statTotal">18</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #ef4444;">
+            <div class="label"><span>Admin</span> 🟥</div>
+            <div class="value" id="statAdmin">2</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #0284c7;">
+            <div class="label"><span>Teknisi</span> 🟦</div>
+            <div class="value" id="statTeknisi">9</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #16a34a;">
+            <div class="label"><span>Kasir</span> 🟩</div>
+            <div class="value" id="statKasir">4</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #ca8a04;">
+            <div class="label"><span>Customer Service</span> 🟨</div>
+            <div class="value" id="statCS">2</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #9333ea;">
+            <div class="label"><span>Owner</span> 🟪</div>
+            <div class="value" id="statOwner">1</div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- 1. Form Tambah User Card (Vertical V1) -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👤 Tambah User Baru</h2>
+                <p>Buat akun staf dan atur level hak akses.</p>
+            </div>
+
+            <form id="addUserForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="newUsername" placeholder="Contoh: erik_sf" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-input" id="newFullName" placeholder="Contoh: Erik Pratama" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-input" id="newPassword" placeholder="••••••••" required>
+                        <button type="button" class="btn-toggle-pw" onclick="togglePassword('newPassword', this)" title="Lihat/Sembunyikan Password">👁</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Level Hak Akses</label>
+                    <select class="form-select" id="newAccessLevel" onchange="updatePermPreview()">
+                        <option value="teknisi">Teknisi</option>
+                        <option value="kasir">Kasir</option>
+                        <option value="cs">Customer Service</option>
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
+                    </select>
+                </div>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="newStatus" checked>
+                    <span>🟢 Akun Langsung Aktif</span>
+                </label>
+
+                <!-- Dynamic Permission System Preview Box -->
+                <div class="permission-box" id="permPreviewBox">
+                    <h4>🛠️ Cakupan Hak Akses (Teknisi):</h4>
+                    <div class="perm-list">
+                        <div class="perm-item allow">✔ Kelola Data Servis & Tindakan</div>
+                        <div class="perm-item allow">✔ Cek Stok Sparepart & Harga</div>
+                        <div class="perm-item deny">✖ Laporan Keuangan & Laba</div>
+                        <div class="perm-item deny">✖ Tutup Kas & Pindah Arsip</div>
+                        <div class="perm-item deny">✖ Manajemen Akun User</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">+ Simpan User Baru</button>
+            </form>
+        </div>
+
+        <!-- Tabel Daftar User Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 Daftar Pengguna & Kewenangan</h2>
+                <p>Pantau status login, filter hak akses, dan lakukan aksi dengan cepat.</p>
+            </div>
+
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Cari username atau nama lengkap..." onkeyup="filterTable()">
+                </div>
+                <div class="filter-box">
+                    <select class="form-select" id="filterSelect" onchange="filterTable()">
+                        <option value="ALL">Semua Level Akses ▼</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Teknisi">Teknisi</option>
+                        <option value="Kasir">Kasir</option>
+                        <option value="Customer Service">Customer Service</option>
+                        <option value="Owner">Owner</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Username</th>
+                            <th>Nama Lengkap</th>
+                            <th>Level Akses</th>
+                            <th>Status</th>
+                            <th>Terakhir Login</th>
+                            <th style="text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr data-role="Admin" data-status="Aktif">
+                            <td>1</td>
+                            <td style="font-weight: 700; color: #0f172a;">admin</td>
+                            <td>Super Admin</td>
+                            <td><span class="badge badge-admin">🟥 Admin</span></td>
+                            <td><span class="status-badge status-active"><span class="status-dot"></span> Aktif</span></td>
+                            <td style="color: #64748b; font-size: 0.88em;">Hari ini, 08:25</td>
+                            <td style="text-align: center;">
+                                <div class="action-dropdown">
+                                    <button class="btn-action" onclick="toggleDropdown(event, 1)">⋮</button>
+                                    <div class="dropdown-content" id="dropdown-1">
+                                        <div class="dropdown-item" onclick="openEditModal('admin', 'Super Admin', 'admin')">✏ Edit Data</div>
+                                        <div class="dropdown-item" onclick="openResetModal('admin')">🔒 Reset Password</div>
+                                        <div class="dropdown-item" onclick="alert('Admin utama tidak bisa dinonaktifkan!')">🚫 Nonaktifkan</div>
+                                        <div class="dropdown-item danger" onclick="alert('Admin utama tidak bisa dihapus!')">🗑 Hapus</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-role="Teknisi" data-status="Aktif">
+                            <td>2</td>
+                            <td style="font-weight: 700; color: #0f172a;">Erik</td>
+                            <td>Erik Pratama</td>
+                            <td><span class="badge badge-teknisi">🟦 Teknisi</span></td>
+                            <td><span class="status-badge status-active"><span class="status-dot"></span> Aktif</span></td>
+                            <td style="color: #64748b; font-size: 0.88em;">Kemarin, 16:40</td>
+                            <td style="text-align: center;">
+                                <div class="action-dropdown">
+                                    <button class="btn-action" onclick="toggleDropdown(event, 2)">⋮</button>
+                                    <div class="dropdown-content" id="dropdown-2">
+                                        <div class="dropdown-item" onclick="openEditModal('Erik', 'Erik Pratama', 'teknisi')">✏ Edit Data</div>
+                                        <div class="dropdown-item" onclick="openResetModal('Erik')">🔒 Reset Password</div>
+                                        <div class="dropdown-item" onclick="toggleStatusRow(this)">🚫 Nonaktifkan</div>
+                                        <div class="dropdown-item danger" onclick="confirmDeleteRow(this, 'Erik')">🗑 Hapus</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-role="Kasir" data-status="Nonaktif">
+                            <td>3</td>
+                            <td style="font-weight: 700; color: #0f172a;">Eja</td>
+                            <td>Reza Rahadian</td>
+                            <td><span class="badge badge-kasir">🟩 Kasir</span></td>
+                            <td><span class="status-badge status-inactive"><span class="status-dot"></span> Nonaktif</span></td>
+                            <td style="color: #64748b; font-size: 0.88em;">5 hari lalu</td>
+                            <td style="text-align: center;">
+                                <div class="action-dropdown">
+                                    <button class="btn-action" onclick="toggleDropdown(event, 3)">⋮</button>
+                                    <div class="dropdown-content" id="dropdown-3">
+                                        <div class="dropdown-item" onclick="openEditModal('Eja', 'Reza Rahadian', 'kasir')">✏ Edit Data</div>
+                                        <div class="dropdown-item" onclick="openResetModal('Eja')">🔒 Reset Password</div>
+                                        <div class="dropdown-item" onclick="toggleStatusRow(this)">🟢 Aktifkan</div>
+                                        <div class="dropdown-item danger" onclick="confirmDeleteRow(this, 'Eja')">🗑 Hapus</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="resetModal">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight:800; margin-bottom:12px;">🔒 Reset Password User</h3>
+        <p style="font-size:0.9em; color:var(--text-secondary); margin-bottom:18px;">
+            Atur ulang password untuk pengguna <strong id="resetTargetName" style="color:var(--primary);"></strong>.
+        </p>
+        <div class="form-group">
+            <label class="form-label">Password Baru</label>
+            <div class="input-wrapper">
+                <input type="password" class="form-input" id="resetPasswordInput" placeholder="Minimal 6 karakter">
+                <button type="button" class="btn-toggle-pw" onclick="togglePassword('resetPasswordInput', this)">👁</button>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:24px;">
+            <button type="button" class="btn-back" style="margin:0; box-shadow:none;" onclick="closeModals()">Batal</button>
+            <button type="button" class="btn-submit" style="margin:0; width:auto; padding:10px 20px;" onclick="alert('Password berhasil direset!'); closeModals();">Simpan Password Baru</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight:800; margin-bottom:12px;">✏️ Edit Data & Level Akses</h3>
+        <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" id="editUsername" disabled style="background:#f1f5f9; color:#94a3b8;">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nama Lengkap</label>
+            <input type="text" class="form-input" id="editFullName">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Level Hak Akses</label>
+            <select class="form-select" id="editRoleSelect">
+                <option value="teknisi">Teknisi</option>
+                <option value="kasir">Kasir</option>
+                <option value="cs">Customer Service</option>
+                <option value="admin">Admin</option>
+                <option value="owner">Owner</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:24px;">
+            <button type="button" class="btn-back" style="margin:0; box-shadow:none;" onclick="closeModals()">Batal</button>
+            <button type="button" class="btn-submit" style="margin:0; width:auto; padding:10px 20px;" onclick="alert('Perubahan berhasil disimpan!'); closeModals();">Perbarui Data</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "🙈";
+            btn.style.color = "#3b82f6";
+        } else {
+            input.type = "password";
+            btn.textContent = "👁";
+            btn.style.color = "#94a3b8";
+        }
+    }
+
+    const permDefinitions = {
+        'teknisi': `
+            <h4>🛠️ Cakupan Hak Akses (Teknisi):</h4>
+            <div class="perm-list">
+                <div class="perm-item allow">✔ Kelola Data Servis & Tindakan</div>
+                <div class="perm-item allow">✔ Cek Stok Sparepart & Harga</div>
+                <div class="perm-item deny">✖ Laporan Keuangan & Laba</div>
+                <div class="perm-item deny">✖ Tutup Kas & Pindah Arsip</div>
+                <div class="perm-item deny">✖ Manajemen Akun User</div>
+            </div>`,
+        'kasir': `
+            <h4>🛒 Cakupan Hak Akses (Kasir):</h4>
+            <div class="perm-list">
+                <div class="perm-item allow">✔ Pembayaran & Penerimaan Unit</div>
+                <div class="perm-item allow">✔ Cetak Nota & Klaim Garansi</div>
+                <div class="perm-item deny">✖ Tindakan Perbaikan Teknisi</div>
+                <div class="perm-item deny">✖ Laporan Laba Bersih Toko</div>
+                <div class="perm-item deny">✖ Manajemen Akun User</div>
+            </div>`,
+        'cs': `
+            <h4>🎧 Cakupan Hak Akses (Customer Service):</h4>
+            <div class="perm-list">
+                <div class="perm-item allow">✔ Pendaftaran & Analisa Awal Unit</div>
+                <div class="perm-item allow">✔ Kirim WhatsApp & Cetak Tanda Terima</div>
+                <div class="perm-item deny">✖ Eksekusi Perbaikan & Sparepart</div>
+                <div class="perm-item deny">✖ Closing Pembayaran Tunai/QRIS</div>
+                <div class="perm-item deny">✖ Laporan Keuangan & User</div>
+            </div>`,
+        'admin': `
+            <h4>⚡ Cakupan Hak Akses (Admin):</h4>
+            <div class="perm-list">
+                <div class="perm-item allow">✔ Kelola Seluruh Data Servis & Part</div>
+                <div class="perm-item allow">✔ Pembayaran & Closing Kasir</div>
+                <div class="perm-item allow">✔ Laporan Keuangan Harian/Bulanan</div>
+                <div class="perm-item allow">✔ Tutup Buku & Pindah Arsip (16:00)</div>
+                <div class="perm-item allow">✔ Manajemen Akun & Hak Akses Staf</div>
+            </div>`,
+        'owner': `
+            <h4>👑 Cakupan Hak Akses (Owner):</h4>
+            <div class="perm-list">
+                <div class="perm-item allow">✔ Kendali Penuh Seluruh Sistem & Menu</div>
+                <div class="perm-item allow">✔ Laporan Eksekutif & Laba Rugi</div>
+                <div class="perm-item allow">✔ Audit Log & Riwayat Penghapusan</div>
+                <div class="perm-item allow">✔ Manajemen Seluruh Level Akses</div>
+            </div>`
+    };
+
+    function updatePermPreview() {
+        const level = document.getElementById('newAccessLevel').value;
+        const box = document.getElementById('permPreviewBox');
+        box.innerHTML = permDefinitions[level] || '';
+    }
+
+    function toggleDropdown(event, id) {
+        event.stopPropagation();
+        document.querySelectorAll('.dropdown-content').forEach(dd => {
+            if (dd.id !== 'dropdown-' + id) dd.classList.remove('show');
+        });
+        document.getElementById('dropdown-' + id).classList.toggle('show');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.dropdown-content').forEach(dd => dd.classList.remove('show'));
+    });
+
+    function filterTable() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const roleFilter = document.getElementById('filterSelect').value;
+        const rows = document.querySelectorAll('#tableBody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowRole = row.getAttribute('data-role');
+            const matchQuery = text.includes(query);
+            const matchRole = (roleFilter === 'ALL' || rowRole === roleFilter);
+
+            if (matchQuery && matchRole) row.style.display = '';
+            else row.style.display = 'none';
+        });
+    }
+
+    function openResetModal(username) {
+        document.getElementById('resetTargetName').innerText = username;
+        document.getElementById('resetPasswordInput').value = '';
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    function openEditModal(username, fullname, role) {
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editFullName').value = fullname;
+        document.getElementById('editRoleSelect').value = role;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        alert('Simpan user baru [Demo V1]');
+    }
+
+    function toggleStatusRow(btn) {
+        const row = btn.closest('tr');
+        const statusSpan = row.querySelector('.status-badge');
+        if (row.getAttribute('data-status') === 'Aktif') {
+            row.setAttribute('data-status', 'Nonaktif');
+            statusSpan.className = 'status-badge status-inactive';
+            statusSpan.innerHTML = '<span class="status-dot"></span> Nonaktif';
+            btn.innerText = '🟢 Aktifkan';
+        } else {
+            row.setAttribute('data-status', 'Aktif');
+            statusSpan.className = 'status-badge status-active';
+            statusSpan.innerHTML = '<span class="status-dot"></span> Aktif';
+            btn.innerText = '🚫 Nonaktifkan';
+        }
+    }
+
+    function confirmDeleteRow(btn, username) {
+        if (confirm('Yakin ingin menghapus ' + username + '?')) btn.closest('tr').remove();
+    }
+</script>
+</body>
+</html>

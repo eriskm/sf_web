@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Backups and Logs
+backups/
+temp_backup/
+logs/
+*.log
+*.zip
+
+# Agent / IDE
+.agent/
+.vscode/
+.idea/
+
+# Static / uploads if any
+# (add specific paths if you want to ignore user uploads)

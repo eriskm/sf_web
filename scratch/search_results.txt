@@ -1,0 +1,51 @@
+182: # 2. Tabel Kas Utama (Untuk nyimpen saldo awal & history tutup buku)
+204: # 4. Tabel Arsip Servis (Untuk mindahin data CASH setelah tutup buku)
+206: CREATE TABLE IF NOT EXISTS arsip_servis (
+230: permissions TEXT DEFAULT '' -- Contoh: 'keuangan,sparepart,servis,tutup_buku,users'
+238: ('admin', generate_password_hash('admin123'), 'admin', 'keuangan,sparepart,servis,tutup_buku,users'))
+295: pesan = f"✅ *KAS MASUK (UNIT SELESAI)*\n\n📱 *Device*: {device}\n👤 *Konsumen*: {nama}\n👨‍🔧 *Teknisi*: {teknisi}\n\n💰 *Harga Jual*: {format_rp(harga_jual)}\n📈 *Laba Kotor*: {format_rp(laba_kotor)}\n\nAlhamdulillah, nota berhasil ditutup! 🚀"
+319: # (Karena yang siklus lalu sudah dipindah ke Arsip, jadi ini pasti laba siklus sekarang)
+460: def kirim_laporan_telegram(path_gambar, jenis="TUTUP"):
+464: if jenis == "TUTUP":
+466: "🏢 *LAPORAN TUTUP BUKU SIKLUS 16.00*\n"
+469: "Siklus operasional hari ini telah ditutup. Bersama ini kami lampirkan rekap otomatis Buku Kas & Alokasi Bagi Hasil (Aliran Kas) sebagai bentuk transparansi dan pertanggungjawaban.\n\n"
+528: session['permissions'] = 'keuangan,sparepart,servis,tutup_buku,users'
+777: # 7.5 AMBIL DATA ARSIP DARI MySQL (Lemari Baja)
+783: cur_mysql.execute("DELETE FROM arsip_garansi WHERE tgl_akhir < CURDATE()")
+792: FROM arsip_garansi
+804: FROM arsip_pelanggan
+833: cur_mysql.execute(f"SELECT COUNT(*) as total FROM arsip_garansi {where_g}", params_g)
+836: cur_mysql.execute(f"SELECT * FROM arsip_garansi {where_g} ORDER BY id_garansi DESC LIMIT 10 OFFSET %s", params_g + [offset_garansi])
+837: arsip_garansi = cur_mysql.fetchall()
+849: cur_mysql.execute(f"SELECT COUNT(*) as total FROM arsip_pelanggan {where_p}", params_p)
+852: cur_mysql.execute(f"SELECT * FROM arsip_pelanggan {where_p} ORDER BY id_arsip DESC LIMIT 10 OFFSET %s", params_p + [offset_pelanggan])
+853: arsip_pelanggan = cur_mysql.fetchall()
+885: cur_mysql.execute("SELECT DISTINCT nama_user FROM arsip_garansi WHERE nama_user IS NOT NULL")
+887: cur_mysql.execute("SELECT DISTINCT device FROM arsip_garansi WHERE device IS NOT NULL")
+892: cur_mysql.execute("SELECT DISTINCT nama_user FROM arsip_pelanggan WHERE nama_user IS NOT NULL")
+894: cur_mysql.execute("SELECT DISTINCT device FROM arsip_pelanggan WHERE device IS NOT NULL")
+907: print(f"Error load arsip: {e}")
+908: arsip_garansi = []
+909: arsip_pelanggan = []
+995: arsip_garansi=arsip_garansi,
+996: arsip_pelanggan=arsip_pelanggan,
+1319: SELECT nama_user as nama, wa as wa FROM arsip_servis WHERE nama_user LIKE ?
+1341: SELECT nama_user as nama, tanggal_masuk as tgl FROM arsip_servis WHERE wa = ?
+1622: "🏢 *LAPORAN SIKLUS TUTUP BUKU - SUKABUMI FLASHER*\n\n"
+1650: @app.route('/telegram_tutup_buku', methods=['POST'])
+1651: def telegram_tutup_buku():
+1653: print("[INFO] Mengambil screenshot TUTUP BUKU...")
+1655: nama_gambar = f"Laporan_Tutup_{tgl_sekarang}.png"
+1662: kirim_laporan_telegram(nama_gambar, "TUTUP")
+1663: return "Telegram Tutup Buku Sukses", 200
+1665: return f"Gagal Telegram Tutup Buku: {{e}}", 500
+1686: # 1. Pindah Arsip (Dari tutup_buku)
+1705: sql_arsip = """INSERT INTO arsip_pelanggan
+1708: cur_mysql.execute(sql_arsip, (nama, wa, unit, aksi, biaya, stts.upper()))
+1711: id_arsip = db_mysql.insert_id()
+1720: sql_garansi = """INSERT INTO arsip_garansi
+1721: (id_arsip, nama_user, device, tgl_mulai, tgl_akhir)
+1723: cur_mysql.execute(sql_garansi, (id_arsip, nama, unit, m_garansi_num))
+1728: # 2. Update Master Kas di MySQL (Dari tutup_kas)
+1731: # 3. Reset Papan Tulis (SQLite) (Dari tutup_kas)
+1744: return f"Siklus Selesai! {{counter}} data diarsip. Kas terkunci.", 200

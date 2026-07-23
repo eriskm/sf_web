@@ -1,0 +1,970 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Hak Akses & User - Sukabumi Flasher{% endblock %}
+
+{% block head %}
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            padding: 18px 22px;
+            line-height: 1.45;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Navigation */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.88em;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            color: var(--text-primary);
+            border-color: #cbd5e1;
+            transform: translateX(-2px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title h1 {
+            font-size: 1.45em;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            background: linear-gradient(135deg, #0f172a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 1. Top Stats Cards (SaaS Style V2 Compact) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 13px 16px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25em;
+            flex-shrink: 0;
+        }
+
+        .icon-purple { background: #f3e8ff; color: #9333ea; }
+        .icon-red { background: #fee2e2; color: #dc2626; }
+        .icon-blue { background: #e0f2fe; color: #0284c7; }
+        .icon-green { background: #dcfce7; color: #16a34a; }
+        .icon-yellow { background: #fef9c3; color: #ca8a04; }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card .label {
+            font-size: 0.82em;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .stat-card .value {
+            font-size: 1.45em;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.15;
+            margin-top: 1px;
+        }
+
+        .stat-card .subtext {
+            font-size: 0.74em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Main Content Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 18px;
+        }
+
+        .card-header {
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-header-left h2 {
+            font-size: 1.12em;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header-left p {
+            font-size: 0.82em;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* 2. Form Tambah User (Horizontal Row V2 Compact) */
+        .form-horizontal-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1.5fr 1.2fr auto;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 1100px) {
+            .form-horizontal-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 640px) {
+            .form-horizontal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.82em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 0.88em;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+            height: 38px;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-toggle-pw {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.05em;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .btn-toggle-pw:hover {
+            color: var(--text-primary);
+        }
+
+        .status-toggle-wrapper {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.86em;
+            color: var(--text-primary);
+            user-select: none;
+            margin: 0;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            height: 38px;
+            padding: 0 18px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.88em;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 5px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-submit.btn-red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+        }
+
+        .btn-submit.btn-red:hover {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            box-shadow: 0 5px 14px rgba(220, 38, 38, 0.35);
+        }
+
+        /* 3. Table & Filters Toolbar */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 230px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.88em;
+            outline: none;
+            height: 38px;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.05em;
+        }
+
+        .filter-select {
+            width: 160px;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0 14px;
+            height: 38px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.86em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: #f8fafc;
+            color: var(--text-primary);
+            border-color: #cbd5e1;
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.76em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 11px 12px;
+            font-size: 0.86em;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* User Avatar in Table */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.82em;
+            flex-shrink: 0;
+            background: #e2e8f0;
+            color: #475569;
+            overflow: hidden;
+            border: 1.5px solid #ffffff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-purple { background: #f3e8ff; color: #9333ea; }
+        .avatar-blue { background: #e0f2fe; color: #0284c7; }
+        .avatar-green { background: #dcfce7; color: #16a34a; }
+        .avatar-yellow { background: #fef9c3; color: #ca8a04; }
+        .avatar-red { background: #fee2e2; color: #dc2626; }
+
+        /* Pill Badges for Hak Akses */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 0.78em;
+            font-weight: 700;
+        }
+
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-teknisi { background: #e0f2fe; color: #0284c7; }
+        .badge-kasir { background: #dcfce7; color: #16a34a; }
+        .badge-cs { background: #fef9c3; color: #ca8a04; }
+        .badge-owner { background: #f3e8ff; color: #9333ea; }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.84em;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-active { color: #16a34a; }
+        .status-active .status-dot { background-color: #22c55e; box-shadow: 0 0 6px #22c55e; }
+
+        .status-inactive { color: #dc2626; }
+        .status-inactive .status-dot { background-color: #ef4444; }
+
+        /* Action Dropdown Menu */
+        .action-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn-action {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 35px;
+            background: white;
+            min-width: 165px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            z-index: 100;
+            padding: 5px;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.84em;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+
+        /* Modal Popup */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            max-width: 430px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: zoomIn 0.2s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="header-title">
+            <span style="font-size:1.85em;">👥</span>
+            <h1>Manajemen Hak Akses & Pengguna</h1>
+        </div>
+        <a href="/dashboard" class="btn-back">← Kembali ke Dashboard</a>
+    </div>
+
+    <!-- 1. Top Stats Cards (SaaS Style V2) -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon icon-purple">👥</div>
+            <div class="stat-content">
+                <span class="label">Total User</span>
+                <span class="value" id="statTotal">{{ stats.total if stats else users|length }}</span>
+                <span class="subtext">Semua pengguna terdaftar</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon icon-red">🛡️</div>
+            <div class="stat-content">
+                <span class="label">Admin</span>
+                <span class="value" id="statAdmin">{{ stats.admin if stats else 1 }}</span>
+                <span class="subtext">Akses kendali penuh</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon icon-blue">🔧</div>
+            <div class="stat-content">
+                <span class="label">Teknisi</span>
+                <span class="value" id="statTeknisi">{{ stats.teknisi if stats else 0 }}</span>
+                <span class="subtext">Tim eksekusi perbaikan</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon icon-green">🛒</div>
+            <div class="stat-content">
+                <span class="label">Kasir</span>
+                <span class="value" id="statKasir">{{ stats.kasir if stats else 0 }}</span>
+                <span class="subtext">Penerimaan & pembayaran</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon icon-yellow">🎧</div>
+            <div class="stat-content">
+                <span class="label">CS / Lainnya</span>
+                <span class="value" id="statCS">{{ stats.cs if stats else 0 }}</span>
+                <span class="subtext">Pelayanan pelanggan</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Form Tambah User Card (Horizontal Layout V2) -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <h2>➕ Tambah User Baru</h2>
+                <p>Daftarkan akun staf baru dan tentukan level kewenangan akses sistem.</p>
+            </div>
+        </div>
+
+        <form id="addUserForm" action="/add_user" method="POST">
+            <div class="form-horizontal-grid">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" name="username" placeholder="Contoh: erik_sf" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-input" name="nama_lengkap" placeholder="Contoh: Erik Setiawan" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-input" id="newPassword" name="password" placeholder="••••••••" required>
+                        <button type="button" class="btn-toggle-pw" onclick="togglePassword('newPassword', this)" title="Lihat/Sembunyikan Password">👁</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hak Akses (Role)</label>
+                    <select class="form-select" name="role">
+                        <option value="Teknisi">Teknisi</option>
+                        <option value="Kasir">Kasir</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="status-toggle-wrapper">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newStatusCheckbox" checked onchange="updateStatusValue(this)">
+                            <span id="newStatusText" style="color:#16a34a;">● Aktif</span>
+                        </label>
+                        <input type="hidden" name="status" id="newStatusHidden" value="Aktif">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-submit btn-red">
+                        <span>+ Tambah User</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 3. Tabel Daftar User Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <h2>📋 Daftar Pengguna & Kewenangan</h2>
+                <p>Pantau status login, filter hak akses, dan kelola kewenangan seluruh tim.</p>
+            </div>
+        </div>
+
+        <div class="table-toolbar">
+            <div class="toolbar-filters">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Cari username atau nama lengkap..." onkeyup="filterTable()">
+                </div>
+                <select class="form-select filter-select" id="roleFilter" onchange="filterTable()">
+                    <option value="ALL">Semua Role ▼</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Teknisi">Teknisi</option>
+                    <option value="Kasir">Kasir</option>
+                </select>
+                <select class="form-select filter-select" id="statusFilter" onchange="filterTable()">
+                    <option value="ALL">Semua Status ▼</option>
+                    <option value="Aktif">● Aktif</option>
+                    <option value="Nonaktif">● Nonaktif</option>
+                </select>
+            </div>
+            <button type="button" class="btn-export" onclick="alert('Data user berhasil diekspor ke Excel!')">
+                <span>📥 Export Excel</span>
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>Username</th>
+                        <th>Nama Lengkap</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Terakhir Login</th>
+                        <th style="text-align: center; width: 80px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for user in users %}
+                    {% set role_upper = user.role.upper() if user.role else 'TEKNISI' %}
+                    {% set user_status = user.status if user.status else 'Aktif' %}
+                    <tr data-role="{{ role_upper }}" data-status="{{ user_status }}">
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar avatar-blue">
+                                    {% if user.foto_profil %}
+                                        <img src="{{ user.foto_profil }}" alt="foto">
+                                    {% else %}
+                                        {{ (user.nama_lengkap or user.username)[:2].upper() }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: #0f172a; display: block;">{{ user.username }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-weight: 600; color: #334155;">{{ user.nama_lengkap or user.username }}</td>
+                        <td>
+                            {% if role_upper == 'ADMIN' %}
+                                <span class="badge badge-admin">🟥 Admin</span>
+                            {% elif role_upper == 'TEKNISI' %}
+                                <span class="badge badge-teknisi">🟦 Teknisi</span>
+                            {% elif role_upper == 'KASIR' %}
+                                <span class="badge badge-kasir">🟩 Kasir</span>
+                            {% else %}
+                                <span class="badge badge-cs">🟨 {{ role_upper.title() }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user_status != 'Nonaktif' %}
+                                <span class="status-badge status-active"><span class="status-dot"></span> Aktif</span>
+                            {% else %}
+                                <span class="status-badge status-inactive"><span class="status-dot"></span> Nonaktif</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: #64748b; font-size: 0.88em;">{{ user.last_login or 'Belum pernah' }}</td>
+                        <td style="text-align: center;">
+                            <div class="action-dropdown">
+                                <button type="button" class="btn-action" onclick="toggleDropdown(event, {{ user.id }})">⋮</button>
+                                <div class="dropdown-content" id="dropdown-{{ user.id }}">
+                                    <div class="dropdown-item" onclick="openEditModal({{ user.id }}, '{{ user.username }}', '{{ user.nama_lengkap or user.username }}', '{{ user.role }}')">✏ Edit User</div>
+                                    <div class="dropdown-item" onclick="openResetModal({{ user.id }}, '{{ user.username }}')">🔑 Reset Password</div>
+                                    <a class="dropdown-item" href="/toggle_status/{{ user.id }}">
+                                        {% if user_status != 'Nonaktif' %}🚫 Nonaktifkan{% else %}🟢 Aktifkan{% endif %}
+                                    </a>
+                                    {% if user.id != 1 %}
+                                    <div class="dropdown-item danger" onclick="confirmDeleteRow({{ user.id }}, '{{ user.username }}')">🗑 Hapus User</div>
+                                    {% else %}
+                                    <div class="dropdown-item danger" onclick="alert('Admin utama tidak bisa dihapus!')">🗑 Hapus User</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit User -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight:800; margin-bottom:12px;">✏️ Edit Data & Kewenangan User</h3>
+        <form id="editUserForm" method="POST">
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-input" id="editUsername" disabled style="background:#f1f5f9; color:#94a3b8;">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" class="form-input" name="nama_lengkap" id="editFullName" required>
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Hak Akses (Role)</label>
+                <select class="form-select" name="role" id="editRoleSelect">
+                    <option value="teknisi">Teknisi</option>
+                    <option value="kasir">Kasir</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:24px;">
+                <button type="button" class="btn-back" style="margin:0; box-shadow:none;" onclick="closeModals()">Batal</button>
+                <button type="submit" class="btn-submit" style="margin:0; width:auto; padding:0 20px;">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Reset Password -->
+<div class="modal-overlay" id="resetModal">
+    <div class="modal-box">
+        <h3 style="font-size: 1.25em; font-weight:800; margin-bottom:12px;">🔑 Reset Password User</h3>
+        <p style="font-size:0.9em; color:var(--text-secondary); margin-bottom:18px;">
+            Atur ulang password untuk akun <strong id="resetTargetName" style="color:var(--primary);"></strong>.
+        </p>
+        <form id="resetPwForm" method="POST">
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label">Password Baru</label>
+                <div class="input-wrapper">
+                    <input type="password" class="form-input" name="password" id="resetPasswordInput" placeholder="Minimal 6 karakter" required>
+                    <button type="button" class="btn-toggle-pw" onclick="togglePassword('resetPasswordInput', this)">👁</button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:24px;">
+                <button type="button" class="btn-back" style="margin:0; box-shadow:none;" onclick="closeModals()">Batal</button>
+                <button type="submit" class="btn-submit" style="margin:0; width:auto; padding:0 20px;">Simpan Password Baru</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "🙈";
+            btn.style.color = "#3b82f6";
+        } else {
+            input.type = "password";
+            btn.textContent = "👁";
+            btn.style.color = "#94a3b8";
+        }
+    }
+
+    function updateStatusValue(cb) {
+        const text = document.getElementById('newStatusText');
+        const hidden = document.getElementById('newStatusHidden');
+        if (cb.checked) {
+            text.innerHTML = '● Aktif';
+            text.style.color = '#16a34a';
+            hidden.value = 'Aktif';
+        } else {
+            text.innerHTML = '● Nonaktif';
+            text.style.color = '#ef4444';
+            hidden.value = 'Nonaktif';
+        }
+    }
+
+    function toggleDropdown(event, id) {
+        event.stopPropagation();
+        document.querySelectorAll('.dropdown-content').forEach(dd => {
+            if (dd.id !== 'dropdown-' + id) dd.classList.remove('show');
+        });
+        document.getElementById('dropdown-' + id).classList.toggle('show');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.dropdown-content').forEach(dd => dd.classList.remove('show'));
+    });
+
+    function filterTable() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const roleFilter = document.getElementById('roleFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const rows = document.querySelectorAll('#tableBody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowRole = row.getAttribute('data-role');
+            const rowStatus = row.getAttribute('data-status');
+
+            const matchQuery = text.includes(query);
+            const matchRole = (roleFilter === 'ALL' || rowRole === roleFilter.toUpperCase());
+            const matchStatus = (statusFilter === 'ALL' || rowStatus === statusFilter);
+
+            if (matchQuery && matchRole && matchStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function openEditModal(id, username, fullname, role) {
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editFullName').value = fullname;
+        document.getElementById('editRoleSelect').value = role ? role.toLowerCase() : 'teknisi';
+        document.getElementById('editUserForm').action = '/edit_user/' + id;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function openResetModal(id, username) {
+        document.getElementById('resetTargetName').innerText = username;
+        document.getElementById('resetPasswordInput').value = '';
+        document.getElementById('resetPwForm').action = '/reset_password/' + id;
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    function confirmDeleteRow(id, username) {
+        if (confirm('Yakin ingin menghapus permanen akun user "' + username + '"?')) {
+            window.location.href = '/delete_user/' + id;
+        }
+    }
+</script>
+{% endblock %}

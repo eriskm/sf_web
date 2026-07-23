@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukabumi Flasher | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050508;
+            --primary-red: #E60012;
+            --primary-red-glow: rgba(230, 0, 18, 0.5);
+            --card-bg: rgba(15, 15, 20, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --text-main: #FFFFFF;
+            --text-muted: #9CA3AF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(to bottom, rgba(5,5,8,0.7), rgba(5,5,8,0.9)),
+                url("{{ url_for('static', filename='assets/bg_lab.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Red Laser Lines */
+        .laser {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, var(--primary-red), transparent);
+            box-shadow: 0 0 15px var(--primary-red);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .laser-1 { width: 150vw; height: 1px; top: 20%; left: -25vw; transform: rotate(15deg); opacity: 0.4; }
+        .laser-2 { width: 1px; height: 150vh; top: -25vh; left: 80%; transform: rotate(-25deg); opacity: 0.3; }
+        
+        /* Floating Side Elements */
+        .side-floating {
+            position: absolute;
+            left: 5%;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .float-icon {
+            width: 140px;
+            height: auto;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.4));
+            animation: float-anim 6s ease-in-out infinite;
+        }
+
+        .float-icon:nth-child(2) {
+            animation-delay: 2s;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 50, 0.4));
+        }
+
+        @keyframes float-anim {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(0deg); }
+        }
+
+        /* Login Card */
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px 35px;
+            z-index: 10;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative;
+        }
+        
+        /* Glowing edge for the card */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, rgba(230,0,18,0.4) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.1) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Header / Logo Area */
+        .header-area {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-img {
+            width: 80px;
+            height: auto;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px var(--primary-red-glow));
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .brand-name span.red {
+            color: var(--primary-red);
+        }
+
+        .lab-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .welcome-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .welcome-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            color: var(--primary-red);
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .input-icon-right:hover {
+            color: #fff;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px 45px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: rgba(230,0,18,0.5);
+            box-shadow: 0 0 15px rgba(230,0,18,0.2);
+            background: rgba(0,0,0,0.6);
+        }
+
+        /* Checkbox & Forgot Password */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            accent-color: var(--primary-red);
+            width: 15px; height: 15px;
+        }
+
+        .forgot-link {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 500;
+            transition: text-shadow 0.3s;
+        }
+
+        .forgot-link:hover {
+            text-shadow: 0 0 10px var(--primary-red-glow);
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(90deg, #d31027, #ea384d);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(230,0,18,0.3);
+            transition: all 0.3s;
+            margin-bottom: 25px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(230,0,18,0.5);
+        }
+
+        /* Social Login */
+        .social-divider {
+            text-align: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .social-divider::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%; width: 100%; height: 1px;
+            background: rgba(255,255,255,0.05);
+            z-index: 1;
+        }
+        .social-divider span {
+            background: var(--card-bg); /* Need something close to actual bg */
+            padding: 0 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 2;
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            width: 45px; height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .social-btn svg {
+            width: 20px; height: 20px;
+        }
+
+        /* Footer */
+        .footer-text {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.6;
+        }
+
+        .footer-text span {
+            color: var(--primary-red);
+        }
+
+        /* Alert */
+        .error-alert {
+            background: rgba(230, 0, 18, 0.15);
+            border: 1px solid rgba(230, 0, 18, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            font-size: 13px;
+            text-align: center;
+        }
+        
+        /* Interactive Particles System */
+        .particles {
+            position: absolute;
+            top:0; left:0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            background: var(--primary-red);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-red);
+            animation: rise 15s infinite linear;
+            opacity: 0;
+        }
+        
+        @keyframes rise {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Lasers and Particles -->
+    <div class="laser laser-1"></div>
+    <div class="laser laser-2"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Side Floating Elements Removed for testing -->
+
+    <!-- Login Card -->
+    <div class="login-card">
+        <div class="header-area">
+            <!-- Custom Logo -->
+            <img src="{{ url_for('static', filename='logo1.png') }}" alt="Logo" class="logo-img">
+            
+            <div class="brand-name"><span class="red">SUKABUMI</span> FLASHER</div>
+            <div class="lab-subtitle">SMARTPHONE SERVICE LAB</div>
+            
+            <div class="welcome-title">Selamat Datang Kembali!</div>
+            <div class="welcome-sub">Masuk untuk mengakses sistem BOSS</div>
+        </div>
+
+        {% if error %}
+        <div class="error-alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/login" method="post">
+            <div class="form-group">
+                <!-- User Icon -->
+                <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <!-- Lock Icon -->
+                <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                <!-- Eye Icon -->
+                <svg class="input-icon-right" id="togglePassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </div>
+
+            <div class="form-options">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="rememberMe" checked>
+                    <span>Ingat Saya</span>
+                </label>
+                <a href="#" class="forgot-link">Lupa Password?</a>
+            </div>
+
+            <button type="submit" class="btn-submit">LOGIN</button>
+        </form>
+
+        <div class="social-divider">
+            <span>atau masuk dengan</span>
+        </div>
+
+        <div class="social-buttons">
+            <div class="social-btn">
+                <!-- Google Icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.5a9.3 9.3 0 0 1-1.3 5A9.6 9.6 0 0 1 12 21a9.5 9.5 0 0 1-9.5-9.5A9.5 9.5 0 0 1 12 2a9.6 9.6 0 0 1 6.5 2.5l-2.7 2.7A5.6 5.6 0 0 0 12 5.5a5.9 5.9 0 0 0-5.9 5.9A5.9 5.9 0 0 0 12 17.3c3 0 5-1.9 5.5-4.8H12v-3.8h8.8z" fill="none"/>
+                </svg>
+            </div>
+            <div class="social-btn">
+                <!-- Windows/Microsoft Icon -->
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z" fill="#00a4ef"/>
+                </svg>
+            </div>
+            <div class="social-btn">
+                <!-- Fingerprint Icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary-red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"></path>
+                    <path d="M5 19.5C5.5 18 6 15 6 11.5a6 6 0 0 1 12 0c0 3.5.5 6.5 1 8.5"></path>
+                    <path d="M8.5 22c-.5-3.5-1-6.5-1-10.5a4.5 4.5 0 0 1 9 0c0 4-.5 7-1 10.5"></path>
+                    <path d="M12 22v-9"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="footer-text">
+            © 2025 Sukabumi Flasher. All rights reserved.<br>
+            Power by <span>AIS Technologies</span>
+        </div>
+    </div>
+
+    <script>
+        // Password Visibility Toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function (e) {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            // Toggle eye icon logic (slash vs normal) can be added here if using dynamic SVGs
+        });
+
+        // Remember Me Credentials
+        document.addEventListener('DOMContentLoaded', () => {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const rememberMeCheckbox = document.getElementById('rememberMe');
+            const loginForm = document.querySelector('form');
+
+            if (localStorage.getItem('sf_remember') === 'true') {
+                const savedUsername = localStorage.getItem('sf_username');
+                const savedPassword = localStorage.getItem('sf_password');
+                
+                if (savedUsername) usernameInput.value = savedUsername;
+                if (savedPassword) passwordInput.value = savedPassword;
+                rememberMeCheckbox.checked = true;
+            } else {
+                rememberMeCheckbox.checked = false;
+            }
+
+            loginForm.addEventListener('submit', () => {
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('sf_remember', 'true');
+                    localStorage.setItem('sf_username', usernameInput.value);
+                    localStorage.setItem('sf_password', passwordInput.value);
+                } else {
+                    localStorage.removeItem('sf_remember');
+                    localStorage.removeItem('sf_username');
+                    localStorage.removeItem('sf_password');
+                }
+            });
+
+            // Generate floating red particles
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 3 + 1;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 15;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${left}vw`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        });
+
+        // Parallax Effect for floating elements
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 50;
+            const y = (window.innerHeight / 2 - e.pageY) / 50;
+            
+            document.querySelectorAll('.float-icon').forEach((comp) => {
+                comp.style.transform = `translate(${x}px, ${y}px) rotate(${-x/2}deg)`;
+            });
+        });
+    </script>
+</body>
+</html>

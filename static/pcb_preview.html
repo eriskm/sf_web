@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Model PCB Cybernetic Keren - Sukabumi Flasher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+            font-family: 'Inter', sans-serif;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2em;
+            color: #E60012;
+            text-shadow: 0 4px 12px rgba(230, 0, 18, 0.15);
+            margin-bottom: 10px;
+        }
+        .header p { color: #64748B; font-size: 1.1em; font-weight: 500; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+        
+        .preview-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        
+        .option-box {
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 24px;
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .option-box:hover {
+            transform: translateY(-6px);
+            border-color: #E60012;
+            box-shadow: 0 20px 35px -10px rgba(230, 0, 18, 0.18);
+        }
+        .option-box.recommended {
+            border-color: #E60012;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%);
+        }
+        .badge {
+            position: absolute;
+            top: -14px;
+            background: #E60012;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75em;
+            font-weight: 800;
+            padding: 4px 16px;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(230, 0, 18, 0.3);
+        }
+        
+        .option-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            color: #1E293B;
+            text-align: center;
+        }
+        .option-desc {
+            font-size: 0.88em;
+            color: #64748B;
+            text-align: center;
+            margin-bottom: 24px;
+            min-height: 60px;
+            line-height: 1.5;
+        }
+        
+        /* MOCK SIDEBAR COMMON */
+        .mock-sidebar {
+            width: 280px;
+            height: 480px;
+            background-color: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+        
+        .mock-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+        }
+        .mock-logo {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #E60012, #B3000E);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.95em;
+            color: white;
+            box-shadow: 0 4px 12px rgba(230, 0, 18, 0.35);
+        }
+        .mock-title { font-weight: 800; font-size: 0.95em; color: #0F172A; letter-spacing: 0.5px; }
+        
+        .mock-menu {
+            padding: 20px 15px;
+            z-index: 2;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .mock-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #475569;
+            display: flex; align-items: center; gap: 12px;
+            font-weight: 600;
+        }
+        .mock-item.active {
+            background: #FEF2F2;
+            color: #E60012;
+            font-weight: 700;
+            border-left: 4px solid #E60012;
+            box-shadow: 0 2px 10px rgba(230, 0, 18, 0.1);
+        }
+        
+        /* ========================================================
+           MODEL A: CYBERNETIC MICROCHIP MOTHERBOARD (Paling Keren!)
+           ======================================================== */
+        .bg-model-a {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23E60012' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='90' cy='30' r='1'/%3E%3Ccircle cx='150' cy='30' r='1'/%3E%3Ccircle cx='210' cy='30' r='1'/%3E%3Ccircle cx='30' cy='90' r='1'/%3E%3Ccircle cx='90' cy='90' r='1'/%3E%3Ccircle cx='150' cy='90' r='1'/%3E%3Ccircle cx='210' cy='90' r='1'/%3E%3Ccircle cx='30' cy='150' r='1'/%3E%3Ccircle cx='90' cy='150' r='1'/%3E%3Ccircle cx='150' cy='150' r='1'/%3E%3Ccircle cx='210' cy='150' r='1'/%3E%3Ccircle cx='30' cy='210' r='1'/%3E%3Ccircle cx='90' cy='210' r='1'/%3E%3Ccircle cx='150' cy='210' r='1'/%3E%3Ccircle cx='210' cy='210' r='1'/%3E%3C/g%3E%3Cg stroke='%23E60012' stroke-width='1' fill='none' stroke-opacity='0.18'%3E%3Crect x='45' y='45' width='30' height='30' rx='4'/%3E%3Crect x='165' y='145' width='40' height='40' rx='6'/%3E%3Ccircle cx='185' cy='65' r='18'/%3E%3Ccircle cx='70' cy='180' r='14'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E60012' stroke-width='1.5' stroke-opacity='0.22' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 25 h20 l15 15 v20 l10 10 h15 M0 33 h16 l15 15 v20 l10 10 h15'/%3E%3Cpath d='M75 60 l15-15 h30 l20 20 v40 l15 15 h30'/%3E%3Cpath d='M80 75 h25 l20 20 v40 l15 15 h20'/%3E%3Cpath d='M205 145 v-30 l-15-15 h-30 l-20-20 v-30'/%3E%3Cpath d='M165 185 h-30 l-20 20 v35'/%3E%3Cpath d='M175 185 h-30 l-20 20 v35'/%3E%3Cpath d='M30 120 v30 l15 15 h10 l15 15 v40'/%3E%3Cpath d='M120 0 v40 l15 15 v30 l-15 15 v60 l20 20 v60'/%3E%3Cpath d='M220 0 v80 l-15 15 v50 l15 15 v80'/%3E%3C/g%3E%3Cg fill='%23E60012' fill-opacity='0.35'%3E%3Ccircle cx='60' cy='70' r='3.5'/%3E%3Ccircle cx='60' cy='78' r='3.5'/%3E%3Ccircle cx='185' cy='120' r='4'/%3E%3Ccircle cx='175' cy='120' r='3'/%3E%3Ccircle cx='45' cy='165' r='3.5'/%3E%3Ccircle cx='135' cy='100' r='4'/%3E%3Ccircle cx='155' cy='220' r='3.5'/%3E%3Ccircle cx='205' cy='100' r='4'/%3E%3Ccircle cx='135' cy='160' r='3.5'/%3E%3Ccircle cx='30' cy='120' r='3'/%3E%3C/g%3E%3Cg fill='%23FFFFFF' fill-opacity='0.9'%3E%3Ccircle cx='60' cy='70' r='1.2'/%3E%3Ccircle cx='60' cy='78' r='1.2'/%3E%3Ccircle cx='185' cy='120' r='1.5'/%3E%3Ccircle cx='135' cy='100' r='1.5'/%3E%3Ccircle cx='155' cy='220' r='1.2'/%3E%3Ccircle cx='205' cy='100' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-position: center top;
+            background-size: 100% auto;
+        }
+
+        /* ========================================================
+           MODEL B: HEXAGON CYBER MATRIX
+           ======================================================== */
+        .bg-model-b {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 l30 17.3 v34.6 l-30 17.3 l-30-17.3 v-34.6 z M120 0 l30 17.3 v34.6 l-30 17.3 l-30-17.3 v-34.6 z M75 77.9 l30 17.3 v34.6 l-30 17.3 l-30-17.3 v-34.6 z M30 155.8 l30 17.3 v34.6 l-30 17.3 l-30-17.3 v-34.6 z M120 155.8 l30 17.3 v34.6 l-30 17.3 l-30-17.3 v-34.6 z' fill='none' stroke='%23E60012' stroke-width='1' stroke-opacity='0.12'/%3E%3Cg fill='none' stroke='%23E60012' stroke-width='1.8' stroke-opacity='0.25'%3E%3Cpath d='M0 17.3 l30 17.3 l30-17.3 M90 17.3 l30 17.3 l30-17.3 M45 95.2 l30 17.3 l30-17.3'/%3E%3C/g%3E%3Cg fill='%23E60012' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='34.6' r='3'/%3E%3Ccircle cx='120' cy='34.6' r='3'/%3E%3Ccircle cx='75' cy='112.5' r='3'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-position: center top;
+            background-size: 100% auto;
+        }
+
+        /* ========================================================
+           MODEL C: TRON NEON DATA BUS
+           ======================================================== */
+        .bg-model-c {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23E60012' stroke-width='2' stroke-opacity='0.22' stroke-linecap='round'%3E%3Cpath d='M10 0 v40 l20 20 h40 l20 20 v60 M90 0 v30 l-20 20 v50 l30 30 h50 M180 200 v-50 l-30-30 h-40 l-20-20 v-40 M50 200 v-30 l20-20 h30'/%3E%3C/g%3E%3Cg fill='%23E60012' fill-opacity='0.45'%3E%3Ccircle cx='70' cy='60' r='4'/%3E%3Ccircle cx='110' cy='140' r='4'/%3E%3Ccircle cx='70' cy='100' r='3.5'/%3E%3Ccircle cx='150' cy='120' r='4'/%3E%3C/g%3E%3Cg fill='none' stroke='%23E60012' stroke-width='1' stroke-opacity='0.3'%3E%3Ccircle cx='70' cy='60' r='8'/%3E%3Ccircle cx='110' cy='140' r='8'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-position: center top;
+            background-size: 100% auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>⚡ Review Model PCB Cybernetic Terbaru ⚡</h1>
+        <p>Berdasarkan riset desain futuristik (Command Center & Motherboard Architecture), kami menghadirkan 3 model baru yang jauh lebih padat, authentic, dan keren maksimal!</p>
+    </div>
+
+    <div class="preview-container">
+        
+        <!-- MODEL A -->
+        <div class="option-box recommended">
+            <div class="badge">🔥 RECOMMENDED & TERPASANG 🔥</div>
+            <div class="option-title">Model A: Cyber Motherboard</div>
+            <div class="option-desc">Arsitektur mikrokontroler padat dengan bus data paralel, IC chip pads, dan via holes putih-merah. Sangat authentic layaknya PCB smartphone premium!</div>
+            <div class="mock-sidebar">
+                <div class="bg-model-a"></div>
+                <div class="mock-header">
+                    <div class="mock-logo">SF</div>
+                    <div class="mock-title">SUKABUMI FLASHER</div>
+                </div>
+                <div class="mock-menu">
+                    <div class="mock-item active">📊 Dashboard Utama</div>
+                    <div class="mock-item">📁 Data Servis & Garansi</div>
+                    <div class="mock-item">👥 Arsip Pelanggan</div>
+                    <div class="mock-item">💰 Buku Kas & Keuangan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODEL B -->
+        <div class="option-box">
+            <div class="option-title">Model B: Hexa Cyber Matrix</div>
+            <div class="option-desc">Perpaduan matriks sarang lebah (hexagon tech) dengan jalur sirkuit bersudut neon merah. Bergaya modern AI & data server startup.</div>
+            <div class="mock-sidebar">
+                <div class="bg-model-b"></div>
+                <div class="mock-header">
+                    <div class="mock-logo">SF</div>
+                    <div class="mock-title">SUKABUMI FLASHER</div>
+                </div>
+                <div class="mock-menu">
+                    <div class="mock-item active">📊 Dashboard Utama</div>
+                    <div class="mock-item">📁 Data Servis & Garansi</div>
+                    <div class="mock-item">👥 Arsip Pelanggan</div>
+                    <div class="mock-item">💰 Buku Kas & Keuangan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODEL C -->
+        <div class="option-box">
+            <div class="option-title">Model C: Tron Data Bus</div>
+            <div class="option-desc">Jalur sirkuit tembaga tebal dengan titik-titik node bercahaya terang (*glowing circles*) yang menonjolkan aliran listrik dinamis.</div>
+            <div class="mock-sidebar">
+                <div class="bg-model-c"></div>
+                <div class="mock-header">
+                    <div class="mock-logo">SF</div>
+                    <div class="mock-title">SUKABUMI FLASHER</div>
+                </div>
+                <div class="mock-menu">
+                    <div class="mock-item active">📊 Dashboard Utama</div>
+                    <div class="mock-item">📁 Data Servis & Garansi</div>
+                    <div class="mock-item">👥 Arsip Pelanggan</div>
+                    <div class="mock-item">💰 Buku Kas & Keuangan</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

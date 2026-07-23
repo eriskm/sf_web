@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Input Beban Harian - AIS Technologies{% endblock %}
+
+{% block head %}
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: auto; display: flex; gap: 20px; }
+        @media (max-width: 768px) { body { padding: 10px; } .container { flex-direction: column; } table { display: block; width: 100%; overflow-x: auto; white-space: nowrap; } }
+        .card { background: white; padding: 20px; border-radius: 10px; flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .label { font-weight: bold; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div style="max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px;">
+        <h3>Pengaturan Beban Harian</h3>
+        
+        <form action="/tambah_beban" method="post" style="display: flex; gap: 10px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <select name="kategori" required>
+                <option value="Gaji">Sektor Gaji</option>
+                <option value="Operasional">Sektor Operasional</option>
+            </select>
+            <input type="text" name="nama_beban" placeholder="Nama Beban (Misal: Listrik)" required>
+            <input type="number" name="nilai" placeholder="Nilai Rp" required>
+            <button type="submit" style="background: #28a745; width: auto; margin:0;">+ Tambah</button>
+        </form>
+
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #343a40; color: white;">
+                    <th>Kategori</th>
+                    <th>Uraian</th>
+                    <th>Nilai (Rp)</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in beban_list %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td>{{ b['kategori'] }}</td>
+                    <td>{{ b['nama_beban'] }}</td>
+                    <td><b>{{ "{:,}".format(b['nilai']) }}</b></td>
+                    <td>
+                        <a href="#" onclick="editBeban('{{ b['id'] }}', '{{ b['nama_beban'] }}', '{{ b['nilai'] }}')" style="color: blue; text-decoration: none; margin-right: 10px;">[Edit]</a>
+                        
+                        <a href="/hapus_beban/{{ b['id'] }}" onclick="return confirm('Hapus beban ini?')" style="color: red; text-decoration: none;">[Hapus]</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <a href="/dashboard"><button style="background: #007bff;">SIMPAN & KEMBALI KE DASHBOARD</button></a>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+function editBeban(id, namaLama, nilaiLama) {
+    let namaBaru = prompt("Edit Nama Beban:", namaLama);
+    let nilaiBaru = prompt("Edit Nilai (Angka saja):", nilaiLama);
+    
+    if (namaBaru != null && nilaiBaru != null) {
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/edit_beban/' + id;
+        
+        let inputNama = document.createElement('input');
+        inputNama.name = 'nama_beban';
+        inputNama.value = namaBaru;
+        form.appendChild(inputNama);
+        
+        let inputNilai = document.createElement('input');
+        inputNilai.name = 'nilai';
+        inputNilai.value = nilaiBaru;
+        form.appendChild(inputNilai);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

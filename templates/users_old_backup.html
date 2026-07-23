@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen User - Sukabumi Flasher</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        @media (max-width: 768px) { body { margin: 10px; } table { display: block; width: 100%; overflow-x: auto; white-space: nowrap; } }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #1e293b; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #64748b; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0056b3; transform: translateY(-2px); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: bold; }
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-teknisi { background: #e0f2fe; color: #0284c7; }
+        .badge-kasir { background: #dcfce7; color: #16a34a; }
+        .btn-delete { background: #ef4444; padding: 6px 12px; font-size: 0.85em; }
+        .btn-back { background: #64748b; text-decoration: none; color: white; padding: 10px 15px; border-radius: 8px; font-size: 0.9em; display: inline-block; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard" class="btn-back">← Kembali ke Dashboard</a>
+        
+        <div class="card">
+            <h2>👤 Tambah Akun User Baru</h2>
+            <form action="/add_user" method="post">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" name="username" placeholder="Contoh: asep_teknisi" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="******" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role Utama</label>
+                        <select name="role" id="roleSelect" onchange="togglePerms()">
+                            <option value="admin">Admin (Semua Akses)</option>
+                            <option value="teknisi">Teknisi (Standar)</option>
+                            <option value="kasir">Kasir (Standar)</option>
+                            <option value="custom">CUSTOM (Pilih Sendiri)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="customPerms" style="display: none; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1;">
+                    <label style="margin-bottom: 10px;">Pilih Kewenangan Khusus:</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="perms" value="keuangan"> 💰 Akses Laporan Keuangan</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="perms" value="sparepart"> 📦 Kelola Stok Sparepart</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="perms" value="servis"> 🛠️ Edit/Hapus Data Servis</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="perms" value="tutup_buku"> 🔒 Akses Tutup Buku (16.00)</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="perms" value="users"> 👥 Kelola Akun User</label>
+                    </div>
+                </div>
+
+                <button type="submit" style="margin-top: 20px; width: 100%;">➕ Tambah User Baru</button>
+            </form>
+        </div>
+
+        <script>
+            function togglePerms() {
+                const role = document.getElementById('roleSelect').value;
+                const permsDiv = document.getElementById('customPerms');
+                permsDiv.style.display = (role === 'custom') ? 'block' : 'none';
+            }
+        </script>
+
+        <div class="card">
+            <h2>👥 Daftar Akun & Kewenangan</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Kewenangan</th>
+                        <th>Password (Hidden)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td style="font-weight: bold; color: #1e293b;">{{ u['username'] }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if u['role'] == 'admin' %}badge-admin
+                                {% elif u['role'] == 'teknisi' %}badge-teknisi
+                                {% else %}badge-kasir{% endif %}">
+                                {{ u['role']|upper }}
+                            </span>
+                        </td>
+                        <td style="color: #94a3b8; font-family: monospace;">********</td>
+                        <td>
+                            <a href="/delete_user/{{ u['id'] }}" onclick="return confirm('Hapus user {{ u['username'] }}?')">
+                                <button class="btn-delete">Hapus</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

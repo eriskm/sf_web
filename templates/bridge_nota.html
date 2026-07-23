@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pusat Nota - Sukabumi Flasher</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 450px; width: 100%; text-align: center; }
+        h2 { color: #333; margin-bottom: 20px; }
+        .nota-preview { width: 100%; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .btn { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; color: white; text-decoration: none; }
+        .btn-print { background: #007bff; }
+        .btn-print:hover { background: #0056b3; }
+        .btn-wa { background: #25d366; }
+        .btn-wa:hover { background: #1ebe57; }
+        .btn-back { background: #6c757d; font-size: 0.9em; margin-top: 10px; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 15px; }
+        .penerimaan { background: #fff3e0; color: #e67e22; }
+        .garansi { background: #e3f2fd; color: #007bff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="status-badge {{ 'penerimaan' if type == 'penerimaan' else 'garansi' }}">
+        {{ 'NOTA PENERIMAAN SERVICE' if type == 'penerimaan' else 'NOTA SELESAI / GARANSI' }}
+    </div>
+    
+    <div id="loadingArea">
+        <h3 style="color: #666; margin-top: 20px;">⏳ Sedang Menyiapkan Gambar...</h3>
+        <p style="font-size: 0.8em; color: #999;">Proses ini butuh waktu 3-5 detik</p>
+    </div>
+
+    <img src="" class="nota-preview" id="notaImg" style="display: none;">
+
+    <div class="btn-group" id="actionButtons" style="display: none;">
+        <a href="{{ print_url }}" target="_blank" class="btn btn-print">
+            <span>🖨️</span> CETAK NOTA TERMAL (FISIK)
+        </a>
+        
+        <button onclick="kirimWA()" class="btn btn-wa">
+            <span>💬</span> SALIN & KIRIM KE WA
+        </button>
+
+        <a href="" id="btnDownload" download class="btn" style="background: #e67e22; font-size: 0.9em;">
+            <span>📥</span> SIMPAN GAMBAR KE LAPTOP
+        </a>
+
+        <button onclick="window.close()" class="btn btn-back">TUTUP HALAMAN INI</button>
+    </div>
+
+    <div id="secureWarning" style="display: none; margin-top: 15px; font-size: 0.75em; color: #d35400; background: #fff3e0; padding: 10px; border-radius: 5px; border: 1px solid #ffe0b2; text-align: left;">
+        ⚠️ <b>Tips:</b> Karena ente akses pakai IP Lokal, Chrome mungkin blokir fitur salin otomatis. Gunakan tombol <b>SIMPAN GAMBAR</b> kalau gagal paste di WA ya bro.
+    </div>
+</div>
+
+<script>
+window.onload = async function() {
+    const imgElement = document.getElementById('notaImg');
+    const loadingArea = document.getElementById('loadingArea');
+    const actionButtons = document.getElementById('actionButtons');
+    const btnDownload = document.getElementById('btnDownload');
+    const secureWarning = document.getElementById('secureWarning');
+
+    // Deteksi jika akses bukan via localhost/127.0.0.1
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        secureWarning.style.display = 'block';
+    }
+
+    try {
+        // Panggil generate gambar via fetch
+        const response = await fetch("{{ img_url }}");
+        if (!response.ok) throw new Error("Gagal generate");
+        const finalImgPath = await response.text();
+
+        // Tampilkan hasil
+        imgElement.src = finalImgPath + "?t=" + new Date().getTime(); // Anti cache
+        btnDownload.href = finalImgPath;
+        
+        imgElement.onload = () => {
+            loadingArea.style.display = 'none';
+            imgElement.style.display = 'block';
+            actionButtons.style.display = 'flex';
+        };
+    } catch (err) {
+        loadingArea.innerHTML = "<h3 style='color:red;'>❌ Gagal Menyiapkan Gambar</h3><p>Coba refresh halaman ini bro.</p>";
+    }
+}
+
+async function kirimWA() {
+    const imgElement = document.getElementById('notaImg');
+    const noWA = "{{ no_wa }}";
+    const teksWA = {{ teks_wa|tojson|safe }};
+
+    try {
+        const response = await fetch(imgElement.src);
+        const blob = await response.blob();
+        
+        let copied = false;
+        if (navigator.clipboard && window.ClipboardItem) {
+            try {
+                const item = new ClipboardItem({ "image/png": blob });
+                await navigator.clipboard.write([item]);
+                copied = true;
+            } catch (e) { console.log("Clipboard Error:", e); }
+        }
+        
+        if (copied) {
+            alert("✅ Gambar Nota Berhasil Disalin!\n\nSilakan Paste (CTRL+V) di chat WA konsumen.");
+        } else {
+            alert("⚠️ Fitur Salin Otomatis diblokir Chrome (karena ente pakai IP Lokal).\n\nTenang bro, silakan klik tombol 'SIMPAN GAMBAR' lalu kirim manual filenya ke WA ya!");
+        }
+        
+        window.open(`https://api.whatsapp.com/send?phone=${noWA}&text=${encodeURIComponent(teksWA)}`, '_blank');
+    } catch (err) {
+        alert("Gagal memproses gambar.");
+    }
+}
+</script>
+
+</body>
+</html>

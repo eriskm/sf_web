@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Unit Baru - SF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #EFF6FF;
+            --bg-page: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --panel-bg: #F5F7FB;
+            --border-color: #E2E8F0;
+            --border-hover: #3B82F6;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 8px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { margin: 0; padding: 10px 18px 20px 18px; background: var(--bg-page); color: var(--text-main); }
+        
+        /* 1. Ultra Compact Header (Clean Enterprise Look) */
+        .top-header {
+            max-width: 1360px; margin: 0 auto 10px auto; height: 52px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); padding: 0 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+        }
+        .top-header h1 { font-size: 1.1em; font-weight: 700; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 8px; letter-spacing: -0.3px; }
+        .top-header .subtitle { color: var(--text-muted); font-weight: 500; font-size: 0.84em; border-left: 2px solid var(--border-color); padding-left: 10px; margin-left: 4px; }
+        .badge-v4 { background: #2563EB; color: white; font-size: 0.68em; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
+
+        /* Progress Stepper Bar */
+        .stepper-bar {
+            max-width: 1360px; margin: 0 auto 10px auto; background: var(--card-bg); padding: 8px 20px; border-radius: var(--radius);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .step-item { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 0.82em; color: var(--text-muted); flex: 1; cursor: pointer; transition: all 0.2s; }
+        .step-item.active { color: var(--primary); font-weight: 700; }
+        .step-item.done { color: var(--accent-green); }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.78em;
+            background: #F1F5F9; color: var(--text-muted); transition: all 0.2s; flex-shrink: 0;
+        }
+        .step-item.active .step-num { background: var(--primary); color: white; box-shadow: 0 0 0 2.5px var(--primary-light); }
+        .step-item.done .step-num { background: var(--accent-green); color: white; }
+        .step-connector { height: 1.5px; flex: 1; background: var(--border-color); margin: 0 6px; }
+
+        /* Master Grid Layout */
+        .master-grid {
+            max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 2.15fr 1.1fr; gap: 16px; align-items: start;
+        }
+        @media (max-width: 1024px) { .master-grid { grid-template-columns: 1fr; } }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--card-bg); border-radius: var(--radius); border: 1.5px solid var(--border-color); padding: 12px 16px;
+            box-shadow: var(--shadow-sm); margin-bottom: 10px; transition: all 0.2s;
+        }
+        .section-card:hover, .section-card:focus-within {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+        }
+        .section-title {
+            font-size: 0.92em; font-weight: 700; color: var(--text-main); margin: 0 0 8px 0; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+        }
+        .section-title-left { display: flex; align-items: center; gap: 6px; }
+
+        /* Form Grid */
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+        @media (max-width: 600px) { .form-row-2 { grid-template-columns: 1fr; } }
+        .form-row-1 { margin-bottom: 8px; }
+
+        /* Labels */
+        .label { font-weight: 600; font-size: 0.82em; color: var(--text-main); margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between; }
+        .label-left { display: flex; align-items: center; gap: 5px; }
+        .req-tag { color: #DC2626; font-size: 0.74em; font-style: italic; font-weight: 500; opacity: 0.9; }
+
+        /* Inputs & Textareas */
+        input, select, textarea {
+            width: 100%; padding: 7.5px 11px; font-size: 0.86em; border: 1.5px solid #CBD5E1; border-radius: 6px;
+            background: #FAFAFA; transition: all 0.2s; color: var(--text-main);
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary); background: #FFFFFF; outline: none; box-shadow: 0 0 0 2.5px var(--primary-light);
+        }
+        textarea { resize: vertical; min-height: 44px; }
+
+        /* Realtime Error Messages Box */
+        .error-msg-box {
+            display: none; color: #DC2626; font-size: 0.76em; font-weight: 600; margin-top: 4px; padding: 5px 9px;
+            background: #FEF2F2; border: 1px solid #FECACA; border-radius: 5px; line-height: 1.3;
+        }
+
+        /* V4: Subdued Minimalist Checklist Panel */
+        .subdued-checklist {
+            background: #F8FAFC; border: 1px solid #F1F5F9; border-radius: 6px; padding: 6px 10px; margin: 6px 0;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .sc-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .sc-title { font-size: 0.75em; font-weight: 600; color: #475569; width: 145px; flex-shrink: 0; }
+        .sc-items { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; }
+        
+        .sc-check {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 0.75em; font-weight: 500; color: #64748B;
+            cursor: pointer; user-select: none; transition: all 0.15s;
+        }
+        .sc-check:hover { color: var(--text-main); }
+        .sc-check input[type="checkbox"] { width: 13px; height: 13px; margin: 0; cursor: pointer; accent-color: var(--primary); }
+        .sc-check.active-green { color: #047857; font-weight: 600; }
+        .sc-check.active-red { color: #DC2626; font-weight: 600; }
+
+        /* V4: Subdued Helper Chips */
+        .subdued-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; align-items: center; }
+        .sc-hint-text { font-size: 0.71em; color: #94A3B8; margin-right: 2px; }
+        .sub-chip {
+            background: transparent; border: 1px solid #E2E8F0; border-radius: 4px; padding: 1.5px 6px; font-size: 0.72em; font-weight: 500;
+            color: #64748B; cursor: pointer; transition: all 0.15s;
+        }
+        .sub-chip:hover { background: #F1F5F9; color: var(--primary); border-color: #CBD5E1; }
+
+        /* Realtime Money Formatter */
+        .money-preview { font-size: 0.78em; font-weight: 700; color: #059669; margin-top: 2px; display: block; height: 16px; }
+
+        /* Color-Coded Status Dropdown */
+        .status-select { font-weight: 700; cursor: pointer; }
+        .status-select.st-Analisa { border-color: #3B82F6; background: #EFF6FF; color: #1E40AF; }
+        .status-select.st-Konfirmasi { border-color: #F59E0B; background: #FEF3C7; color: #92400E; }
+        .status-select.st-WaitPart { border-color: #F97316; background: #FFEDD5; color: #9A3412; }
+        .status-select.st-Repair { border-color: #10B981; background: #ECFDF5; color: #065F46; }
+        .status-select.st-Garansi { border-color: #EF4444; background: #FEF2F2; color: #991B1B; }
+
+        /* Prominent Submit Button */
+        .btn-submit {
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: white; border: none; padding: 11px 20px;
+            font-size: 1.02em; font-weight: 700; border-radius: var(--radius); width: 100%; cursor: pointer; letter-spacing: 0.2px;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.28); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%);
+            transform: translateY(-1px); box-shadow: 0 6px 14px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Sidebar Intelligent History Panel */
+        .history-panel {
+            background: var(--panel-bg); border-radius: var(--radius); border: 1.5px solid #CBD5E1; padding: 14px 16px;
+            box-shadow: var(--shadow-sm); position: sticky; top: 10px;
+        }
+        .panel-badge { background: #DBEAFE; color: #1E40AF; font-size: 0.68em; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+        
+        .profile-card {
+            background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm);
+        }
+        .profile-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: #2563EB; color: #FFFFFF; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2em; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+        }
+        .profile-info h4 { margin: 0 0 2px 0; font-size: 0.94em; color: var(--text-main); font-weight: 700; }
+        .profile-info p { margin: 0; font-size: 0.78em; color: var(--text-muted); }
+        .profile-badge {
+            display: inline-block; background: #FEF3C7; color: #D97706; font-size: 0.68em; font-weight: 700; padding: 1.5px 6px;
+            border-radius: 4px; margin-top: 4px;
+        }
+
+        .history-timeline { display: flex; flex-direction: column; gap: 8px; }
+        .history-item {
+            padding: 9px 11px; border-radius: 6px; border-left: 3.5px solid var(--primary); background: #FFFFFF; border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0;
+            box-shadow: var(--shadow-sm); transition: all 0.2s;
+        }
+        .hi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .hi-device { font-weight: 700; font-size: 0.82em; color: var(--text-main); }
+        .hi-date { font-size: 0.7em; color: var(--text-muted); }
+        .hi-desc { font-size: 0.76em; color: var(--text-muted); margin-bottom: 4px; line-height: 1.3; }
+        .hi-status { display: inline-block; font-size: 0.68em; font-weight: 700; padding: 1.5px 6px; border-radius: 3px; }
+        .st-done { background: #ECFDF5; color: #047857; }
+
+        /* Autocomplete Box */
+        .ac-wrapper { position: relative; }
+        .ac-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid var(--border-hover);
+            border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 180px; overflow-y: auto; display: none; margin-top: 2px;
+        }
+        .ac-item { padding: 8px 12px; border-bottom: 1px solid #F1F5F9; cursor: pointer; display: flex; flex-direction: column; }
+        .ac-item:hover { background: #EFF6FF; }
+        .ac-item:last-child { border-bottom: none; }
+        .ac-item b { font-size: 0.84em; color: var(--text-main); }
+        .ac-item span { font-size: 0.74em; color: var(--text-muted); }
+
+        /* Animations */
+        @keyframes fadeInPanel {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Keyboard Shortcut Footer Hint */
+        .shortcut-bar {
+            max-width: 1360px; margin: 12px auto 0 auto; padding: 8px 16px; background: #E2E8F0; border-radius: 6px;
+            font-size: 0.74em; color: #475569; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .shortcut-item { display: flex; align-items: center; gap: 4px; }
+        .kbd { background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px; padding: 1.5px 6px; font-weight: 700; color: #1E293B; box-shadow: 0 1px 1px rgba(0,0,0,0.08); font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Clean Compact Header -->
+    <div class="top-header">
+        <h1>Penerimaan Unit Baru <span class="subtitle">Unit Servis & Pengarsipan</span></h1>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="/dashboard" style="text-decoration: none; color: var(--text-muted); font-size: 0.8em; font-weight: 600; background: #F1F5F9; padding: 4px 10px; border-radius: 6px; border: 1px solid #E2E8F0;">← Kembali ke Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Progress Stepper Bar -->
+    <div class="stepper-bar">
+        <div class="step-item active" id="step_1" onclick="setStep(1)">
+            <div class="step-num">1</div>
+            <span>Data Konsumen</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" id="step_2" onclick="setStep(2)">
+            <div class="step-num">2</div>
+            <span>Diagnosa & Checklist</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" id="step_3" onclick="setStep(3)">
+            <div class="step-num">3</div>
+            <span>Estimasi & Penugasan</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item">
+            <div class="step-num">✓</div>
+            <span>Siap Eksekusi</span>
+        </div>
+    </div>
+
+    <!-- Master Layout Grid -->
+    <div class="master-grid">
+        
+        <!-- LEFT COLUMN: FORM SECTIONS -->
+        <div>
+            <form action="/tambah" method="post" id="form_input">
+                
+                <!-- SECTION 1: DATA KONSUMEN -->
+                <div class="section-card" onclick="setStep(1)">
+                    <div class="section-title">
+                        <span class="section-title-left">1. Data Identitas Konsumen</span>
+                        <span style="font-size: 0.74em; font-weight: 500; color: var(--text-muted);">Cek riwayat otomatis</span>
+                    </div>
+                    
+                    <div class="form-row-2" style="margin-bottom: 0;">
+                        <div class="ac-wrapper">
+                            <div class="label">
+                                <span class="label-left">Nama Konsumen</span>
+                                <span class="req-tag">*wajib diisi</span>
+                            </div>
+                            <input type="text" name="nama_user" id="nama_user" placeholder="Contoh: Irfan / Budi" autocomplete="off" required>
+                            <div id="autocomplete_list" class="ac-dropdown"></div>
+                            <div id="nama_error_msg" class="error-msg-box">⚠️ Nama Konsumen wajib diisi dan tidak boleh kosong!</div>
+                        </div>
+                        
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Nomor WhatsApp</span>
+                                <span class="req-tag">*wajib angka</span>
+                            </div>
+                            <input type="tel" name="no_wa" id="no_wa" placeholder="08xxxxxxxxxx" autocomplete="off" required pattern="^[0-9]+$" title="Nomor WhatsApp wajib berupa angka">
+                            <div id="wa_error_msg" class="error-msg-box">⚠️ Nomor WhatsApp wajib angka (tanpa huruf/spasi/simbol)!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: IDENTITAS, DIAGNOSA & CHECKLIST UNIT -->
+                <div class="section-card" onclick="setStep(2)">
+                    <div class="section-title">
+                        <span class="section-title-left">2. Identitas, Diagnosa & Checklist Unit</span>
+                        <span style="font-size: 0.74em; font-weight: 500; color: var(--text-muted);">Proteksi Komplain</span>
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Device / Model HP</span>
+                                <span class="req-tag">*wajib diisi</span>
+                            </div>
+                            <input type="text" name="device" id="device" placeholder="Contoh: Infinix Hot 50i" required>
+                            <div id="device_error_msg" class="error-msg-box">⚠️ Device / Model HP wajib diisi dan tidak boleh kosong!</div>
+                        </div>
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Password / Pola HP</span>
+                            </div>
+                            <input type="text" name="password_hp" id="password_hp" placeholder="Misal: 1234 / Pola L / Kosong">
+                        </div>
+                    </div>
+
+                    <!-- V4: Subdued Clean Checklist Panel -->
+                    <div class="subdued-checklist">
+                        <div class="sc-row">
+                            <span class="sc-title">📦 Kelengkapan Masuk:</span>
+                            <div class="sc-items">
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'green')">
+                                    <input type="checkbox" name="kelengkapan[]" value="SIM Tray"> SIM Tray
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'green')">
+                                    <input type="checkbox" name="kelengkapan[]" value="Memory Card"> Memory Card
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'green')">
+                                    <input type="checkbox" name="kelengkapan[]" value="Charger"> Charger
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'green')">
+                                    <input type="checkbox" name="kelengkapan[]" value="Dus / Box"> Dus / Box
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'green')">
+                                    <input type="checkbox" name="kelengkapan[]" value="Softcase"> Softcase
+                                </label>
+                            </div>
+                        </div>
+                        <div class="sc-row" style="border-top: 1px solid #F1F5F9; padding-top: 4px;">
+                            <span class="sc-title" style="color: #B91C1C;">⚠️ Fisik Rusak/Lecet:</span>
+                            <div class="sc-items">
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'red')">
+                                    <input type="checkbox" name="kondisi[]" value="LCD Pecah"> LCD Pecah
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'red')">
+                                    <input type="checkbox" name="kondisi[]" value="Backdoor Pecah"> Backdoor Retak
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'red')">
+                                    <input type="checkbox" name="kondisi[]" value="Frame Lecet"> Frame Lecet
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'red')">
+                                    <input type="checkbox" name="kondisi[]" value="Kena Air"> Kena Air
+                                </label>
+                                <label class="sc-check" onclick="toggleSubCheck(this, 'red')">
+                                    <input type="checkbox" name="kondisi[]" value="Segel Bongkar"> Segel Bongkar
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisa + Subdued Helper Chips -->
+                    <div class="form-row-1" style="margin-top: 6px;">
+                        <div class="label">
+                            <span class="label-left">Analisa Kerusakan</span>
+                            <span class="req-tag">*wajib diisi</span>
+                        </div>
+                        <textarea name="analisa" id="analisa" rows="1" placeholder="Sebutkan kendala / kerusakan unit yang dikeluhkan..." required></textarea>
+                        <div id="analisa_error_msg" class="error-msg-box">⚠️ Analisa Kerusakan wajib diisi dan tidak boleh kosong!</div>
+                        
+                        <div class="subdued-chips">
+                            <span class="sc-hint-text">Saran Cepat:</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Ganti LCD')">+ Ganti LCD</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Ganti Baterai')">+ Ganti Baterai</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Mati Total')">+ Mati Total</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Lupa Pola / FRP')">+ Lupa Pola</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Konektor Cas Rusak')">+ Konektor Cas</span>
+                            <span class="sub-chip" onclick="addChip('analisa', 'Sinyal Hilang')">+ Sinyal Hilang</span>
+                        </div>
+                    </div>
+
+                    <!-- Tindakan + Subdued Helper Chips -->
+                    <div class="form-row-1" style="margin-bottom: 0;">
+                        <div class="label">
+                            <span class="label-left">Rencana Tindakan Perbaikan</span>
+                        </div>
+                        <input type="text" name="tindakan" id="tindakan" placeholder="Sebutkan rencana tindakan perbaikan...">
+                        
+                        <div class="subdued-chips">
+                            <span class="sc-hint-text">Saran Cepat:</span>
+                            <span class="sub-chip" onclick="setChip('tindakan', 'Ganti LCD Original')">+ LCD Original</span>
+                            <span class="sub-chip" onclick="setChip('tindakan', 'Ganti Baterai Double Power')">+ Baterai Double Power</span>
+                            <span class="sub-chip" onclick="setChip('tindakan', 'Flashing / Unlock Pola')">+ Flashing / Unlock</span>
+                            <span class="sub-chip" onclick="setChip('tindakan', 'Ganti Konektor Type-C')">+ Konektor Type-C</span>
+                            <span class="sub-chip" onclick="setChip('tindakan', 'Cek Jalur / Penggantian IC')">+ Cek Jalur IC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: ESTIMASI, TEKNISI & STATUS -->
+                <div class="section-card" onclick="setStep(3)">
+                    <div class="section-title">
+                        <span class="section-title-left">3. Estimasi Biaya & Penugasan Teknisi</span>
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Estimasi Biaya</span>
+                            </div>
+                            <input type="number" name="estimasi" id="estimasi" placeholder="Rp 0" oninput="formatMoney('estimasi', 'preview_est')">
+                            <span class="money-preview" id="preview_est"></span>
+                            <div class="subdued-chips">
+                                <span class="sub-chip" onclick="addMoney('estimasi', 50000)">+50rb</span>
+                                <span class="sub-chip" onclick="addMoney('estimasi', 100000)">+100rb</span>
+                                <span class="sub-chip" onclick="addMoney('estimasi', 150000)">+150rb</span>
+                                <span class="sub-chip" onclick="addMoney('estimasi', 250000)">+250rb</span>
+                                <span class="sub-chip" onclick="addMoney('estimasi', 500000)">+500rb</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="label">
+                                <span class="label-left">DP (Deposit Awal)</span>
+                            </div>
+                            <input type="number" name="dp" id="dp" placeholder="Rp 0" oninput="formatMoney('dp', 'preview_dp')">
+                            <span class="money-preview" id="preview_dp"></span>
+                            <div class="subdued-chips">
+                                <span class="sub-chip" onclick="addMoney('dp', 25000)">+25rb</span>
+                                <span class="sub-chip" onclick="addMoney('dp', 50000)">+50rb</span>
+                                <span class="sub-chip" onclick="addMoney('dp', 100000)">+100rb</span>
+                                <span class="sub-chip" onclick="addChipDpPas()">Pas (Lunas)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2" style="margin-bottom: 0; margin-top: 8px;">
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Pilih Teknisi Penanggung Jawab</span>
+                            </div>
+                            <select name="teknisi" id="teknisi">
+                                <option value="-">- Pilih Teknisi -</option>
+                                {% for tek in daftar_teknisi %}
+                                <option value="{{ tek }}">{{ tek }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <div class="label">
+                                <span class="label-left">Status Awal Pengerjaan</span>
+                            </div>
+                            <select name="status" id="status" class="status-select st-Analisa" onchange="updateStatusColor(this)">
+                                <option value="Analisa">Analisa (Cek & Diagnosa Awal)</option>
+                                <option value="Konfirmasi">Konfirmasi (Tunggu Persetujuan Biaya)</option>
+                                <option value="Wait Part">Wait Part (Menunggu Suku Cadang)</option>
+                                <option value="Repair">Repair (Langsung Dikerjakan / Selesai)</option>
+                                <option value="Garansi">Klaim Garansi (Retur Servis)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prominent Submit Button -->
+                <button type="submit" class="btn-submit">
+                    <span style="font-size: 1.15em;">💾</span> + TERIMA DAN DAFTARKAN UNIT SERVIS
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT COLUMN: SIDEBAR INTELLIGENT HISTORY PANEL -->
+        <div class="history-panel">
+            <div class="section-title" style="margin-bottom: 8px; border-bottom: 1.5px solid #CBD5E1;">
+                <span class="section-title-left">📋 Panel Histori Cerdas</span>
+                <span class="panel-badge">AUTO-SYNC</span>
+            </div>
+            <p style="font-size: 0.78em; color: var(--text-muted); margin-top: -2px; margin-bottom: 12px;">
+                Otomatis mendeteksi pelanggan saat kasir mengetik Nama / WA.
+            </p>
+
+            <!-- Default / Empty State -->
+            <div id="hist_empty" style="text-align: center; padding: 24px 12px; border: 2px dashed #CBD5E1; border-radius: 8px; background: #FFFFFF; color: var(--text-muted);">
+                <div style="font-size: 2.2em; margin-bottom: 6px;">🔍</div>
+                <strong style="display: block; font-size: 0.88em; color: var(--text-main); margin-bottom: 3px;">Belum Ada Pelanggan Dipilih</strong>
+                <span style="font-size: 0.78em; line-height: 1.35; display: block;">Ketik Nama atau Nomor WhatsApp untuk menampilkan riwayat servis.</span>
+            </div>
+
+            <!-- Profile & History Loaded State -->
+            <div id="hist_content" style="display: none;">
+                <div class="profile-card">
+                    <div class="profile-avatar" id="hc_initial">P</div>
+                    <div class="profile-info">
+                        <h4 id="hc_name">-</h4>
+                        <p id="hc_wa">-</p>
+                        <span class="profile-badge" id="hc_total">🌟 0 Kali Servis Sebelumnya</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.82em; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📜 Riwayat Servis Terdahulu</span>
+                    <span style="font-size: 0.78em; color: var(--primary); cursor: pointer; font-weight: 600;" onclick="checkHistoryLive(document.getElementById('no_wa').value || document.getElementById('nama_user').value)">↻ Refresh</span>
+                </div>
+
+                <div class="history-timeline" id="hc_timeline">
+                    <!-- Dynamic Timeline Items -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Keyboard Shortcut Bar -->
+    <div class="shortcut-bar">
+        <span style="font-weight: 700; color: #1E293B;">⚡ Shortcut Kerja Cepat:</span>
+        <div class="shortcut-item"><span class="kbd">Enter</span> <span>Pindah Kolom</span></div>
+        <div class="shortcut-item"><span class="kbd">F2</span> <span>Fokus Nama</span></div>
+        <div class="shortcut-item"><span class="kbd">F4</span> <span>Fokus Device</span></div>
+        <div class="shortcut-item"><span class="kbd">F8</span> / <span class="kbd">Ctrl + S</span> <span>Simpan Data</span></div>
+    </div>
+
+    <!-- JavaScript Live Autocomplete, Validation & History Sync -->
+    <script>
+        // Elements
+        const inputNama = document.getElementById('nama_user');
+        const inputWa = document.getElementById('no_wa');
+        const inputDevice = document.getElementById('device');
+        const inputAnalisa = document.getElementById('analisa');
+        const namaErrorMsg = document.getElementById('nama_error_msg');
+        const waErrorMsg = document.getElementById('wa_error_msg');
+        const deviceErrorMsg = document.getElementById('device_error_msg');
+        const analisaErrorMsg = document.getElementById('analisa_error_msg');
+        const acList = document.getElementById('autocomplete_list');
+        
+        let acTimeout, waTimeout;
+
+        // 1. Live Validation untuk 4 Kolom Wajib
+        function setupLiveReqValidation(inputEl, errorEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', function() {
+                if (this.value.trim().length === 0) {
+                    this.style.borderColor = '#DC2626';
+                    this.style.backgroundColor = '#FEF2F2';
+                    errorEl.style.display = 'block';
+                } else {
+                    this.style.borderColor = '#10B981';
+                    this.style.backgroundColor = '#F0FDF4';
+                    errorEl.style.display = 'none';
+                }
+            });
+        }
+        setupLiveReqValidation(inputNama, namaErrorMsg);
+        setupLiveReqValidation(inputDevice, deviceErrorMsg);
+        setupLiveReqValidation(inputAnalisa, analisaErrorMsg);
+
+        // 2. WhatsApp Real-Time Numeric & History Validation
+        function handleWaInput() {
+            clearTimeout(waTimeout);
+            const rawWa = inputWa.value.trim();
+            const cleanWa = rawWa.replace(/[\s\-+]/g, '');
+            const isNumeric = /^[0-9]+$/.test(cleanWa);
+            
+            if (rawWa.length > 0 && !isNumeric) {
+                inputWa.style.borderColor = '#DC2626';
+                inputWa.style.backgroundColor = '#FEF2F2';
+                waErrorMsg.innerText = '⚠️ Nomor WhatsApp hanya boleh berisi angka tanpa huruf/simbol!';
+                waErrorMsg.style.display = 'block';
+            } else if (rawWa.length === 0) {
+                inputWa.style.borderColor = '#DC2626';
+                inputWa.style.backgroundColor = '#FEF2F2';
+                waErrorMsg.innerText = '⚠️ Nomor WhatsApp tidak boleh kosong!';
+                waErrorMsg.style.display = 'block';
+                document.getElementById('hist_empty').style.display = 'block';
+                document.getElementById('hist_content').style.display = 'none';
+            } else if (cleanWa.length < 9) {
+                inputWa.style.borderColor = '#F59E0B';
+                inputWa.style.backgroundColor = '#FFFBEB';
+                waErrorMsg.innerText = '⚠️ Nomor WhatsApp minimal 9 digit angka!';
+                waErrorMsg.style.display = 'block';
+                waTimeout = setTimeout(() => checkHistoryLive(rawWa), 400);
+            } else {
+                inputWa.style.borderColor = '#10B981';
+                inputWa.style.backgroundColor = '#F0FDF4';
+                waErrorMsg.style.display = 'none';
+                waTimeout = setTimeout(() => checkHistoryLive(rawWa), 300);
+            }
+        }
+        inputWa.addEventListener('input', handleWaInput);
+        inputWa.addEventListener('change', () => checkHistoryLive(inputWa.value.trim()));
+
+        // 3. Autocomplete Pelanggan via API
+        inputNama.addEventListener('input', function() {
+            clearTimeout(acTimeout);
+            const q = this.value.trim();
+            if (q.length >= 2) {
+                acTimeout = setTimeout(() => {
+                    fetch(`/api/search_pelanggan?q=${encodeURIComponent(q)}`)
+                        .then(res => res.json())
+                        .then(results => {
+                            acList.innerHTML = '';
+                            if (results && results.length > 0) {
+                                acList.style.display = 'block';
+                                results.forEach(item => {
+                                    const div = document.createElement('div');
+                                    div.className = 'ac-item';
+                                    const waStr = item.wa || item.no_wa || '-';
+                                    div.innerHTML = `<b>${item.nama}</b><span>📱 ${waStr}</span>`;
+                                    div.onclick = () => {
+                                        inputNama.value = item.nama;
+                                        inputWa.value = waStr !== '-' ? waStr : '';
+                                        acList.style.display = 'none';
+                                        inputNama.style.borderColor = '#10B981';
+                                        inputNama.style.backgroundColor = '#F0FDF4';
+                                        namaErrorMsg.style.display = 'none';
+                                        if (waStr !== '-') {
+                                            inputWa.style.borderColor = '#10B981';
+                                            inputWa.style.backgroundColor = '#F0FDF4';
+                                            waErrorMsg.style.display = 'none';
+                                            checkHistoryLive(waStr);
+                                        }
+                                    };
+                                    acList.appendChild(div);
+                                });
+                            } else {
+                                acList.style.display = 'none';
+                            }
+                        })
+                        .catch(e => console.error("Error search_pelanggan:", e));
+                }, 300);
+            } else {
+                acList.style.display = 'none';
+            }
+        });
+
+        // 4. History Panel Check Logic
+        function checkHistoryLive(query) {
+            if (!query) return;
+            fetch(`/api/check_wa?wa=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.found) {
+                        showHistoryPanel(data.nama, query, data.total_servis, data.device, data.terakhir);
+                        if (!inputNama.value.trim()) {
+                            inputNama.value = data.nama;
+                            inputNama.style.borderColor = '#10B981';
+                            inputNama.style.backgroundColor = '#F0FDF4';
+                            namaErrorMsg.style.display = 'none';
+                        }
+                        if (!inputDevice.value.trim() && data.device) {
+                            inputDevice.value = data.device;
+                            inputDevice.style.borderColor = '#10B981';
+                            inputDevice.style.backgroundColor = '#F0FDF4';
+                            deviceErrorMsg.style.display = 'none';
+                        }
+                    } else if (query.replace(/[\s\-+]/g, '').length >= 9) {
+                        // Tampilkan status pelanggan baru jika nomor WA sudah valid
+                        document.getElementById('hist_empty').style.display = 'none';
+                        const hc = document.getElementById('hist_content');
+                        hc.style.display = 'block';
+                        triggerPanelAnimation();
+                        document.getElementById('hc_initial').innerText = (inputNama.value || 'P').charAt(0).toUpperCase();
+                        document.getElementById('hc_name').innerText = inputNama.value || 'Pelanggan Baru';
+                        document.getElementById('hc_wa').innerText = query;
+                        document.getElementById('hc_total').innerText = `🌟 Pelanggan Baru (0 Kali Servis)`;
+                        document.getElementById('hc_timeline').innerHTML = `
+                            <div class="history-item">
+                                <div class="hi-header">
+                                    <span class="hi-device">✨ Unit Pertama</span>
+                                    <span class="hi-date">Hari Ini</span>
+                                </div>
+                                <div class="hi-desc">Belum ada riwayat servis sebelumnya tercatat.</div>
+                                <span class="hi-status" style="background:#EFF6FF; color:#1E40AF;">NEW CUSTOMER</span>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(e => console.error("Error check_wa:", e));
+        }
+
+        function triggerPanelAnimation() {
+            const hc = document.getElementById('hist_content');
+            if (hc) {
+                hc.style.animation = 'none';
+                hc.offsetHeight; // trigger reflow
+                hc.style.animation = 'fadeInPanel 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+            }
+        }
+
+        function showHistoryPanel(nama, wa, total, device, terakhir) {
+            document.getElementById('hist_empty').style.display = 'none';
+            document.getElementById('hist_content').style.display = 'block';
+            triggerPanelAnimation();
+            
+            document.getElementById('hc_initial').innerText = nama.charAt(0).toUpperCase();
+            document.getElementById('hc_name').innerText = nama;
+            document.getElementById('hc_wa').innerText = wa || 'Tanpa No. WA';
+            document.getElementById('hc_total').innerText = `🌟 ${total} Kali Servis Sebelumnya`;
+
+            const timeline = document.getElementById('hc_timeline');
+            timeline.innerHTML = `
+                <div class="history-item">
+                    <div class="hi-header">
+                        <span class="hi-device">📲 ${device || 'Device HP'}</span>
+                        <span class="hi-date">🗓️ ${terakhir || 'Terakhir'}</span>
+                    </div>
+                    <div class="hi-desc">Servis sebelumnya tercatat dalam arsip sistem.</div>
+                    <span class="hi-status st-done">✓ ARSIP SELESAI</span>
+                </div>
+            `;
+            if (total > 1) {
+                timeline.innerHTML += `
+                    <div class="history-item" style="opacity: 0.85;">
+                        <div class="hi-header">
+                            <span class="hi-device">📲 Unit Lama Sebelumnya</span>
+                            <span class="hi-date">🗓️ Riwayat Terdahulu</span>
+                        </div>
+                        <div class="hi-desc">Perbaikan sukses & unit diserahkan.</div>
+                        <span class="hi-status st-done">✓ CASH / LUNAS</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 5. Proteksi Submit Universal untuk 4 Kolom Wajib & WA Angka
+        const formInput = document.getElementById('form_input');
+        if (formInput) {
+            formInput.addEventListener('submit', function(e) {
+                let isValid = true;
+                let firstInvalidInput = null;
+
+                // Cek Nama
+                if (!inputNama.value.trim()) {
+                    inputNama.style.borderColor = '#DC2626'; inputNama.style.backgroundColor = '#FEF2F2';
+                    namaErrorMsg.style.display = 'block'; isValid = false;
+                    if (!firstInvalidInput) firstInvalidInput = inputNama;
+                }
+                // Cek WA
+                const rawWa = inputWa.value.trim();
+                const cleanWa = rawWa.replace(/[\s\-+]/g, '');
+                if (!rawWa || !/^[0-9]+$/.test(cleanWa) || cleanWa.length < 9) {
+                    inputWa.style.borderColor = '#DC2626'; inputWa.style.backgroundColor = '#FEF2F2';
+                    waErrorMsg.innerText = !rawWa ? '⚠️ Nomor WhatsApp tidak boleh kosong!' : '⚠️ Nomor WhatsApp wajib angka minimal 9 digit!';
+                    waErrorMsg.style.display = 'block'; isValid = false;
+                    if (!firstInvalidInput) firstInvalidInput = inputWa;
+                }
+                // Cek Device
+                if (!inputDevice.value.trim()) {
+                    inputDevice.style.borderColor = '#DC2626'; inputDevice.style.backgroundColor = '#FEF2F2';
+                    deviceErrorMsg.style.display = 'block'; isValid = false;
+                    if (!firstInvalidInput) firstInvalidInput = inputDevice;
+                }
+                // Cek Analisa
+                if (!inputAnalisa.value.trim()) {
+                    inputAnalisa.style.borderColor = '#DC2626'; inputAnalisa.style.backgroundColor = '#FEF2F2';
+                    analisaErrorMsg.style.display = 'block'; isValid = false;
+                    if (!firstInvalidInput) firstInvalidInput = inputAnalisa;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    if (firstInvalidInput) {
+                        firstInvalidInput.focus();
+                        firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } else {
+                    // Beri loading 600ms supaya kasir yakin data diproses server & telegram
+                    e.preventDefault();
+                    const btn = formInput.querySelector('.btn-submit');
+                    if (btn && !btn.disabled) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.9';
+                        btn.style.cursor = 'wait';
+                        btn.innerHTML = `<span style="display:inline-block; animation: spin 1s infinite linear;">⏳</span> Menyimpan... <span style="font-family: monospace; letter-spacing: -1px; color: #FCD34D;">██████████</span>`;
+                        setTimeout(() => {
+                            formInput.submit();
+                        }, 600);
+                    }
+                }
+            });
+        }
+
+        // V4: Subdued Checkbox Pill Toggle
+        function toggleSubCheck(labelEl, colorType) {
+            setTimeout(() => {
+                const cb = labelEl.querySelector('input[type="checkbox"]');
+                if (cb.checked) {
+                    labelEl.classList.add(colorType === 'green' ? 'active-green' : 'active-red');
+                } else {
+                    labelEl.classList.remove('active-green', 'active-red');
+                }
+            }, 10);
+        }
+
+        // Progress Stepper Highlight
+        function setStep(num) {
+            document.querySelectorAll('.step-item').forEach((el, idx) => {
+                el.classList.remove('active');
+                if (idx + 1 < num) el.classList.add('done');
+                else el.classList.remove('done');
+            });
+            const target = document.getElementById('step_' + num);
+            if (target) target.classList.add('active');
+        }
+
+        // Chip Helpers
+        function addChip(fieldId, text) {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.value = text;
+            } else if (!field.value.includes(text)) {
+                field.value = field.value.trim() + ", " + text;
+            }
+            field.focus();
+            if (fieldId === 'analisa') {
+                field.style.borderColor = '#10B981';
+                field.style.backgroundColor = '#F0FDF4';
+                analisaErrorMsg.style.display = 'none';
+            }
+        }
+        function setChip(fieldId, text) {
+            document.getElementById(fieldId).value = text;
+            document.getElementById(fieldId).focus();
+        }
+
+        // Money Formatter & Chip Add
+        function formatMoney(fieldId, previewId) {
+            const val = parseInt(document.getElementById(fieldId).value || 0);
+            const prev = document.getElementById(previewId);
+            if (val > 0) {
+                prev.innerText = "💵 Terbilang: Rp " + val.toLocaleString('id-ID');
+            } else {
+                prev.innerText = "";
+            }
+        }
+        function addMoney(fieldId, amount) {
+            const field = document.getElementById(fieldId);
+            let cur = parseInt(field.value || 0);
+            field.value = cur + amount;
+            formatMoney(fieldId, fieldId === 'estimasi' ? 'preview_est' : 'preview_dp');
+        }
+        function addChipDpPas() {
+            const est = parseInt(document.getElementById('estimasi').value || 0);
+            if (est > 0) {
+                document.getElementById('dp').value = est;
+                formatMoney('dp', 'preview_dp');
+            } else {
+                alert('Isi Estimasi Biaya terlebih dahulu untuk menggunakan opsi Pas (Lunas).');
+            }
+        }
+
+        // Status Dropdown Color Shift
+        function updateStatusColor(sel) {
+            sel.className = "status-select st-" + sel.value.replace(/\s+/g, '');
+        }
+
+        // Close AC outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.ac-wrapper')) acList.style.display = 'none';
+        });
+
+        // 3. Shortcut Keyboard & 4. Auto Focus
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F2') {
+                e.preventDefault();
+                if (inputNama) { inputNama.focus(); inputNama.select(); }
+            } else if (e.key === 'F4') {
+                e.preventDefault();
+                if (inputDevice) { inputDevice.focus(); inputDevice.select(); }
+            } else if (e.key === 'F8' || (e.ctrlKey && (e.key === 's' || e.key === 'S'))) {
+                e.preventDefault();
+                if (formInput) {
+                    const btn = formInput.querySelector('.btn-submit');
+                    if (btn && !btn.disabled) btn.click();
+                }
+            }
+        });
+
+        if (formInput) {
+            const focusableSelectors = 'input:not([type="hidden"]):not([type="checkbox"]):not([type="submit"]), select, textarea';
+            formInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    const focusables = Array.from(formInput.querySelectorAll(focusableSelectors));
+                    const idx = focusables.indexOf(e.target);
+                    if (idx > -1 && idx < focusables.length - 1) {
+                        focusables[idx + 1].focus();
+                        if (focusables[idx + 1].select && focusables[idx + 1].tagName === 'INPUT') focusables[idx + 1].select();
+                    } else {
+                        const btn = formInput.querySelector('.btn-submit');
+                        if (btn && !btn.disabled) btn.click();
+                    }
+                }
+            });
+        }
+
+        // 4. Auto Focus begitu halaman dibuka
+        window.addEventListener('DOMContentLoaded', () => {
+            if (inputNama) inputNama.focus();
+        });
+    </script>
+</body>
+</html>

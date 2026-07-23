@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard SF - Filter Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <style>
+        /* UTILITY CLASSES */
+        .show { display: block !important; }
+
+        /* PROGRESS BAR & CIRCLE */
+        .progress-circle {
+            position: relative;
+            background: conic-gradient(var(--primary) var(--percent), #E2E8F0 0deg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            background: var(--card-bg);
+            border-radius: 50%;
+        }
+        .progress-inner {
+            position: relative;
+            z-index: 2;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        /* KHUSUS BOT TELEGRAM (Menyembunyikan bagian atas agar fokus ke Buku Kas) */
+        
+        .sidebar, .topbar, .hero-grid, .quick-actions, .charts-area, .card-keuangan { display: none !important; }
+        .main-content { margin-left: 0 !important; }
+        .content-body { padding: 20px !important; }
+        .content-body > *:not(#tabel-kas) { display: none !important; }
+        
+    </style>
+</head>
+<body>
+    
+    
+        
+            
+        
+    
+        
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    
+    
+    
+    
+
+    <!-- OVERLAY UNTUK MOBILE SIDEBAR -->
+    <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/logo.png" alt="Logo" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;">
+            <div>
+                <div class="poppins" style="font-weight: 800; font-size: 1.1em; line-height: 1.1;">SUKABUMI FLASHER</div>
+            </div>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/dashboard" class="menu-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Dashboard
+            </a>
+            <a href="#tabel-transaksi-data" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Transaksi
+            </a>
+            <a href="#tabel-pelanggan" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                Pelanggan
+            </a>
+            <a href="#tabel-garansi" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Garansi
+            </a>
+            <a href="#tabel-sparepart" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Sparepart
+            </a>
+            
+            
+            
+        </div>
+        
+        <div class="sidebar-footer">
+            
+            
+                
+            
+            <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=&amp;backgroundColor=e2e8f0" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover;">
+            <div style="flex: 1;">
+                <div class="font-bold" style="font-size: 0.9em; color: var(--dark);"></div>
+                <div style="font-size: 0.75em; color: var(--gray);">User</div>
+            </div>
+            <a href="/logout" style="color: var(--gray); cursor: pointer;" title="Logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display: flex; align-items: center;">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div>
+                    <div style="font-weight: 800; font-size: 1.2em; font-family: 'Poppins', sans-serif;">Dashboard</div>
+                    <div style="font-size: 0.85em; color: var(--gray); margin-top: -2px;">Selamat datang, User</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+
+                
+                <div style="display: flex; gap: 15px; color: var(--gray); align-items: center;">
+                    <!-- Dark Mode Toggle Button -->
+                    <div style="cursor: pointer; display: flex; align-items: center; transition: 0.3s;" id="themeToggle" title="Toggle Dark Mode">
+                        <svg id="themeIconLight" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg id="themeIconDark" style="display: none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </div>
+                    
+                    <div style="position: relative; cursor: pointer;" onclick="document.getElementById('notifDropdown').classList.toggle('show')">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        
+                        <span style="position: absolute; top: -6px; right: -8px; min-width: 16px; height: 16px; background: var(--danger); border-radius: 10px; border: 2px solid white; color: white; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 4px;">8</span>
+                        
+                        
+                        <!-- Dropdown Notif SLA -->
+                        <div id="notifDropdown" style="display: none; position: absolute; right: -10px; top: 40px; width: 320px; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 12px; border: 1px solid var(--border); z-index: 9999; cursor: default;">
+                            <div style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 800; color: var(--dark); display: flex; justify-content: space-between; align-items: center;">
+                                Notifikasi (SLA)
+                                <span style="font-size: 0.8em; font-weight: 500; background: var(--danger-light); color: var(--danger); padding: 2px 8px; border-radius: 20px;">8 Unread</span>
+                            </div>
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🚨</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[17 Hari] Samsung A11</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Kritis (Telah diekskalasi)</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🚨</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[17 Hari] Tecno Spark Go 1</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Kritis (Telah diekskalasi)</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🚨</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[17 Hari] Poco X7 pro</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Kritis (Telah diekskalasi)</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🚨</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[17 Hari] Infinix GT 20 pro</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Kritis (Telah diekskalasi)</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🚨</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[9 Hari] Infinix Note 30 pro</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Kritis (Telah diekskalasi)</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🔴</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[72 Jam] Infinix Hot 50i</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Eskalasi Admin</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🟠</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[48 Jam] Realme 5i</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Happy Call / Customer Update</div>
+                                                
+                                                <a href="https://wa.me/6285720627829" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.75em; background: var(--success-light); color: var(--success); padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                                    Happy Call WA
+                                                </a>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
+                                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                            <div style="font-size: 1.2em;">🟡</div>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; color: var(--dark); font-size: 0.9em; margin-bottom: 2px;">[24 Jam] Blackshark 5</div>
+                                                <div style="font-size: 0.8em; color: var(--gray); margin-bottom: 4px;">Reminder Teknisi</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <link rel="stylesheet" href="/static/dashboard.css">
+        <script>
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                var isClickInside = document.getElementById('notifDropdown').contains(event.target) || event.target.closest('div[onclick="document.getElementById(\\'notifDropdown\\').classList.toggle(\\'show\\')"]');
+                if (!isClickInside) {
+                    document.getElementById('notifDropdown').classList.remove('show');
+                }
+            });
+        </script>
+
+        <div class="content-body">
+            
+            
+<style>
+@media (max-width: 768px) {
+    .prm-card {
+        padding: 16px 15px !important;
+        gap: 12px !important;
+    }
+    .prm-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 14px !important;
+    }
+    .prm-icon svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    .prm-title {
+        font-size: 11px !important;
+    }
+    .prm-value {
+        font-size: 18px !important;
+    }
+    .prm-badge {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+    }
+}
+</style>
+<!-- FINANCIAL CARDS ROW -->
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                  <!-- Omset Hari Ini -->
+                  <div class="prm-card" style="flex: 1; min-width: 240px; border-radius: 20px; padding: 24px 20px; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 16px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.03)';">
+                      <div class="prm-icon" style="width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5);">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                              <polyline points="16 7 22 7 22 13"></polyline>
+                          </svg>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <div class="prm-title" style="color: #64748b; font-size: 13px; font-weight: 600;">Omset Hari Ini</div>
+                          <div class="prm-value" style="color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; font-family: 'Inter', 'Poppins', sans-serif;">Rp 480,000</div>
+                          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                              <span class="prm-badge" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background-color: #dcfce7; color: #16a34a;">+12%</span>
+                              <span style="color: #94a3b8; font-size: 12px; font-weight: 500;">vs kemarin</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Laba Kotor -->
+                  <div class="prm-card" style="flex: 1; min-width: 240px; border-radius: 20px; padding: 24px 20px; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 16px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.03)';">
+                      <div class="prm-icon" style="width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+                          </svg>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <div class="prm-title" style="color: #64748b; font-size: 13px; font-weight: 600;">Laba Kotor</div>
+                          <div class="prm-value" style="color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; font-family: 'Inter', 'Poppins', sans-serif;">Rp 165,000</div>
+                          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                              <span class="prm-badge" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background-color: #dcfce7; color: #16a34a;">+8%</span>
+                              <span style="color: #94a3b8; font-size: 12px; font-weight: 500;">vs kemarin</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Total Beban -->
+                  <div class="prm-card" style="flex: 1; min-width: 240px; border-radius: 20px; padding: 24px 20px; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 16px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.03)';">
+                      <div class="prm-icon" style="width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.5);">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                              <path d="M8 21h8a2 2 0 0 0 2-2v-4a6 6 0 0 0-12 0v4a2 2 0 0 0 2 2z"></path>
+                              <path d="M12 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path>
+                              <path d="M10.8 5.2a1 1 0 0 1 2.4 0l1.8 2.8H9l1.8-2.8z"></path>
+                          </svg>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <div class="prm-title" style="color: #64748b; font-size: 13px; font-weight: 600;">Total Beban</div>
+                          <div class="prm-value" style="color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; font-family: 'Inter', 'Poppins', sans-serif;">Rp 605,000</div>
+                          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                              <span class="prm-badge" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background-color: #fee2e2; color: #dc2626;">+5%</span>
+                              <span style="color: #94a3b8; font-size: 12px; font-weight: 500;">vs kemarin</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Laba Bersih -->
+                  <div class="prm-card" style="flex: 1; min-width: 240px; border-radius: 20px; padding: 24px 20px; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 16px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.03)';">
+                      <div class="prm-icon" style="width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.5);">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                              <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+                              <polyline points="16 17 22 17 22 11"></polyline>
+                          </svg>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <div class="prm-title" style="color: #64748b; font-size: 13px; font-weight: 600;">Laba Bersih</div>
+                          <div class="prm-value" style="color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; font-family: 'Inter', 'Poppins', sans-serif;">Rp -440,000</div>
+                          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                              <span class="prm-badge" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background-color: #fee2e2; color: #dc2626;">-8%</span>
+                              <span style="color: #94a3b8; font-size: 12px; font-weight: 500;">vs kemarin</span>
+                          </div>
+                      </div>
+                  </div>
+
+                                  <!-- Target Gaji (CTS) - Keeping original format with donut chart but matching height -->
+                <div style="flex: 1; min-width: 260px; border-radius: 20px; padding: 20px 24px; background: var(--card-bg); border: 1px solid var(--border); box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <div style="font-size: 0.9em; color: var(--gray); font-weight: 600; margin-bottom: 2px; display:flex; align-items:center; gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Target Gaji (CTS)
+                        </div>
+                        <div style="font-size: 1.6em; font-weight: 800; color: var(--dark); font-family: 'Poppins', sans-serif; line-height: 1.1; margin-bottom: 8px;">Rp 400,000</div>
+                            <div style="width: 100%; background: #E2E8F0; border-radius: 4px; height: 6px; overflow: hidden;">
+                                <div style="height: 100%; background: var(--primary); width: 27.27272727272727%; border-radius: 4px; transition: width 1s ease-in-out;"></div>
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--dark); font-weight: 600; margin-top: 8px;">
+                                
+                                
+                                  Kurang <span style="color: #ef4444;">Rp 235,000</span> lagi
+                                
+                            </div>
+                    </div>
+                    <div class="progress-circle" style="--percent: 27.27272727272727%; width: 60px; height: 60px; font-size: 1.1em; border-width: 6px;">
+                        <div class="progress-inner poppins" style="font-size: 0.8em;">27.3%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION & INSIGHT ROW -->
+              <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+                  
+                  <!-- AKSI CEPAT CONTAINER -->
+                  <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 15px 20px; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03);">
+                      <div style="font-size: 0.85em; font-weight: 800; color: var(--dark); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px;">AKSI CEPAT</div>
+                      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                          <!-- Service Baru -->
+                          <a href="/tambah" style="flex: 1; min-width: 90px; border-radius: 16px; padding: 16px 8px; background: #fff; border: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-decoration: none; text-align: center; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.02)';">
+                              <div style="background: linear-gradient(135deg, #F3E8FF, #F5F3FF); color: #7E22CE; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(126, 34, 206, 0.15);">
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                              </div>
+                              <div style="font-size: 0.8em; font-weight: 700; color: #1E293B; margin-bottom: 6px;">Service Baru</div>
+                              <div style="font-size: 0.65em; color: #64748B; font-weight: 500; padding: 0 4px; line-height: 1.3;">Buat transaksi<br>service baru</div>
+                          </a>
+                          
+                          
+
+                          
+                      </div>
+                  </div>
+
+                  <!-- INSIGHT HARI INI CONTAINER -->
+                  <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 15px 20px; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.03);">
+                      <div style="font-size: 0.85em; font-weight: 800; color: var(--dark); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px;">INSIGHT HARI INI</div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                          <!-- Masuk -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #F5F8FF; border: 1px solid #E5EDFF; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #2563EB; margin-bottom: 4px;">Unit Masuk</div>
+                              <div style="color: #2563EB; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="12" y1="2" x2="12" y2="8"></line><polyline points="9 5 12 8 15 5"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #1E3A8A; line-height: 1;">1</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #1E3A8A; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Selesai -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #ECFDF5; border: 1px solid #D1FAE5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #059669; margin-bottom: 4px;">Unit Selesai</div>
+                              <div style="color: #059669; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #064E3B; line-height: 1;">3</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #064E3B; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Cash -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #FFFBEB; border: 1px solid #FEF3C7; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #D97706; margin-bottom: 4px;">Unit Cash</div>
+                              <div style="color: #D97706; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #78350F; line-height: 1;">0</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #78350F; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+
+                          <!-- Pending -->
+                          <div style="flex: 1; min-width: 80px; border-radius: 12px; padding: 12px 8px; background: #FEF2F2; border: 1px solid #FEE2E2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; text-align: center;">
+                              <div style="font-size: 0.75em; font-weight: 700; color: #DC2626; margin-bottom: 4px;">Unit Pending</div>
+                              <div style="color: #DC2626; margin-bottom: 8px;">
+                                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                              </div>
+                              <div style="font-size: 1.2em; font-weight: 800; color: #7F1D1D; line-height: 1;">10</div>
+                                <div style="font-size: 0.65em; font-weight: 700; color: #7F1D1D; opacity: 0.7; margin-top: 2px;">Unit</div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- TEKNISI TERBAIK -->
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 15px; font-size: 1.1em; color: var(--dark);">Teknisi Terbaik</div>
+                        <div style="width: 280px; height: 175px; border-radius: 20px; padding: 24px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid var(--border); position: relative; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);">
+                            <!-- Dekorasi -->
+                            <div style="position: absolute; right: -20px; top: -20px; opacity: 0.1;">
+                                <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                            </div>
+                            
+                            <div style="display: flex; align-items: flex-start; gap: 15px; position: relative; z-index: 2;">
+                                <!-- Avatar -->
+                                <div style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #FBBF24; overflow: hidden; background: white; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/static/icon_teknisi.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div>
+                                    <!-- Crown & Title -->
+                                    <div style="display: flex; align-items: center; gap: 5px; color: #FBBF24; margin-bottom: 2px;">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"></path></svg>
+                                        <span style="font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Top of the Day</span>
+                                    </div>
+                                    <div style="font-size: 24px; font-weight: 700; line-height: 1.1; margin-bottom: 4px;">Belum Ada</div>
+                                    <div style="font-size: 14px; color: #94a3b8;">0 Unit Selesai</div>
+                                </div>
+                            </div>
+                            
+                            <div style="position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between;">
+                                <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Total Revenue</div>
+                                <div style="font-size: 24px; font-weight: 800; color: #22C55E; font-family: 'Poppins', sans-serif; line-height: 1;">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+  <!-- CHARTS AREA (Old Charts Repurposed) -->
+            <div class="charts-area" style="display: flex; gap: 20px; margin-bottom: 30px;">
+                <div style="flex: 1; background: var(--card-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 1.1em; margin-bottom: 15px;">Statistik Status Transaksi</div>
+                    <div style="height: 250px; position: relative;"><canvas id="barStatus"></canvas></div>
+                </div>
+                <div style="flex: 1; background: var(--card-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 1.1em; margin-bottom: 15px;">Top 10 Kerusakan</div>
+                    <div style="height: 250px; position: relative;"><canvas id="donutKerusakan"></canvas></div>
+                </div>
+            </div>
+
+            <!-- ORIGINAL DATA TRANSAKSI TABLE AREA -->
+            
+
+<div id="tabel-kas" style="background: var(--bg-card); padding: 25px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">📖 Buku Kas & Alokasi Bagi Hasil</h3>
+        
+        <div style="display: flex; gap: 30px; align-items: flex-start;">
+            
+            <div style="flex: 1.5;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                    <thead>
+                        <tr>
+                            <th align="left">URAIAN</th>
+                            <th align="right">DEBIT</th>
+                            <th align="right">KREDIT</th>
+                            <th align="right">SALDO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr style="border-bottom: 1px solid #eee; ">
+                            <td style="padding: 10px;">
+                                KAS ASET AWAL
+                                
+                            </td>
+                            <td align="right" style="color: green;">-</td>
+                            <td align="right" style="color: red;">-</td>
+                            <td align="right" style="font-weight: bold; padding-right: 10px;">Rp 0</td>
+                        </tr>
+                        
+                        <tr style="border-bottom: 1px solid #eee; ">
+                            <td style="padding: 10px;">
+                                TOTAL PENJUALAN SERVICE
+                                
+                            </td>
+                            <td align="right" style="color: green;">Rp 480,000</td>
+                            <td align="right" style="color: red;">-</td>
+                            <td align="right" style="font-weight: bold; padding-right: 10px;">Rp 480,000</td>
+                        </tr>
+                        
+                        <tr style="border-bottom: 1px solid #eee; ">
+                            <td style="padding: 10px;">
+                                TOTAL MODAL (PART + JASA + LAIN)
+                                
+                            </td>
+                            <td align="right" style="color: green;">-</td>
+                            <td align="right" style="color: red;">Rp 315,000</td>
+                            <td align="right" style="font-weight: bold; padding-right: 10px;">Rp 165,000</td>
+                        </tr>
+                        
+                        <tr style="border-bottom: 1px solid #eee; ">
+                            <td style="padding: 10px;">
+                                TOTAL BEBAN (GAJI + OPS)
+                                
+                            </td>
+                            <td align="right" style="color: green;">-</td>
+                            <td align="right" style="color: red;">Rp 605,000</td>
+                            <td align="right" style="font-weight: bold; padding-right: 10px;">Rp -440,000</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+
+                
+            </div>
+
+            <div style="flex: 1; text-align: center; background: #fafafa; padding: 20px; border-radius: 10px; border: 1px solid #eee;">
+                <h4 style="margin-top: 0; color: #555;">Visual Alokasi Profit</h4>
+                <div style="max-width: 250px; margin: auto;">
+                    <canvas id="pieBagiHasil"></canvas>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.8em; text-align: left;">
+                    <ul style="list-style: none; padding: 0; text-align: left;">
+                        <li><span style="color:#ff6384;">■</span> Bonus Karyawan: <b>Rp 0</b></li>
+                        <li><span style="color:#36a2eb;">■</span> Bagi Hasil Pengelola: <b>Rp 0</b></li>
+                        <li><span style="color:#cc65fe;">■</span> Bagi Hasil Investor: <b>Rp 0</b></li>
+                        <li><span style="color:#ffce56;">■</span> Kas Aset (30%): <b>Rp 0</b></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+            
+            
+        </div>
+    </div>
+    
+    
+
+    <div id="popupKas" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; width: 350px; max-width: 90%; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0;">Audit Tutup Kas</h3>
+            <p style="font-size: 14px; color: #666;">Masukkan total uang fisik (Aliran Kas) yang ada di laci saat ini:</p>
+            
+            <input type="number" id="inputUangFisik" placeholder="Contoh: 150000" style="width: 100%; padding: 10px; margin: 15px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+            
+            <div style="display: flex; justify-content: space-between;">
+                <button onclick="tutupPopupKas()" style="background-color: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; width: 48%;">Batal</button>
+                <button onclick="kirimDataKas()" style="background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; width: 48%;">Kunci & Arsip</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popup Form Sparepart -->
+    <div id="popupSparepart" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; width: 450px; max-width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <h3 id="sparepartTitle" style="margin-top: 0; color:#333; text-align:center; border-bottom: 2px solid #eee; padding-bottom: 10px;">Input Sparepart Baru</h3>
+            <form action="/simpan_sparepart" method="post" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <input type="hidden" name="id_sparepart" id="sp_id">
+                
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Tgl Masuk</label>
+                        <input type="date" name="tanggal_masuk" id="sp_tgl" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Kategori</label>
+                        <select name="kategori" id="sp_kategori" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                            <option value="">-- Pilih --</option>
+                            <option value="Batre">Batre</option>
+                            <option value="LCD">LCD</option>
+                            <option value="Konektor">Konektor</option>
+                            <option value="Board">Board</option>
+                            <option value="Kabel Fleksibel">Kabel Fleksibel</option>
+                            <option value="IC">IC</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="font-size: 0.85em; font-weight: bold; color: #555;">Merek</label>
+                    <input type="text" name="merek" id="sp_merek" placeholder="Contoh: Samsung, Vizz, dll" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85em; font-weight: bold; color: #555;">Jenis Barang</label>
+                    <input type="text" name="jenis_barang" id="sp_barang" placeholder="Contoh: LCD Fullset, Batre BN54" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:2;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Jenis Device / Tipe HP</label>
+                        <input type="text" name="jenis_device" id="sp_device" placeholder="Contoh: Redmi Note 9" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Qty (Stok)</label>
+                        <input type="number" name="qty" id="sp_qty" placeholder="0" min="0" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Harga Beli (Modal)</label>
+                        <input type="number" name="harga_beli" id="sp_beli" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size: 0.85em; font-weight: bold; color: #555;">Harga Jual</label>
+                        <input type="number" name="harga_jual" id="sp_jual" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <button type="button" onclick="tutupPopupSparepart()" style="background-color: #6c757d; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; width: 48%;">Batal</button>
+                    <button type="submit" style="background-color: #6f42c1; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; width: 48%;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    const dataBagiHasil = [
+        0, 
+        0, 
+        0, 
+        0
+    ];
+
+    const ctx = document.getElementById('pieBagiHasil').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Bonus (10%)', 'Pengelola (30%)', 'Investor (30%)', 'Kas Aset (30%)'],
+            datasets: [{
+                data: dataBagiHasil,
+                backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                borderWidth: 2,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Rp ' + context.raw.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const statusData = {
+        'Analisa': 5,
+        'Konfirmasi': 0,
+        'Wait Part': 3,
+        'Repair': 2,
+        'Done': 5,
+        'Failed': 0,
+        'Garansi': 0,
+        'Refund': 0,
+        'Cancel': 0,
+        'Cash': 2
+    };
+
+    const ctxBar = document.getElementById('barStatus').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(statusData),
+            datasets: [{
+                label: 'Jumlah Transaksi',
+                data: Object.values(statusData),
+                backgroundColor: [
+                    '#adb5bd', // Analisa
+                    '#ffc107', // Konfirmasi
+                    '#17a2b8', // Wait Part
+                    '#0c5460', // Repair
+                    '#007bff', // Done
+                    '#343a40', // Failed
+                    '#20c997', // Garansi
+                    '#fd7e14', // Refund
+                    '#dc3545', // Cancel
+                    '#28a745'  // Cash
+                ],
+                borderRadius: 6,
+                borderWidth: 0,
+                barPercentage: 0.6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: '#6c757d', font: { family: 'sans-serif', size: 12 } },
+                    grid: { color: '#f0f0f0', borderDash: [5, 5] },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#495057', font: { family: 'sans-serif', size: 12, weight: 'bold' } },
+                    border: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(33, 37, 41, 0.9)',
+                    titleFont: { size: 14, family: 'sans-serif' },
+                    bodyFont: { size: 14, weight: 'bold', family: 'sans-serif' },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            }
+        }
+    });
+
+    
+
+// Fungsi Pengingat Otomatis Jam 16.00 (Sekarang buka popup Kas)
+setInterval(() => {
+    const sekarang = new Date();
+    if (sekarang.getHours() === 16 && sekarang.getMinutes() === 0) {
+        alert("Waktu sudah masuk jam 16.00 (Cut-off). Waktunya Tutup Kas & Buku!");
+        bukaPopupKas();
+    }
+}, 60000);
+
+    // Diagram Garansi
+    const elGaransi = document.getElementById('pieGaransi');
+    if (elGaransi) {
+    const ctxGaransi = elGaransi.getContext('2d');
+    new Chart(ctxGaransi, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sisa ≤ 1 Bulan', 'Sisa 1-2 Bulan', 'Sisa > 2 Bulan'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'sans-serif', size: 12, weight: 'bold' } }
+                }
+            },
+            animation: { animateScale: true, animateRotate: true, duration: 1000 }
+        }
+    });
+    }
+
+    // Diagram Pelanggan (Top Tindakan)
+    const elPelanggan = document.getElementById('donutPelanggan');
+    if (elPelanggan) {
+    const ctxPelanggan = elPelanggan.getContext('2d');
+    new Chart(ctxPelanggan, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: ['#007bff', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'sans-serif', size: 11, weight: 'bold' } }
+                }
+            },
+            animation: { animateScale: true, animateRotate: true, duration: 1200 }
+        }
+    });
+    }
+    // End Diagram Pelanggan
+
+    // Diagram Sparepart (Kategori)
+    const elSparepart = document.getElementById('donutSparepart');
+    if (elSparepart) {
+    const sparepartLabels = [];
+    const sparepartColorMap = {
+        'LCD': '#007bff',
+        'Batre': '#28a745',
+        'IC': '#dc3545',
+        'Konektor': '#17a2b8',
+        'Board': '#fd7e14',
+        'Kabel Fleksibel': '#6c757d',
+        'Lainnya': '#6f42c1'
+    };
+    const sparepartColors = sparepartLabels.map(label => sparepartColorMap[label] || '#adb5bd');
+    const ctxSparepart = elSparepart.getContext('2d');
+    new Chart(ctxSparepart, {
+        type: 'doughnut',
+        data: {
+            labels: sparepartLabels,
+            datasets: [{
+                data: [],
+                backgroundColor: sparepartColors,
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'sans-serif', size: 11, weight: 'bold' } }
+                }
+            },
+            animation: { animateScale: true, animateRotate: true, duration: 1000 }
+        }
+    });
+    }
+
+function bukaPopupKas() {
+    document.getElementById('popupKas').style.display = 'flex';
+    document.getElementById('inputUangFisik').value = ''; 
+    document.getElementById('inputUangFisik').focus();
+}
+
+function tutupPopupKas() {
+    document.getElementById('popupKas').style.display = 'none';
+}
+
+// Fungsi Gabungan: Tutup Kas DULU, baru Tutup Buku!
+function kirimDataKas() {
+    let uangFisik = document.getElementById('inputUangFisik').value;
+    let totalSaldo = -440000; 
+    
+    if (uangFisik === '' || uangFisik < 0) {
+        alert("Nominal uang fisik tidak boleh kosong bro!");
+        return;
+    }
+
+    let kasAsetBaru = totalSaldo - uangFisik;
+
+    if(confirm(`Yakin mau eksekusi siklus 16.00?\n\nTotal Saldo Sistem: Rp ${totalSaldo.toLocaleString('id-ID')}\nUang Fisik (Laci): Rp ${Number(uangFisik).toLocaleString('id-ID')}\n-----------------------------\nKas Aset Baru: Rp ${kasAsetBaru.toLocaleString('id-ID')}\n\nSetelah klik OK, data akan otomatis diarsip ke Lemari Baja.`)) {
+        
+        // Langsung sembunyikan popup biar user ngga nungguin
+        tutupPopupKas();
+        
+        // Ubah cursor jadi loading biar tahu lagi proses (karena ada proses screenshot & kirim Telegram yang makan waktu)
+        document.body.style.cursor = 'wait';
+          
+          let btn = document.querySelector('#popupKas button:nth-child(2)');
+          if(btn) {
+              btn.innerText = 'Tunggu 10-20 Detik...';
+              btn.style.backgroundColor = '#6c757d';
+              btn.disabled = true;
+          }
+          
+          // Tampilkan overlay loading layar penuh
+          let loader = document.createElement('div');
+          loader.id = 'fullScreenLoader';
+          loader.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-family:Poppins,sans-serif;';
+          loader.innerHTML = '<div style="font-size:2em;margin-bottom:20px;">dY?~</div><h2>Sedang Memproses Tutup Kas...</h2><p>Mohon jangan menutup atau me-refresh halaman ini.<br>Proses ini memakan waktu sekitar 15-20 detik.</p>';
+          document.body.appendChild(loader);
+
+
+        // 1. Ambil screenshot kondisi akhir hari ini (Tutup Buku) & kirim Telegram
+        // Menggunakan .catch() dan .finally() agar jika Telegram error, DB tetap dieksekusi
+        fetch('/telegram_tutup_buku', { method: 'POST' })
+        .catch(e => {
+            console.warn("Peringatan: Telegram Tutup Buku error, namun eksekusi DB tetap dilanjutkan.", e);
+        })
+        .finally(() => {
+            // 2. Eksekusi semua logika database (mindahin arsip, hapus data lama, set kas baru)
+            fetch('/eksekusi_db', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uang_fisik: uangFisik, total_saldo: totalSaldo })
+            })
+            .then(response => {
+                if(!response.ok) throw new Error("Gagal eksekusi database");
+                return response.text();
+            })
+            .then(msgDB => {
+                window.msgDB = msgDB;
+                // 3. Ambil screenshot kondisi awal besok (Buka Buku) & kirim Telegram
+                return fetch('/telegram_buka_buku', { method: 'POST' })
+                    .catch(e => console.warn("Peringatan: Telegram Buka Buku error.", e));
+            })
+            .then(() => {
+                document.body.style.cursor = 'default';
+                alert("Siklus Selesai Sepenuhnya!\n\n" + window.msgDB + "\n\nJika ada notifikasi Telegram gagal, harap abaikan, data aman.");
+                location.reload(); 
+            })
+            .catch(error => {
+                document.body.style.cursor = 'default';
+                console.error('Error:', error);
+                alert("Terjadi kesalahan sistem saat Eksekusi DB: " + error.message);
+            });
+        });
+    }
+}
+
+function bukaPopupSparepart(id='', tgl='', kategori='', merek='', barang='', device='', qty='', beli='', jual='') {
+    document.getElementById('popupSparepart').style.display = 'flex';
+    document.getElementById('sp_id').value = id;
+    
+    // Jika tgl kosong (mode tambah baru), set ke hari ini
+    if (!tgl) {
+        let today = new Date();
+        tgl = today.toISOString().split('T')[0];
+    }
+    document.getElementById('sp_tgl').value = tgl;
+    
+    document.getElementById('sp_kategori').value = kategori;
+    document.getElementById('sp_merek').value = merek;
+    document.getElementById('sp_barang').value = barang;
+    document.getElementById('sp_device').value = device;
+    document.getElementById('sp_qty').value = qty;
+    document.getElementById('sp_beli').value = beli;
+    document.getElementById('sp_jual').value = jual;
+    
+    document.getElementById('sparepartTitle').innerText = id ? 'Edit Data Sparepart' : 'Input Sparepart Baru';
+}
+
+function tutupPopupSparepart() {
+    document.getElementById('popupSparepart').style.display = 'none';
+}
+
+// Visual feedback: Ubah kursor jadi loading saat submit form (proses kirim telegram)
+document.addEventListener('submit', function() {
+    document.body.style.cursor = 'wait';
+    const buttons = document.querySelectorAll('button[type="submit"]');
+    buttons.forEach(btn => {
+        btn.style.opacity = '0.7';
+        btn.innerText = '⏳ Sedang Proses...';
+    });
+});
+</script>
+    
+
+    
+    <!-- Tutup content-body dan main-content -->
+        </div> 
+    </main>
+
+    <script>
+        // --- DARK MODE LOGIC ---
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIconLight = document.getElementById('themeIconLight');
+        const themeIconDark = document.getElementById('themeIconDark');
+        const htmlEl = document.documentElement;
+        
+        // 1. Cek dari LocalStorage saat halaman dimuat
+        const savedTheme = localStorage.getItem('sfs_theme');
+        if (savedTheme === 'dark') {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeIconLight.style.display = 'none';
+            themeIconDark.style.display = 'block';
+        }
+
+        // 2. Aksi saat tombol ditekan
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            
+            // Animasi rotasi kecil
+            themeToggle.style.transform = 'scale(0.8) rotate(90deg)';
+            setTimeout(() => { themeToggle.style.transform = 'scale(1) rotate(0deg)'; }, 200);
+
+            if (currentTheme === 'dark') {
+                htmlEl.removeAttribute('data-theme');
+                localStorage.setItem('sfs_theme', 'light');
+                themeIconLight.style.display = 'block';
+                themeIconDark.style.display = 'none';
+            } else {
+                htmlEl.setAttribute('data-theme', 'dark');
+                localStorage.setItem('sfs_theme', 'dark');
+                themeIconLight.style.display = 'none';
+                themeIconDark.style.display = 'block';
+            }
+        });
+    </script>
+    <!-- SCRIPT AUTO REFRESH (AJAX POLLING) -->
+    <script>
+        let lastDbUpdate = null;
+        function checkAutoUpdate() {
+            // Jangan refresh jika user sedang mengetik sesuatu di search bar atau input form
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) {
+                return; 
+            }
+            fetch('/api/check_update')
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        if (lastDbUpdate === null) {
+                            lastDbUpdate = data.last_update; // Set pertama kali
+                        } else if (lastDbUpdate !== data.last_update) {
+                            // Ada perubahan di database, reload halaman untuk menampilkan data terbaru
+                            console.log("Data terbaru terdeteksi, merefresh halaman...");
+                            window.location.reload();
+                        }
+                    }
+                })
+                .catch(e => console.error("Error auto-update:", e));
+        }
+        setInterval(checkAutoUpdate, 5000); // Cek setiap 5 detik
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+    </script>
+
+    <!-- WIDGET ROBOT AIS -->
+    <script src="/static/robot_ais_widget.js"></script>
+</body>
+</html>
+
+<script>
+// Auto-inject data-labels for mobile responsive tables
+document.querySelectorAll('table').forEach(table => {
+    let headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.replace(/[\n\r]/g, ' ').trim());
+    table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(tr => {
+        Array.from(tr.querySelectorAll('td')).forEach((td, i) => {
+            if(headers[i]) td.setAttribute('data-label', headers[i]);
+        });
+    });
+});
+</script>

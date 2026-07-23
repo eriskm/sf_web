@@ -1,0 +1,47 @@
+=== MySQL Schema (db_ais_systems) ===
+
+Table: arsip_garansi
+CREATE TABLE `arsip_garansi` (
+  `id_garansi` int(11) NOT NULL AUTO_INCREMENT,
+  `id_arsip` int(11) DEFAULT NULL,
+  `nama_user` varchar(100) DEFAULT NULL,
+  `device` varchar(100) DEFAULT NULL,
+  `tgl_mulai` date DEFAULT NULL,
+  `tgl_akhir` date DEFAULT NULL,
+  PRIMARY KEY (`id_garansi`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+Table: arsip_pelanggan
+CREATE TABLE `arsip_pelanggan` (
+  `id_arsip` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_user` varchar(100) DEFAULT NULL,
+  `no_wa` varchar(20) DEFAULT NULL,
+  `device` varchar(100) DEFAULT NULL,
+  `tindakan` text DEFAULT NULL,
+  `harga_jual` int(11) DEFAULT 0,
+  `status_final` varchar(50) DEFAULT 'CASH',
+  PRIMARY KEY (`id_arsip`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+Table: data_sparepart
+CREATE TABLE `data_sparepart` (
+  `id_sparepart` int(11) NOT NULL AUTO_INCREMENT,
+  `kategori` varchar(50) DEFAULT NULL,
+  `merek` varchar(50) DEFAULT NULL,
+  `jenis_barang` varchar(100) DEFAULT NULL,
+  `jenis_device` varchar(100) DEFAULT NULL,
+  `qty` int(11) DEFAULT 0,
+  `tanggal_masuk` varchar(20) DEFAULT NULL,
+  `harga_beli` int(11) DEFAULT 0,
+  `harga_jual` int(11) DEFAULT 0,
+  PRIMARY KEY (`id_sparepart`)
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+Table: master_kas
+CREATE TABLE `master_kas` (
+  `id_kas` int(11) NOT NULL AUTO_INCREMENT,
+  `kas_kecil_laci` int(11) DEFAULT 0,
+  `kas_aset_pengelola` int(11) DEFAULT 0,
+  PRIMARY KEY (`id_kas`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+

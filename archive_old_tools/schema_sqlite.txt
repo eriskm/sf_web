@@ -1,0 +1,92 @@
+=== SQLite Schema (sukabumi_flasher.db) ===
+
+Table: users
+CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT
+        , permissions TEXT DEFAULT '')
+
+Table: sqlite_sequence
+CREATE TABLE sqlite_sequence(name,seq)
+
+Table: servis
+CREATE TABLE "servis" (
+"No" REAL,
+  "Tanggal Masuk" TEXT,
+  "Device" TEXT,
+  "Nama User" TEXT,
+  "PassWord" TEXT,
+  "No. WA" TEXT,
+  "Deadline" REAL,
+  "Analisa Kerusakan" TEXT,
+  "Estimasi Biaya" INTEGER,
+  "DP" TEXT,
+  "Status" TEXT,
+  "Part" REAL,
+  "Tindakan" TEXT,
+  "Harga Jual" INTEGER,
+  "Modal Part" INTEGER,
+  "Modal Jasa" INTEGER,
+  "Laba Kotor" INTEGER,
+  "Teknisi" REAL
+, "Tindakan Perbaikan" TEXT, "Lain-lain" INTEGER DEFAULT 0, masa_garansi TEXT DEFAULT '1 Bulan', updated_at DATETIME, flag_kritis INTEGER DEFAULT 0)
+
+Table: beban
+CREATE TABLE "beban" (id INTEGER PRIMARY KEY AUTOINCREMENT, kategori TEXT, nama_beban TEXT UNIQUE, nilai INTEGER)
+
+Table: kas_utama
+CREATE TABLE kas_utama (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tanggal TEXT,
+            saldo_awal INTEGER DEFAULT 0,
+            saldo_akhir INTEGER DEFAULT 0,
+            total_laba_bersih INTEGER DEFAULT 0
+        )
+
+Table: transaksi_tambahan
+CREATE TABLE transaksi_tambahan (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tanggal TEXT,
+            uraian TEXT,
+            jenis TEXT, -- 'Masuk' atau 'Keluar'
+            nominal INTEGER
+        )
+
+Table: arsip_servis
+CREATE TABLE arsip_servis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tanggal_masuk TEXT,
+            tanggal_keluar TEXT,
+            nama_user TEXT,
+            wa TEXT,
+            device TEXT,
+            kerusakan TEXT,
+            tindakan TEXT,
+            modal_part INTEGER,
+            modal_jasa INTEGER,
+            harga_jual INTEGER,
+            laba_kotor INTEGER,
+            teknisi TEXT
+        )
+
+Table: milestone_logs
+CREATE TABLE milestone_logs (
+            tanggal TEXT,
+            jenis TEXT, -- 'CTS', 'CTO', 'CTH'
+            PRIMARY KEY (tanggal, jenis)
+        )
+
+Table: pembayaran
+CREATE TABLE pembayaran (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            servis_id INTEGER,
+            metode TEXT, -- 'QRIS', 'Transfer', 'Tunai'
+            nominal INTEGER,
+            status TEXT DEFAULT 'Pending', -- 'Pending', 'Sukses', 'Gagal'
+            bukti_bayar TEXT, -- Path file gambar bukti transfer
+            tanggal TEXT,
+            FOREIGN KEY (servis_id) REFERENCES servis (id)
+        )
+

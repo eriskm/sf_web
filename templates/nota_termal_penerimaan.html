@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: 58mm auto;
+            margin: 0;
+        }
+
+        body {
+            width: 52mm;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            padding: 2mm;
+            color: #000;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .line {
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3px;
+        }
+
+        .header {
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+
+<body onload="window.print()">
+
+    <div class="text-center">
+        <div class="header bold">SUKABUMI FLASHER</div>
+        <div>Tanda Terima Servis</div>
+        <div>Sukabumi, Jawa Barat</div>
+        <div>WA: 0811-1737-030</div>
+    </div>
+
+    <div class="row" style="margin-top: 10px; font-size: 9px; opacity: 0.8;">
+        <span>{{ tgl_cetak }}</span>
+        <span>{{ jam_cetak }}</span>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Nama:</span>
+        <span class="bold text-right">{{ s['Nama User'] }}</span>
+    </div>
+    <div class="row">
+        <span>Unit:</span>
+        <span class="bold text-right">{{ s['Device'] }}</span>
+    </div>
+    <div class="row">
+        <span>Keluhan:</span>
+        <span class="bold text-right">{{ s['Analisa Kerusakan'] or '-' }}</span>
+    </div>
+
+    <div class="row" style="margin-top: 5px; font-size: 12px;">
+        <span class="bold">ESTIMASI:</span>
+        <span class="bold text-right">Rp {{ "{:,}".format(s['Estimasi Biaya'] or 0) }}</span>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="text-center">
+        Mohon simpan nota ini<br>
+        sebagai bukti serah terima
+    </div>
+
+    <div class="line"></div>
+
+    <div style="font-size: 9px; line-height: 1.2;">
+        * Kami tidak bertanggung jawab atas kehilangan data<br>
+        * Perangkat yang tidak diambil lebih dari 3 bulan bukan tanggung jawab kami
+    </div>
+
+    <div class="line"></div>
+
+</body>
+
+</html>

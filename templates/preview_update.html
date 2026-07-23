@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Update Data - Sukabumi Flasher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #EFF6FF;
+            --bg-page: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --panel-bg: #F8FAFC;
+            --border-color: #E2E8F0;
+            --border-hover: #3B82F6;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --accent-green: #10B981;
+            --accent-green-hover: #059669;
+            --accent-red: #EF4444;
+            --accent-orange: #F59E0B;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { margin: 0; padding: 12px 20px 30px 20px; background: var(--bg-page); color: var(--text-main); }
+        
+        /* 1. Ultra Compact Top Header (Senada dengan V4 Penerimaan) */
+        .top-header {
+            max-width: 1360px; margin: 0 auto 12px auto; height: 56px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); padding: 0 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+        }
+        .top-header h1 { font-size: 1.15em; font-weight: 800; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 10px; letter-spacing: -0.3px; }
+        .top-header .subtitle { color: var(--text-muted); font-weight: 500; font-size: 0.85em; border-left: 2px solid var(--border-color); padding-left: 12px; margin-left: 4px; }
+        .badge-status { background: #DBEAFE; color: #1D4ED8; font-size: 0.72em; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; border: 1px solid #BFDBFE; display: flex; align-items: center; gap: 5px; }
+        
+        .btn-back {
+            background: #F1F5F9; color: #334155; text-decoration: none; font-size: 0.85em; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: 1px solid #CBD5E1; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .btn-back:hover { background: #E2E8F0; color: #0F172A; }
+
+        /* Master Grid Layout */
+        .master-grid {
+            max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 2.15fr 1.1fr; gap: 16px; align-items: start;
+        }
+        @media (max-width: 1024px) { .master-grid { grid-template-columns: 1fr; } }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--card-bg); border-radius: var(--radius); border: 1.5px solid var(--border-color); padding: 14px 18px;
+            box-shadow: var(--shadow-sm); margin-bottom: 12px; transition: all 0.2s;
+        }
+        .section-card:hover, .section-card:focus-within {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+        }
+        .section-title {
+            font-size: 0.95em; font-weight: 700; color: var(--text-main); margin: 0 0 10px 0; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+        }
+        .section-title-left { display: flex; align-items: center; gap: 7px; }
+
+        /* Form Layouts */
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-bottom: 10px; }
+        @media (max-width: 600px) { .form-row-2, .form-row-3 { grid-template-columns: 1fr; } }
+        .form-row-1 { margin-bottom: 10px; }
+
+        label {
+            font-size: 0.82em; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 10px 12px; font-size: 0.92em; font-weight: 500; color: var(--text-main);
+            background: #F8FAFC; border: 1.5px solid var(--border-color); border-radius: 8px; transition: all 0.2s;
+            outline: none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            background: #FFFFFF; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        .form-textarea { resize: vertical; line-height: 1.5; font-size: 0.92em; }
+
+        /* Checkbox Chips Grid (Kelengkapan & Kondisi Fisik) */
+        .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+        @media (max-width: 768px) { .check-grid { grid-template-columns: repeat(2, 1fr); } }
+        .check-label {
+            display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #F8FAFC; border: 1px solid #E2E8F0;
+            border-radius: 6px; font-size: 0.82em; font-weight: 600; color: #334155; cursor: pointer; transition: all 0.15s;
+        }
+        .check-label:hover { background: #EFF6FF; border-color: #93C5FD; color: #1E40AF; }
+        .check-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+        /* Right Column Specifics */
+        .right-col .section-card { background: var(--panel-bg); border-color: #CBD5E1; }
+        .right-col .section-card:hover { border-color: var(--primary); }
+
+        .highlight-input-yellow { background-color: #FEF9C3 !important; border-color: #FDE047 !important; font-weight: 700 !important; color: #854D0E !important; }
+        .highlight-input-blue { background-color: #EFF6FF !important; border-color: #BFDBFE !important; font-weight: 700 !important; color: #1E40AF !important; }
+        .highlight-input-green { background-color: #ECFDF5 !important; border-color: #A7F3D0 !important; font-weight: 800 !important; color: #065F46 !important; font-size: 1.05em !important; }
+
+        /* Smart Action Boxes */
+        .smart-box-garansi {
+            background: #EFF6FF; border: 1.5px solid #93C5FD; border-radius: 8px; padding: 12px; margin-top: 12px; transition: all 0.3s;
+        }
+        .smart-box-penerimaan {
+            background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 12px; margin-top: 12px; transition: all 0.3s;
+        }
+
+        .btn-action-wa {
+            width: 100%; padding: 11px; background: #2563EB; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+        }
+        .btn-action-wa:hover { background: #1D4ED8; box-shadow: 0 4px 8px rgba(37,99,235,0.3); }
+
+        .btn-action-print {
+            width: 100%; padding: 11px; background: #D97706; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(217,119,6,0.2);
+        }
+        .btn-action-print:hover { background: #B45309; }
+
+        .btn-action-green {
+            width: 100%; padding: 12px; background: #16A34A; color: white; border: none; border-radius: 8px; font-weight: 800; font-size: 0.92em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(22,163,74,0.25);
+        }
+        .btn-action-green:hover { background: #15803D; }
+
+        /* Main Submit Button (Gradasi Gagah - Merah) */
+        .btn-submit-main {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; border: none; border-radius: var(--radius);
+            font-size: 1.05em; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 6px 15px rgba(239,68,68,0.35); transition: all 0.2s; margin-top: 14px; letter-spacing: 0.3px;
+        }
+        .btn-submit-main:hover {
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+            transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239,68,68,0.45);
+        }
+        .btn-submit-main:active { transform: translateY(0); }
+
+        .preview-banner {
+            max-width: 1360px; margin: 0 auto 12px auto; background: linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%); color: white;
+            padding: 10px 20px; border-radius: var(--radius); font-weight: 600; font-size: 0.88em; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+        }
+        .preview-banner span { background: #FCD34D; color: #78350F; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.8em; margin-right: 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- Preview Notification Banner -->
+    <div class="preview-banner">
+        <div><span>PREVIEW MODE V4</span> Ini adalah rancangan UI Halaman Update Data (Satu Theme dengan Penerimaan Unit Baru V4). Silakan coba klik & tes interaksinya!</div>
+        <div style="font-size: 0.85em; opacity: 0.9;">🎨 Enterprise Clean Theme</div>
+    </div>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <h1>
+            <span>⚙️ UPDATE DATA SERVIS #181</span>
+            <span class="subtitle">Samsung S23 Ultra — Konsumen Tes Retur</span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="badge-status">
+                <span style="width:7px; height:7px; background:#2563EB; border-radius:50%; display:inline-block;"></span>
+                STATUS: REPAIR / PROSES
+            </div>
+            <a href="#" class="btn-back" onclick="alert('Kembali ke Dashboard (Mode Preview)')">← Kembali ke Dashboard</a>
+        </div>
+    </div>
+
+    <form onsubmit="event.preventDefault(); alert('🚀 Data berhasil diperbaharui dan disimpan ke Kas/Database (Simulasi Mode Preview)!');">
+        <div class="master-grid">
+            
+            <!-- KOLOM KIRI (Data Pelanggan & Teknis) -->
+            <div class="left-col">
+                
+                <!-- Card 1: Identitas Pelanggan -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>📌</span> 1. Identitas Pelanggan & Device</div>
+                        <span style="font-size:0.75em; color:var(--text-muted); font-weight:500;">ID Transaksi #181</span>
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div>
+                            <label>Nama Pelanggan / Konsumen</label>
+                            <input type="text" class="form-input" value="Konsumen Tes Retur">
+                        </div>
+                        <div>
+                            <label>Nomor WhatsApp (Aktif)</label>
+                            <input type="text" class="form-input" value="081234567890">
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div>
+                            <label>Tipe Device / HP</label>
+                            <input type="text" class="form-input" value="Samsung S23 Ultra">
+                        </div>
+                        <div>
+                            <label>Password / Pola Kunci Layar</label>
+                            <input type="text" class="form-input" value="1234">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Diagnosa & Tindakan Teknis -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>🛠️</span> 2. Diagnosa & Tindakan Perbaikan Teknis</div>
+                        <span style="font-size:0.75em; color:var(--primary); font-weight:700;">Teknisi Active</span>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>Analisa Kerusakan / Keluhan Awal Konsumen</label>
+                        <textarea class="form-textarea" rows="2" placeholder="Tuliskan keluhan atau analisa kerusakan...">Layar berkedip saat brightness rendah & sentuhan pojok kanan kurang sensitif</textarea>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>Tindakan Perbaikan Teknis yang Dilakukan</label>
+                        <textarea class="form-textarea" rows="3" style="background:#FFFFFF; border-color:#93C5FD;" placeholder="Tuliskan tindakan perbaikan yang dilakukan oleh teknisi...">Cek fleksibel LCD & resoldering konektor display. Pengetesan nyala normal dalam masa garansi toko.</textarea>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>👨‍🔧 Teknisi Penanggung Jawab</label>
+                        <select class="form-select" style="font-weight:700; color:#1E40AF;">
+                            <option value="SFTECH" selected>SFTECH (Master Teknisi)</option>
+                            <option value="Kang Asep">Kang Asep</option>
+                            <option value="Kang Budi">Kang Budi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Card 3: Kelengkapan & Kondisi Fisik Masuk (FITUR BARU) -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>📦</span> 3. Kelengkapan Aksesoris & Kondisi Fisik Masuk</div>
+                        <span style="font-size:0.75em; background:#E0F2FE; color:#0369A1; font-weight:700; padding:2px 8px; border-radius:4px;">Bisa Ditambah/Diedit Teknisi</span>
+                    </div>
+                    
+                    <label style="color:#0284C7; margin-top:4px;">✅ Kelengkapan Aksesoris Masuk</label>
+                    <div class="check-grid">
+                        <label class="check-label"><input type="checkbox" checked> SIM Tray</label>
+                        <label class="check-label"><input type="checkbox"> Memory Card</label>
+                        <label class="check-label"><input type="checkbox" checked> Charger / Kabel</label>
+                        <label class="check-label"><input type="checkbox" checked> Dus / Box</label>
+                        <label class="check-label"><input type="checkbox"> Tas / Softcase</label>
+                        <label class="check-label"><input type="checkbox"> S Pen / Stylus</label>
+                    </div>
+
+                    <label style="color:#E11D48; margin-top:12px;">⚠️ Kondisi Fisik Unit Masuk</label>
+                    <div class="check-grid">
+                        <label class="check-label"><input type="checkbox"> LCD Pecah / Retak</label>
+                        <label class="check-label"><input type="checkbox" checked> Backdoor Pecah</label>
+                        <label class="check-label"><input type="checkbox" checked> Frame Lecet / Dent</label>
+                        <label class="check-label"><input type="checkbox"> Tombol Keras / Hilang</label>
+                        <label class="check-label"><input type="checkbox"> Kaca Kamera Retak</label>
+                        <label class="check-label"><input type="checkbox"> Unit Melengkung</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- KOLOM KANAN (Keuangan / Kas & Aksi Cerdas) -->
+            <div class="right-col">
+                
+                <!-- Card 4: Rincian Biaya & Kas -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>💰</span> 4. Rincian Biaya & Pembagian Kas</div>
+                        <span style="font-size:0.75em; color:var(--accent-green); font-weight:700;">Financial Center</span>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div>
+                            <label>Estimasi Biaya Awal (Rp)</label>
+                            <input type="number" class="form-input highlight-input-yellow" value="250000">
+                        </div>
+                        <div>
+                            <label>DP (Deposit Awal) (Rp)</label>
+                            <input type="number" class="form-input highlight-input-blue" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label style="color:#059669; font-size:0.9em;">💵 Harga Jual Final (Total Biaya Konsumen)</label>
+                        <input type="number" class="form-input highlight-input-green" id="prev_hjual" value="250000" oninput="hitungPreviewJasa()">
+                    </div>
+
+                    <div class="form-row-3" style="margin-top:12px;">
+                        <div>
+                            <label>Modal Part (Rp)</label>
+                            <input type="number" class="form-input" id="prev_mpart" value="100000" oninput="hitungPreviewJasa()">
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Part ke:</label>
+                            <input type="text" class="form-input" value="Toko / Owner">
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                                <label style="margin:0;">Modal Jasa (Rp)</label>
+                                <select id="prev_persen" onchange="hitungPreviewJasa()" style="font-size:0.72em; padding:1px 4px; border-radius:4px; border:1px solid #CBD5E1; font-weight:700; color:#1D4ED8;">
+                                    <option value="manual">Manual</option>
+                                    <option value="40" selected>Bagi 40%</option>
+                                    <option value="50">Bagi 50%</option>
+                                </select>
+                            </div>
+                            <input type="number" class="form-input" id="prev_mjasa" value="60000">
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Jasa ke:</label>
+                            <input type="text" class="form-input" value="SFTECH (Teknisi)">
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div>
+                            <label>Lain-lain (Rp)</label>
+                            <input type="number" class="form-input" value="0">
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Lainnya ke:</label>
+                            <input type="text" class="form-input" value="Kasir / Admin">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Status & Smart Action -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>⚡</span> 5. Status Unit & Aksi Cepat</div>
+                        <span style="font-size:0.75em; color:#64748B;">Smart Action Box</span>
+                    </div>
+
+                    <label style="font-size:0.88em; color:#1E40AF;">Update Status Unit Terkini</label>
+                    <select class="form-select" id="preview_status" onchange="gantiPreviewStatus()" style="font-size:1em; font-weight:800; color:#1D4ED8; padding:12px; background:#EFF6FF; border-color:#93C5FD;">
+                        <option value="Analisa">Analisa (Pengecekan Awal)</option>
+                        <option value="Konfirmasi">Konfirmasi Biaya / Konsumen</option>
+                        <option value="Wait Part">Wait Part (Menunggu Sparepart)</option>
+                        <option value="Repair" selected>Repair (Proses Perbaikan)</option>
+                        <option value="Done">Done (Selesai Perbaikan / Siap Ambil)</option>
+                        <option value="Cash">Cash (Sudah Diambil & Bayar Lunas)</option>
+                        <option value="Garansi">Garansi (Klaim Garansi Toko)</option>
+                        <option value="Cancel">Cancel (Batal Perbaikan)</option>
+                    </select>
+
+                    <!-- Smart Box Penerimaan (Muncul saat Analisa/Repair/Wait Part) -->
+                    <div id="box_preview_penerimaan" class="smart-box-penerimaan">
+                        <div style="font-weight:700; font-size:0.85em; color:#B45309; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <span>📋</span> Cetak Ulang Nota / Struk Penerimaan
+                        </div>
+                        <button type="button" class="btn-action-print" onclick="alert('Membuka PDF/Gambar Nota Penerimaan (Simulasi Preview)')">
+                            <span>🖨️</span> CETAK NOTA / STRUK PENERIMAAN
+                        </button>
+                    </div>
+
+                    <!-- Smart Box Garansi & Closing (Muncul saat Done/Cash/Garansi) -->
+                    <div id="box_preview_garansi" class="smart-box-garansi" style="display:none;">
+                        <div style="font-weight:800; font-size:0.88em; color:#1E40AF; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+                            <span>🛡️ Panel Closing & Masa Garansi</span>
+                            <span style="background:#2563EB; color:white; font-size:0.75em; padding:2px 6px; border-radius:4px;">Active</span>
+                        </div>
+                        <label style="color:#1E40AF;">Pilih Masa Garansi Toko</label>
+                        <select class="form-select" style="margin-bottom:10px; font-weight:700;">
+                            <option value="1 Bulan" selected>1 Bulan (Garansi Standar)</option>
+                            <option value="2 Bulan">2 Bulan (Garansi Khusus)</option>
+                            <option value="3 Bulan">3 Bulan (Garansi VIP/Layar)</option>
+                            <option value="Tanpa Garansi">Tanpa Garansi</option>
+                        </select>
+
+                        <button type="button" class="btn-action-wa" onclick="alert('Membuka jembatan Nota Digital & WhatsApp (Simulasi Preview)')">
+                            <span>🖨️</span> CETAK NOTA GARANSI & WA
+                        </button>
+
+                        <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #93C5FD;">
+                            <div style="font-weight:700; font-size:0.82em; color:#059669; margin-bottom:6px;">📲 Pratinjau Teks Laporan Setoran WA</div>
+                            <div style="background:white; border:1px solid #CBD5E1; padding:8px; border-radius:6px; font-size:0.75em; font-family:monospace; color:#334155; margin-bottom:8px;">*LAPORAN SERVIS SELESAI*
+ID: #181 - Samsung S23 Ultra
+Konsumen: Konsumen Tes Retur
+Biaya: Rp 250.000 (Lunas)
+Teknisi: SFTECH</div>
+                            <button type="button" class="btn-action-green" onclick="alert('Membuka WhatsApp Web/Desktop (Simulasi Preview)')">
+                                💬 KIRIM LAPORAN WA SEKARANG
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan Utama -->
+                    <button type="submit" class="btn-submit-main">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        SIMPAN PERBAHARUI DATA KE KAS
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+    <script>
+    function gantiPreviewStatus() {
+        const val = document.getElementById('preview_status').value;
+        const boxPenerimaan = document.getElementById('box_preview_penerimaan');
+        const boxGaransi = document.getElementById('box_preview_garansi');
+
+        if (val === 'Done' || val === 'Cash' || val === 'Garansi') {
+            boxGaransi.style.display = 'block';
+            boxPenerimaan.style.display = 'none';
+        } else {
+            boxGaransi.style.display = 'none';
+            boxPenerimaan.style.display = 'block';
+        }
+    }
+
+    function hitungPreviewJasa() {
+        const persen = document.getElementById('prev_persen').value;
+        if (persen === 'manual') return;
+        const hjual = parseInt(document.getElementById('prev_hjual').value) || 0;
+        const mpart = parseInt(document.getElementById('prev_mpart').value) || 0;
+        if (hjual >= mpart) {
+            const sisa = hjual - mpart;
+            const hasil = Math.round(sisa * (parseInt(persen) / 100));
+            document.getElementById('prev_mjasa').value = hasil;
+        }
+    }
+    </script>
+</body>
+</html>

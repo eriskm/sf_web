@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota Garansi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #fff; font-family: 'Inter', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 1024px; height: 1536px; margin: 0; padding: 0; }
+        .wrapper { width: 800px; height: 1200px; background: #ffffff; position: relative; overflow: hidden; transform: scale(1.28); transform-origin: center; display: flex; flex-direction: column; }
+        
+        /* HEADER (Same as Penerimaan) */
+        .header { background: #d30000; padding: 30px 40px; color: white; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; height: 120px; flex-shrink: 0; }
+        .header-bg-shape { position: absolute; right: -50px; top: -50px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index: 1; }
+        .header-content { display: flex; justify-content: space-between; width: 100%; z-index: 2; position: relative; }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .logo-icon { width: 50px; height: 50px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 2px; }
+        .logo-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-text-container { display: flex; flex-direction: column; }
+        .brand-title { font-size: 28px; font-weight: 900; font-style: italic; line-height: 0.95; letter-spacing: -0.5px; }
+        .brand-subtitle { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-top: 4px; }
+        .header-contact { text-align: right; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+        .contact-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; justify-content: flex-end; }
+        .contact-item svg { width: 15px; height: 15px; }
+
+        /* BODY CONTENT */
+        .main-body { padding: 25px 40px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+
+        /* TOP SECTION: Garansi Title & ID */
+        .top-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; }
+        .title-area h1 { font-size: 32px; font-weight: 900; color: #111; letter-spacing: -1px; margin-bottom: 12px; }
+        .title-area h1 span { color: #d30000; }
+        
+        .garansi-status { display: flex; align-items: center; gap: 15px; }
+        .shield-icon { width: 55px; height: 55px; color: #10b981; }
+        .status-text h2 { color: #10b981; font-size: 22px; font-weight: 800; margin-bottom: 2px; }
+        .status-text p { font-size: 12px; color: #666; max-width: 250px; line-height: 1.4; font-weight: 500; }
+
+        .garansi-id-box { border: 2px solid #d30000; border-radius: 12px; text-align: center; overflow: hidden; width: 320px; }
+        .garansi-id-box .id-label { font-size: 11px; color: #555; font-weight: 700; margin-top: 15px; }
+        .garansi-id-box .id-value { font-size: 26px; font-weight: 900; color: #111; margin: 5px 0 15px 0; }
+        .garansi-id-box .id-footer { background: #d30000; color: white; padding: 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* 3 COLUMN GRID */
+        .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        
+        .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; background: #fafafa; }
+        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .card-header svg { width: 18px; height: 18px; color: #d30000; }
+        .card-header .ch-title { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Row 1 Content */
+        .val-primary { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 6px; }
+        .val-secondary { font-size: 13px; color: #444; font-weight: 500; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        
+        /* Row 2 Content */
+        .grid-main { display: grid; grid-template-columns: 1fr 1.1fr 1.2fr; gap: 15px; margin-top: 5px; align-items: stretch; }
+        .card-detail { border: 1px solid #e5e7eb; border-radius: 12px; background: #fafafa; display: flex; flex-direction: column; }
+        
+        /* Col 1: Detail Perbaikan */
+        .detail-section { padding: 15px; border-bottom: 1px dashed #d1d5db; }
+        .detail-section:last-child { border-bottom: none; }
+        .ds-title { font-size: 11px; font-weight: 700; color: #666; margin-bottom: 6px; }
+        .ds-value { font-size: 13px; color: #222; font-weight: 500; line-height: 1.5; }
+        
+        /* Col 2: Masa Garansi */
+        .masa-garansi-inner { padding: 15px; background: #fff; border: 1px solid #10b981; border-radius: 12px; margin: 0 15px 15px 15px; }
+        .mg-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #e5e7eb; }
+        .mg-row:last-child { border-bottom: none; }
+        .mg-icon { width: 32px; height: 32px; background: #ecfdf5; color: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .mg-icon svg { width: 18px; height: 18px; }
+        .mg-label { font-size: 11px; color: #666; font-weight: 600; }
+        .mg-val { font-size: 15px; font-weight: 800; color: #10b981; }
+        .mg-info { background: #ecfdf5; padding: 10px; border-radius: 8px; font-size: 10px; color: #065f46; font-weight: 500; margin: 0 15px 15px 15px; display: flex; gap: 8px; align-items: flex-start; }
+
+        /* Col 3: Cakupan & Pengecualian */
+        .cakupan-list { padding: 0 15px 10px 15px; display: flex; flex-direction: column; gap: 6px; }
+        .cakupan-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; font-weight: 500; color: #444; line-height: 1.4; }
+        .c-icon-green { color: #10b981; width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+        .c-icon-red { color: #ef4444; width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+        .alert-header { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-top: 1px dashed #d1d5db; margin-top: 5px; }
+        .alert-header svg { width: 18px; height: 18px; color: #ef4444; }
+        .alert-header .ch-title { font-size: 11px; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Row 3: Bawah */
+        .grid-footer { display: grid; grid-template-columns: 1fr auto 1fr; gap: 15px; align-items: center; margin-top: 5px; }
+        .qr-center { border: 1px solid #e5e7eb; padding: 10px; border-radius: 12px; background: white; }
+        .qr-center img { width: 90px; height: 90px; display: block; }
+        
+        .footer-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; background: #fafafa; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        .fc-title { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .fc-title svg { width: 20px; height: 20px; color: #d30000; }
+        .fc-title span { font-size: 12px; font-weight: 800; color: #111; }
+        .fc-desc { font-size: 11px; color: #666; line-height: 1.5; font-weight: 500; margin-bottom: 12px; }
+        .fc-btn { background: #d30000; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; }
+
+        .fc-right { background: #fef2f2; border: 1px solid #fecaca; text-align: center; }
+        .fc-right-icon { width: 40px; height: 40px; background: white; border-radius: 50%; color: #d30000; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; box-shadow: 0 4px 6px -1px rgba(211,0,0,0.1); }
+        .fc-right p { font-size: 11px; color: #555; line-height: 1.4; font-weight: 500; margin: 0; }
+        .fc-right p strong { color: #d30000; font-weight: 800; }
+
+        /* Ketentuan Garansi (Bottom) */
+        .ketentuan-section { margin-top: auto; padding-top: 10px; }
+        .ks-header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .ks-title { font-size: 12px; font-weight: 800; color: #d30000; white-space: nowrap; }
+        .ks-line { height: 1px; background: #d30000; flex: 1; opacity: 0.3; }
+        
+        .ks-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .ks-item { display: flex; align-items: flex-start; gap: 8px; }
+        .ks-icon { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #fca5a5; display: flex; align-items: center; justify-content: center; color: #d30000; flex-shrink: 0; background: white; }
+        .ks-icon svg { width: 14px; height: 14px; }
+        .ks-text { font-size: 10px; color: #555; line-height: 1.3; font-weight: 500; }
+        .ks-text strong { color: #d30000; }
+
+        /* FOOTER DARK */
+        .footer-dark { background: #111; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; height: 75px; flex-shrink: 0; }
+        .fd-left { display: flex; align-items: center; gap: 10px; }
+        .fd-left svg { width: 24px; height: 24px; color: #d30000; }
+        .fd-left p { font-size: 12px; font-weight: 500; margin: 0; }
+        .fd-right { text-align: right; }
+        .fd-right p { font-size: 15px; font-weight: 800; margin: 0; }
+        .fd-right p span { color: #d30000; }
+        .fd-right small { font-size: 9px; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-bg-shape"></div>
+        <div class="header-content">
+            <div class="brand">
+                <div class="logo-icon">
+                    {% if logo_b64 %}
+                    <img src="data:image/png;base64,{{ logo_b64 }}" alt="Logo">
+                    {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:30px;height:30px;color:#d30000;"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><circle cx="12" cy="14" r="3"></circle><path d="M12 11v-2"></path><path d="M12 19v-2"></path></svg>
+                    {% endif %}
+                </div>
+                <div class="brand-text-container">
+                    <div class="brand-title">SUKABUMI<br>FLASHER</div>
+                    <div class="brand-subtitle">SMARTPHONE SERVICE LAB</div>
+                </div>
+            </div>
+            
+            <div class="header-contact">
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    +62 811-1737-030
+                </div>
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    {{ tgl_sekarang }}
+                </div>
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Jam: {{ jam_cetak }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-body">
+        
+        <!-- Top Section -->
+        <div class="top-section">
+            <div class="title-area">
+                <h1>NOTA <span>GARANSI</span> SERVICE</h1>
+                <div class="garansi-status">
+                    <svg class="shield-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                    <div class="status-text">
+                        <h2>GARANSI AKTIF</h2>
+                        <p>Kami menjamin perbaikan sesuai dengan ketentuan garansi yang berlaku.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="garansi-id-box">
+                <div class="id-label">NOMOR GARANSI</div>
+                <div class="id-value">{{ invoice_no }}</div>
+                <div class="id-footer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    Simpan nota ini sebagai bukti garansi Anda
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Top Cards -->
+        <div class="grid-3col">
+            <div class="card">
+                <div class="card-header">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <div class="ch-title">PELANGGAN</div>
+                </div>
+                <div class="val-primary">{{ s['Nama User'] }}</div>
+                <div class="val-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    {{ s['No. WA'] }}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+                    <div class="ch-title">DEVICE</div>
+                </div>
+                <div class="val-primary">{{ s['Device'] }}</div>
+                <div class="val-secondary" style="margin-top:8px;">Warna &nbsp;: -</div>
+                <div class="val-secondary">IMEI &nbsp;&nbsp;&nbsp;: -</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                    <div class="ch-title">NO. TRANSAKSI</div>
+                </div>
+                <div class="val-primary">#{{ s['id'] }}</div>
+                <div class="val-secondary" style="margin-top:8px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    {{ tgl_sekarang }}
+                </div>
+                <div class="val-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {{ jam_cetak }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Main Details -->
+        <div class="grid-main">
+            <!-- Col 1 -->
+            <div class="card-detail">
+                <div class="card-header" style="padding: 18px 18px 0 18px; margin-bottom:0;">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+                    <div class="ch-title">DETAIL PERBAIKAN</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="ds-title">Keluhan</div>
+                    <div class="ds-value">{{ kondisi_awal }}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="ds-title">Pekerjaan / Tindakan</div>
+                    <div class="ds-value" style="display: flex; gap:8px; align-items:flex-start;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#d30000" stroke-width="2" width="14" height="14" style="flex-shrink:0; margin-top:2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>{{ tindakan }}</span>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="ds-title">Teknisi</div>
+                    <div class="ds-value">{{ teknisi }}</div>
+                </div>
+                <div class="detail-section" style="flex:1;">
+                    <div class="ds-title">Biaya Perbaikan</div>
+                    <div class="ds-value" style="font-weight: 800; color: #111;">Rp {{ "{:,}".format(s['Harga Jual'] or 0) }}</div>
+                </div>
+            </div>
+
+            <!-- Col 2 -->
+            <div class="card-detail" style="border-color:#10b981;">
+                <div class="card-header" style="padding: 18px 18px 0 18px; margin-bottom:10px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <div class="ch-title" style="color:#10b981;">MASA GARANSI</div>
+                </div>
+                
+                <div class="masa-garansi-inner">
+                    <div class="mg-row">
+                        <div class="mg-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div>
+                            <div class="mg-label">Mulai</div>
+                            <div class="mg-val">{{ tgl_sekarang }}</div>
+                        </div>
+                    </div>
+                    <div class="mg-row">
+                        <div class="mg-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div>
+                            <div class="mg-label">Berakhir</div>
+                            <div class="mg-val" style="color:#666; font-size:13px; font-weight:700;">
+                                {% if tgl_akhir != '-' %}{{ tgl_akhir }}{% else %}+ {{ garansi_durasi }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mg-row" style="padding-bottom:0;">
+                        <div class="mg-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div>
+                            <div class="mg-label">Durasi</div>
+                            <div class="mg-val" style="font-size:20px;">{{ garansi_durasi }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mg-info" style="margin-top:auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    Garansi berlaku untuk kerusakan yang sama sesuai dengan ketentuan yang berlaku.
+                </div>
+            </div>
+
+            <!-- Col 3 -->
+            <div class="card-detail">
+                <div class="card-header" style="padding: 18px 18px 15px 18px; margin-bottom:0;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <div class="ch-title" style="color:#10b981;">CAKUPAN GARANSI</div>
+                </div>
+                
+                <div class="cakupan-list">
+                    <div class="cakupan-item">
+                        <svg class="c-icon-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Kerusakan yang sama (sesuai keluhan awal)
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Pekerjaan teknisi
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Sparepart yang diganti (sesuai garansi sparepart)
+                    </div>
+                </div>
+
+                <div class="alert-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <div class="ch-title">TIDAK TERMASUK GARANSI</div>
+                </div>
+
+                <div class="cakupan-list" style="margin-top:10px;">
+                    <div class="cakupan-item">
+                        <svg class="c-icon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Kerusakan akibat jatuh / benturan
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Kerusakan akibat kena air / cairan
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Kerusakan akibat kelalaian pemilik
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Kerusakan akibat pembongkaran oleh pihak lain
+                    </div>
+                    <div class="cakupan-item">
+                        <svg class="c-icon-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Software / aplikasi
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Footer Cards -->
+        <div class="grid-footer">
+            <div class="footer-card">
+                <div class="fc-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <span>VERIFIKASI GARANSI</span>
+                </div>
+                <div class="fc-desc">Scan QR untuk verifikasi keaslian garansi dan melihat detail garansi Anda.</div>
+                <div class="fc-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    sflasher.id/garansi/{{ invoice_no }}
+                </div>
+            </div>
+            
+            <div class="qr-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://sflasher.id/cek/{{ s['id'] }}" alt="QR">
+            </div>
+
+            <div class="footer-card fc-right">
+                <div class="fc-right-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                </div>
+                <p>Garansi ini hanya berlaku di<br><strong>SUKABUMI FLASHER<br>SMARTPHONE SERVICE LAB</strong></p>
+                <div style="height: 1px; background: #fca5a5; margin: 10px 0;"></div>
+                <p style="font-size: 10px; color: #777;">Terima kasih telah mempercayakan perbaikan perangkat Anda kepada kami.</p>
+            </div>
+        </div>
+
+        <!-- Ketentuan Garansi (Bottom) -->
+        <div class="ketentuan-section">
+            <div class="ks-header">
+                <div class="ks-title">KETENTUAN GARANSI</div>
+                <div class="ks-line"></div>
+            </div>
+            <div class="ks-grid">
+                <div class="ks-item">
+                    <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                    <div class="ks-text"><strong>1.</strong> Nota garansi ini wajib dibawa saat klaim garansi.</div>
+                </div>
+                <div class="ks-item">
+                    <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></div>
+                    <div class="ks-text"><strong>2.</strong> Garansi berlaku sesuai dengan masa berlaku yang tertera.</div>
+                </div>
+                <div class="ks-item">
+                    <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></div>
+                    <div class="ks-text"><strong>3.</strong> Garansi hanya berlaku untuk kerusakan yang sama sesuai keluhan awal.</div>
+                </div>
+                <div class="ks-item">
+                    <div class="ks-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                    <div class="ks-text"><strong>4.</strong> Keputusan teknisi adalah yang utama dalam penentuan klaim garansi.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER DARK -->
+    <div class="footer-dark">
+        <div class="fd-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <p>Terima kasih telah mempercayakan<br>perbaikan perangkat Anda kepada kami.</p>
+        </div>
+        <div class="fd-right">
+            <p>Powered by <span>BOSS</span></p>
+            <small>BUSINESS OPERATION SMART SYSTEM</small>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard SF - Filter Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    {% set total_laba = [0] %}
+    {% for s in servis %}
+        {% if s['Status'] == 'Cash' and s['Laba Kotor'] %}
+            {% if total_laba.append(total_laba.pop() + s['Laba Kotor']) %}{% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {% set total_beban = g_hari + o_hari %}
+    {% set laba_bersih = total_laba[0] - total_beban %}
+    {% set persen_gaji = (total_laba[0] / g_hari * 100) if g_hari > 0 else 0 %}

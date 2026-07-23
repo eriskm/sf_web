@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}Update Unit #{{ s['id'] }} - Sukabumi Flasher{% endblock %}
+
+{% block head %}
+    <style>
+        body { padding: 12px 20px 30px 20px; }
+        
+        /* Top Header Ultra Compact */
+        .top-header {
+            max-width: 1360px; margin: 0 auto 12px auto; height: 56px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); padding: 0 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+        }
+        .top-header h1 { font-size: 1.15em; font-weight: 800; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 10px; letter-spacing: -0.3px; }
+        .top-header .subtitle { color: var(--text-muted); font-weight: 500; font-size: 0.85em; border-left: 2px solid var(--border-color); padding-left: 12px; margin-left: 4px; }
+        .badge-status { background: #EFF6FF; color: #1D4ED8; font-size: 0.72em; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; border: 1px solid #BFDBFE; display: flex; align-items: center; gap: 6px; }
+        
+        .btn-back {
+            background: #F1F5F9; color: #334155; text-decoration: none; font-size: 0.85em; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: 1px solid #CBD5E1; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .btn-back:hover { background: #E2E8F0; color: #0F172A; }
+
+        /* Master Grid Layout */
+        .master-grid {
+            max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 2.15fr 1.1fr; gap: 16px; align-items: start;
+        }
+        @media (max-width: 1024px) { .master-grid { grid-template-columns: 1fr; } }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--card-bg); border-radius: var(--radius); border: 1.5px solid var(--border-color); padding: 14px 18px;
+            box-shadow: var(--shadow-sm); margin-bottom: 12px; transition: all 0.2s;
+        }
+        .section-card:hover, .section-card:focus-within {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+        }
+        .section-title {
+            font-size: 0.95em; font-weight: 700; color: var(--text-main); margin: 0 0 10px 0; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+        }
+        .section-title-left { display: flex; align-items: center; gap: 7px; }
+
+        /* Form Layouts */
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-bottom: 10px; }
+        @media (max-width: 600px) { .form-row-2, .form-row-3 { grid-template-columns: 1fr; } }
+        .form-row-1 { margin-bottom: 10px; }
+
+        label {
+            font-size: 0.82em; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 10px 12px; font-size: 0.92em; font-weight: 500; color: var(--text-main);
+            background: #F8FAFC; border: 1.5px solid var(--border-color); border-radius: 8px; transition: all 0.2s;
+            outline: none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            background: #FFFFFF; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        .form-textarea { resize: vertical; line-height: 1.5; font-size: 0.92em; }
+
+        /* Checkbox Chips Grid (Kelengkapan & Kondisi Fisik) */
+        .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+        @media (max-width: 768px) { .check-grid { grid-template-columns: repeat(2, 1fr); } }
+        .check-label {
+            display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #F8FAFC; border: 1px solid #E2E8F0;
+            border-radius: 6px; font-size: 0.82em; font-weight: 600; color: #334155; cursor: pointer; transition: all 0.15s;
+        }
+        .check-label:hover { background: #EFF6FF; border-color: #93C5FD; color: #1E40AF; }
+        .check-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+        /* Right Column Specifics */
+        .right-col .section-card { background: var(--panel-bg); border-color: #CBD5E1; }
+        .right-col .section-card:hover { border-color: var(--primary); }
+
+        .highlight-input-yellow { background-color: #FEF9C3 !important; border-color: #FDE047 !important; font-weight: 700 !important; color: #854D0E !important; }
+        .highlight-input-blue { background-color: #EFF6FF !important; border-color: #BFDBFE !important; font-weight: 700 !important; color: #1E40AF !important; }
+        .highlight-input-green { background-color: #ECFDF5 !important; border-color: #A7F3D0 !important; font-weight: 800 !important; color: #065F46 !important; font-size: 1.05em !important; }
+
+        /* Smart Action Boxes */
+        .smart-box-garansi {
+            background: #EFF6FF; border: 1.5px solid #93C5FD; border-radius: 8px; padding: 12px; margin-top: 12px; transition: all 0.3s;
+        }
+        .smart-box-penerimaan {
+            background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 12px; margin-top: 12px; transition: all 0.3s;
+        }
+
+        .btn-action-wa {
+            width: 100%; padding: 11px; background: #2563EB; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+        }
+        .btn-action-wa:hover { background: #1D4ED8; box-shadow: 0 4px 8px rgba(37,99,235,0.3); }
+
+        .btn-action-print {
+            width: 100%; padding: 11px; background: #D97706; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(217,119,6,0.2);
+        }
+        .btn-action-print:hover { background: #B45309; }
+
+        .btn-action-green {
+            width: 100%; padding: 12px; background: #16A34A; color: white; border: none; border-radius: 8px; font-weight: 800; font-size: 0.92em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(22,163,74,0.25);
+        }
+        .btn-action-green:hover { background: #15803D; }
+
+        /* Main Submit Button (Gradasi Gagah - Merah) */
+        .btn-submit-main {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; border: none; border-radius: var(--radius);
+            font-size: 1.05em; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 6px 15px rgba(239,68,68,0.35); transition: all 0.2s; margin-top: 14px; letter-spacing: 0.3px;
+        }
+        .btn-submit-main:hover {
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+            transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239,68,68,0.45);
+        }
+        .btn-submit-main:active { transform: translateY(0); }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <h1>
+            <span>⚙️ UPDATE DATA SERVIS #{{ s['id'] }}</span>
+            <span class="subtitle">{{ s['Device'] }} — {{ s['Nama User'] }}</span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="badge-status" id="badgeStatusText">
+                <span style="width:7px; height:7px; background:#2563EB; border-radius:50%; display:inline-block;" id="badgeStatusDot"></span>
+                STATUS: {{ s['Status'] or 'ANALISA' }}
+            </div>
+            <a href="/dashboard" class="btn-back">← Kembali ke Dashboard</a>
+        </div>
+    </div>
+
+    <form action="/update/{{ s['id'] }}" method="post" id="formUpdateUnit">
+        <div class="master-grid">
+            
+            <!-- KOLOM KIRI (Data Pelanggan & Teknis) -->
+            <div class="left-col">
+                
+                <!-- Card 1: Identitas Pelanggan -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>📌</span> 1. Identitas Pelanggan & Device</div>
+                        <span style="font-size:0.75em; color:var(--text-muted); font-weight:500;">ID Transaksi #{{ s['id'] }}</span>
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div>
+                            <label>Nama Pelanggan / Konsumen (F2)</label>
+                            <input type="text" class="form-input" id="nama_user" name="nama_user" value="{{ s['Nama User'] }}" required>
+                        </div>
+                        <div>
+                            <label>Nomor WhatsApp (Aktif)</label>
+                            <input type="text" class="form-input" name="no_wa" value="{{ s['No. WA'] }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div>
+                            <label>Tipe Device / HP (F4)</label>
+                            <input type="text" class="form-input" id="device" name="device" value="{{ s['Device'] }}" required>
+                        </div>
+                        <div>
+                            <label>Password / Pola Kunci Layar</label>
+                            <input type="text" class="form-input" name="password_hp" value="{{ s['Password'] or s['PassWord'] or '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Diagnosa & Tindakan Teknis -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>🛠️</span> 2. Diagnosa & Tindakan Perbaikan Teknis</div>
+                        <span style="font-size:0.75em; color:var(--primary); font-weight:700;">Teknisi Active</span>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>Analisa Kerusakan / Keluhan Awal Konsumen</label>
+                        <textarea class="form-textarea" name="analisa" rows="2" placeholder="Tuliskan keluhan atau analisa kerusakan...">{{ s['Analisa Kerusakan'] }}</textarea>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>Tindakan Perbaikan Teknis yang Dilakukan</label>
+                        <textarea class="form-textarea" name="tindakan" id="tindakan" rows="3" style="background:#FFFFFF; border-color:#93C5FD;" placeholder="Tuliskan tindakan perbaikan yang dilakukan oleh teknisi..." oninput="updatePreview()">{{ s['Tindakan Perbaikan'] }}</textarea>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label>👨‍🔧 Teknisi Penanggung Jawab</label>
+                        <select class="form-select" name="teknisi" style="font-weight:700; color:#1E40AF;">
+                            <option value="-">- Pilih / Ubah Teknisi -</option>
+                            {% for tek in daftar_teknisi %}
+                            <option value="{{ tek }}" {{ 'selected' if s['Teknisi'] == tek }}>{{ tek }}</option>
+                            {% endfor %}
+                            {% if s['Teknisi'] and s['Teknisi'] != '-' and s['Teknisi'] not in daftar_teknisi %}
+                            <option value="{{ s['Teknisi'] }}" selected>{{ s['Teknisi'] }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Card 3: Kelengkapan & Kondisi Fisik Masuk -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>📦</span> 3. Kelengkapan Aksesoris & Kondisi Fisik Masuk</div>
+                        <span style="font-size:0.75em; background:#E0F2FE; color:#0369A1; font-weight:700; padding:2px 8px; border-radius:4px;">Bisa Ditambah/Diedit Teknisi</span>
+                    </div>
+                    
+                    <label style="color:#0284C7; margin-top:4px;">✅ Kelengkapan Aksesoris Masuk</label>
+                    <div class="check-grid">
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="SIM Tray" {{ 'checked' if s['kelengkapan'] and 'SIM Tray' in s['kelengkapan'] }}> SIM Tray</label>
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="Memory Card" {{ 'checked' if s['kelengkapan'] and 'Memory Card' in s['kelengkapan'] }}> Memory Card</label>
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="Charger / Kabel" {{ 'checked' if s['kelengkapan'] and ('Charger' in s['kelengkapan'] or 'Kabel' in s['kelengkapan']) }}> Charger / Kabel</label>
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="Dus / Box" {{ 'checked' if s['kelengkapan'] and ('Dus' in s['kelengkapan'] or 'Box' in s['kelengkapan']) }}> Dus / Box</label>
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="Tas / Softcase" {{ 'checked' if s['kelengkapan'] and ('Tas' in s['kelengkapan'] or 'Softcase' in s['kelengkapan']) }}> Tas / Softcase</label>
+                        <label class="check-label"><input type="checkbox" name="kelengkapan[]" value="S Pen / Stylus" {{ 'checked' if s['kelengkapan'] and ('S Pen' in s['kelengkapan'] or 'Stylus' in s['kelengkapan']) }}> S Pen / Stylus</label>
+                    </div>
+
+                    <label style="color:#E11D48; margin-top:12px;">⚠️ Kondisi Fisik Unit Masuk</label>
+                    <div class="check-grid">
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="LCD Pecah / Retak" {{ 'checked' if s['kondisi_fisik'] and ('LCD Pecah' in s['kondisi_fisik'] or 'Retak' in s['kondisi_fisik']) }}> LCD Pecah / Retak</label>
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="Backdoor Pecah" {{ 'checked' if s['kondisi_fisik'] and 'Backdoor Pecah' in s['kondisi_fisik'] }}> Backdoor Pecah</label>
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="Frame Lecet / Dent" {{ 'checked' if s['kondisi_fisik'] and ('Frame Lecet' in s['kondisi_fisik'] or 'Dent' in s['kondisi_fisik']) }}> Frame Lecet / Dent</label>
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="Tombol Keras / Hilang" {{ 'checked' if s['kondisi_fisik'] and 'Tombol' in s['kondisi_fisik'] }}> Tombol Keras / Hilang</label>
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="Kaca Kamera Retak" {{ 'checked' if s['kondisi_fisik'] and 'Kaca Kamera' in s['kondisi_fisik'] }}> Kaca Kamera Retak</label>
+                        <label class="check-label"><input type="checkbox" name="kondisi[]" value="Unit Melengkung" {{ 'checked' if s['kondisi_fisik'] and 'Melengkung' in s['kondisi_fisik'] }}> Unit Melengkung</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- KOLOM KANAN (Keuangan / Kas & Aksi Cerdas) -->
+            <div class="right-col">
+                
+                <!-- Card 4: Rincian Biaya & Kas -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>💰</span> 4. Rincian Biaya & Pembagian Kas</div>
+                        <span style="font-size:0.75em; color:var(--accent-green); font-weight:700;">Financial Center</span>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div>
+                            <label>Estimasi Biaya Awal (Rp)</label>
+                            <input type="number" class="form-input highlight-input-yellow" name="estimasi" value="{{ s['Estimasi Biaya'] }}">
+                        </div>
+                        <div>
+                            <label>DP (Deposit Awal) (Rp)</label>
+                            <input type="number" class="form-input highlight-input-blue" name="dp" value="{{ s['DP'] }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row-1">
+                        <label style="color:#059669; font-size:0.9em;">💵 Harga Jual Final (Total Biaya Konsumen)</label>
+                        <input type="number" class="form-input highlight-input-green" name="harga_jual" id="harga_jual" value="{{ s['Harga Jual'] or 0 }}" {% if session.get('role') == 'teknisi' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
+                    </div>
+
+                    <div class="form-row-3" style="margin-top:12px;">
+                        <div>
+                            <label>Modal Part (Rp) {% if session.get('role') in ['kasir', 'teknisi'] %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
+                            <input type="number" class="form-input" name="modal_part" id="modal_part" value="{{ s['Modal Part'] if s['Modal Part'] is not none else '' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Part ke:</label>
+                            <input type="text" class="form-input" id="tujuan_part" placeholder="Toko / Owner" value="Toko / Owner" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                                <label style="margin:0;">Modal Jasa (Rp) {% if session.get('role') in ['kasir', 'teknisi'] %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
+                                <select id="persen_jasa" {% if session.get('role') in ['kasir', 'teknisi'] %}disabled style="background:#0f172a; color:#94a3b8; border-color:#334155; font-size:0.72em; padding:1px 4px; border-radius:4px; font-weight:700;"{% else %}onchange="hitungJasaOtomatis()" style="font-size:0.72em; padding:1px 4px; border-radius:4px; border:1px solid #CBD5E1; font-weight:700; color:#1D4ED8;"{% endif %}>
+                                    <option value="manual">Manual</option>
+                                    <option value="40">Bagi 40%</option>
+                                    <option value="50">Bagi 50%</option>
+                                </select>
+                            </div>
+                            <input type="number" class="form-input" name="modal_jasa" id="modal_jasa" value="{{ s['Modal Jasa'] if s['Modal Jasa'] is not none else '' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="document.getElementById('persen_jasa').value='manual'; updatePreview()"{% endif %}>
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Jasa ke:</label>
+                            <input type="text" class="form-input" id="tujuan_jasa" placeholder="Teknisi" value="{{ s['Teknisi'] if s['Teknisi'] and s['Teknisi'] != '-' else 'Teknisi' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div>
+                            <label>Lain-lain (Rp)</label>
+                            <input type="number" class="form-input" name="lain_lain" id="lain_lain" value="{{ s['Lain-lain'] or 0 }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                        </div>
+                        <div>
+                            <label style="color:#2563EB;">Setor Lainnya ke:</label>
+                            <input type="text" class="form-input" id="tujuan_lain" placeholder="Kasir" value="Kasir" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Status & Smart Action -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <div class="section-title-left"><span>⚡</span> 5. Status Unit & Aksi Cepat</div>
+                        <span style="font-size:0.75em; color:#64748B;">Smart Action Box</span>
+                    </div>
+
+                    <label style="font-size:0.88em; color:#1E40AF;">Update Status Unit Terkini</label>
+                    <select class="form-select" name="status" id="statusSelect" onchange="toggleBox()" style="font-size:1em; font-weight:800; color:#1D4ED8; padding:12px; background:#EFF6FF; border-color:#93C5FD;">
+                        {% set semua_status = ['Analisa', 'Konfirmasi', 'Wait Part', 'Repair', 'Done', 'Cash', 'Garansi', 'Selesai Klaim', 'Garansi Void', 'Cancel', 'Failed', 'Refund'] %}
+                        {% for stat in semua_status %}
+                            {% if session.get('role') == 'kasir' and stat == 'Cash' and s['Status'] not in ['Done', 'Cash'] %}
+                                <!-- Sembunyikan opsi Cash jika Kasir membuka unit yang belum berstatus Done/Cash -->
+                            {% elif session.get('role') == 'kasir' and stat == 'Selesai Klaim' and s['Status'] not in ['Done', 'Garansi', 'Klaim Garansi', 'Selesai Klaim'] %}
+                                <!-- Sembunyikan opsi Selesai Klaim jika Kasir membuka unit yang belum berstatus Done/Garansi -->
+                            {% elif session.get('role') == 'teknisi' and stat in ['Cash', 'Garansi', 'Selesai Klaim', 'Refund'] %}
+                                <!-- Sembunyikan opsi closing finansial untuk Teknisi -->
+                            {% else %}
+                                <option value="{{ stat }}" {{ 'selected' if s['Status'] == stat }}>{{ stat }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+
+                    <!-- Smart Box Penerimaan -->
+                    <div id="penerimaanBox" class="smart-box-penerimaan" style="display:none;">
+                        <div style="font-weight:700; font-size:0.85em; color:#B45309; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <span>📋</span> Cetak Ulang Nota / Struk Penerimaan
+                        </div>
+                        <button type="button" class="btn-action-print" onclick="prosesPenerimaan(event)">
+                            <span>🖨️</span> CETAK NOTA / STRUK PENERIMAAN
+                        </button>
+                    </div>
+
+                    <!-- Smart Box Garansi & Closing -->
+                    <div id="garansiBox" class="smart-box-garansi" style="display:none;">
+                        <div style="font-weight:800; font-size:0.88em; color:#1E40AF; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+                            <span>🛡️ Panel Closing & Masa Garansi</span>
+                            <span style="background:#2563EB; color:white; font-size:0.75em; padding:2px 6px; border-radius:4px;">Active</span>
+                        </div>
+                        <label style="color:#1E40AF;">Pilih Masa Garansi Toko</label>
+                        <select id="garansiSelect" name="masa_garansi" class="form-select" style="margin-bottom:10px; font-weight:700;">
+                            <option value="1 Bulan" {{ 'selected' if s['masa_garansi'] == '1 Bulan' }}>1 Bulan (Garansi Standar)</option>
+                            <option value="2 Bulan" {{ 'selected' if s['masa_garansi'] == '2 Bulan' }}>2 Bulan (Garansi Khusus)</option>
+                            <option value="3 Bulan" {{ 'selected' if s['masa_garansi'] == '3 Bulan' }}>3 Bulan (Garansi VIP/Layar)</option>
+                            <option value="Tanpa Garansi" {{ 'selected' if s['masa_garansi'] == 'Tanpa Garansi' }}>Tanpa Garansi</option>
+                        </select>
+
+                        <button type="button" onclick="prosesNota(event)" class="btn-action-wa">
+                            <span>🖨️</span> CETAK NOTA GARANSI & WA
+                        </button>
+
+                        <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #93C5FD;">
+                            <div style="font-weight:700; font-size:0.82em; color:#059669; margin-bottom:6px;">📲 Pratinjau Teks Laporan Setoran WA</div>
+                            <div id="setorPreview" style="background:white; border:1px solid #CBD5E1; padding:8px; border-radius:6px; font-size:0.75em; font-family:monospace; color:#334155; margin-bottom:8px; white-space: pre-wrap;">Pratinjau pesan akan muncul di sini...</div>
+                            <button type="button" onclick="kirimManual()" class="btn-action-green">
+                                💬 KIRIM LAPORAN WA SEKARANG
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan Utama -->
+                    <button type="submit" id="btnSimpanUtama" class="btn-submit-main" title="Shortcut: Ctrl+S atau F8">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        SIMPAN PERBAHARUI DATA KE KAS (F8 / CTRL+S)
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    function hitungJasaOtomatis() {
+        const persen = document.getElementById('persen_jasa').value;
+        if (persen === 'manual') return;
+        
+        const h_jual = parseInt(document.getElementById('harga_jual').value) || 0;
+        const m_part = parseInt(document.getElementById('modal_part').value) || 0;
+        
+        if (h_jual >= m_part) {
+            const sisa = h_jual - m_part;
+            const hasil = sisa * (parseInt(persen) / 100);
+            document.getElementById('modal_jasa').value = Math.round(hasil);
+            updatePreview();
+        }
+    }
+
+    function toggleBox() {
+        const status = document.getElementById('statusSelect').value;
+        const garansiBox = document.getElementById('garansiBox');
+        const penerimaanBox = document.getElementById('penerimaanBox');
+        const badgeText = document.getElementById('badgeStatusText');
+        const badgeDot = document.getElementById('badgeStatusDot');
+        
+        if (badgeText) {
+            badgeText.innerHTML = `<span style="width:7px; height:7px; background:#2563EB; border-radius:50%; display:inline-block;"></span> STATUS: ${status.toUpperCase()}`;
+        }
+
+        if (status === 'Cash' || status === 'Done' || status === 'Garansi') {
+            garansiBox.style.display = 'block';
+            penerimaanBox.style.display = 'none';
+        } else {
+            garansiBox.style.display = 'none';
+            penerimaanBox.style.display = 'block';
+        }
+    }
+
+    window.onload = function() {
+        toggleBox();
+        updatePreview();
+        // Auto-focus langsung ke Tindakan Perbaikan atau Nama User saat dibuka
+        const tindakanEl = document.getElementById('tindakan');
+        if (tindakanEl && tindakanEl.value.trim() === '') {
+            tindakanEl.focus();
+        } else {
+            const namaEl = document.getElementById('nama_user');
+            if (namaEl) namaEl.focus();
+        }
+    };
+
+    function prosesPenerimaan(event) {
+        if(event) event.preventDefault();
+        window.open(`/nota_bridge/{{ s['id'] }}?type=penerimaan`, '_blank');
+    }
+
+    function prosesNota(event) {
+        if(event) event.preventDefault();
+        const garansi = document.getElementById('garansiSelect').value;
+        let tglAkhir = "-";
+        if (garansi.includes("Bulan")) {
+            let bulan = parseInt(garansi);
+            let d = new Date();
+            d.setMonth(d.getMonth() + bulan);
+            tglAkhir = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        window.open(`/nota_bridge/{{ s['id'] }}?type=garansi&garansi=${encodeURIComponent(garansi)}&tgl_akhir=${encodeURIComponent(tglAkhir)}`, '_blank');
+    }
+
+    function getPesanSetoran() {
+        const val_device = "{{ s['Device'] }}";
+        const val_tindakan = document.getElementsByName('tindakan')[0].value || "-";
+        
+        const num_jual = parseInt(document.getElementById('harga_jual').value) || 0;
+        const num_part = parseInt(document.getElementById('modal_part').value) || 0;
+        const num_jasa = parseInt(document.getElementById('modal_jasa').value) || 0;
+        const num_lain = parseInt(document.getElementById('lain_lain').value) || 0;
+        const num_net = num_jual - num_part - num_jasa - num_lain;
+
+        const txt_tujuan_part = document.getElementById('tujuan_part').value.trim() || "Toko / Owner";
+        const txt_tujuan_jasa = document.getElementById('tujuan_jasa').value.trim() || "Teknisi";
+        const txt_tujuan_lain = document.getElementById('tujuan_lain').value.trim() || "Kasir";
+
+        const fmt = (v) => "Rp " + v.toLocaleString('id-ID');
+
+        return `*${val_device} & ${val_tindakan}*
+${fmt(num_jual)} - Modal part ${fmt(num_part)} - Modal Jasa ${fmt(num_jasa)} - Lain-lain ${fmt(num_lain)} = *${fmt(num_net)}*
+
+*Setor*
+
+Modal part ${fmt(num_part)} ke ${txt_tujuan_part}
+Modal Jasa ${fmt(num_jasa)} ke ${txt_tujuan_jasa}
+Lain-lain ${fmt(num_lain)} ke ${txt_tujuan_lain}`;
+    }
+
+    function kirimManual() {
+        const pesan = getPesanSetoran();
+        const finalLink = "https://api.whatsapp.com/send?text=" + encodeURIComponent(pesan);
+        window.open(finalLink, '_blank');
+    }
+
+    function updatePreview() {
+        const previewEl = document.getElementById('setorPreview');
+        if (previewEl) {
+            const teks = getPesanSetoran();
+            previewEl.innerText = teks;
+        }
+    }
+
+    // Shortcut Keyboard (Ctrl+S, F2, F4, F8)
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey && e.key === 's') || e.key === 'F8') {
+            e.preventDefault();
+            document.getElementById('formUpdateUnit').submit();
+        } else if (e.key === 'F2') {
+            e.preventDefault();
+            const el = document.getElementById('nama_user');
+            if (el) { el.focus(); el.select(); }
+        } else if (e.key === 'F4') {
+            e.preventDefault();
+            const el = document.getElementById('device');
+            if (el) { el.focus(); el.select(); }
+        }
+    });
+
+    // Enter untuk pindah ke field berikutnya
+    document.querySelectorAll('.form-input').forEach((input, index, allInputs) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const nextInput = allInputs[index + 1];
+                if (nextInput) nextInput.focus();
+            }
+        });
+    });
+    </script>
+{% endblock %}

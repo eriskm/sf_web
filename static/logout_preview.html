@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Model Icon Logout - Sukabumi Flasher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E60012;
+            --primary-light: #FEF2F2;
+            --dark: #1E293B;
+            --gray: #64748B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --border: #E2E8F0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2em;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: var(--gray);
+            font-size: 1.1em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 15px;
+        }
+        .badge {
+            background: #F1F5F9;
+            color: var(--dark);
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .title {
+            font-weight: 700;
+            font-size: 1.2em;
+            color: var(--dark);
+        }
+        .desc {
+            font-size: 0.9em;
+            color: var(--gray);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        /* Demo Box simulating Sidebar Footer */
+        .demo-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #E60012, #990000);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9em;
+        }
+        
+        /* === MODEL 1: MODERN ARROW SLIDE === */
+        .model-1 {
+            color: var(--gray);
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px; border-radius: 10px;
+        }
+        .model-1:hover {
+            color: #E60012;
+            background: #FEF2F2;
+            transform: translateX(4px);
+        }
+
+        /* === MODEL 2: NEON POWER PULSE === */
+        .model-2 {
+            color: #E60012;
+            background: rgba(230, 0, 18, 0.08);
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px; border-radius: 50%;
+        }
+        .model-2:hover {
+            color: #ffffff;
+            background: #E60012;
+            box-shadow: 0 0 15px rgba(230, 0, 18, 0.5);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* === MODEL 3: EMERGENCY EXIT DOOR === */
+        .model-3 {
+            color: var(--gray);
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px; border-radius: 10px;
+        }
+        .model-3:hover {
+            color: #DC2626;
+            background: #FEE2E2;
+        }
+        .model-3:hover svg polyline, .model-3:hover svg line {
+            transform: translateX(3px);
+            transition: 0.3s;
+        }
+
+        /* === MODEL 4: SOFT RED PILL BADGE === */
+        .model-4 {
+            color: #DC2626;
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: 600; text-decoration: none;
+        }
+        .model-4:hover {
+            background: #E60012;
+            color: #ffffff;
+            border-color: #E60012;
+            box-shadow: 0 4px 12px rgba(230, 0, 18, 0.25);
+        }
+
+        /* === MODEL 5: CYBER SHIELD SECURE === */
+        .model-5 {
+            color: var(--gray);
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px; border-radius: 12px; border: 1px solid transparent;
+        }
+        .model-5:hover {
+            color: #E60012;
+            border-color: #FECACA;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transform: scale(1.1);
+        }
+
+        /* === MODEL 6: MINIMALIST RED GLOW === */
+        .model-6 {
+            color: #EF4444;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px; border-radius: 10px;
+        }
+        .model-6:hover {
+            color: #B91C1C;
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+        }
+
+        .code-snippet {
+            margin-top: 15px;
+            background: #0F172A;
+            color: #38BDF8;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Review 6 Model Icon Logout SaaS 🔥</h1>
+            <p>Arahkan kursor (*Hover*) ke ikon logout di bawah ini untuk melihat animasi interaktifnya!</p>
+        </div>
+
+        <div class="grid">
+            <!-- MODEL 1 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 1: Modern Slide</span>
+                        <span class="badge">Terpopuler</span>
+                    </div>
+                    <p class="desc">Desain standar SaaS modern. Saat di-hover, ikon berubah jadi merah soft dan anak panah tergeser halus ke kanan memberi kesan keluar ruangan.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-1" title="Logout Model 1">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODEL 2 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 2: Neon Power</span>
+                        <span class="badge">Futuristic</span>
+                    </div>
+                    <p class="desc">Menggunakan simbol tombol daya (*Power Button*). Saat di-hover, ikon berputar 90 derajat dan menyala merah neon yang sangat keren.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-2" title="Logout Model 2">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODEL 3 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 3: Exit Door</span>
+                        <span class="badge">Expressive</span>
+                    </div>
+                    <p class="desc">Ikon pintu terbuka (*Emergency Exit*). Animasi anak panah melompat keluar pintu secara tegas, sangat komunikatif untuk pengguna.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-3" title="Logout Model 3">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODEL 4 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 4: Soft Red Pill</span>
+                        <span class="badge">Executive UI</span>
+                    </div>
+                    <p class="desc">Bentuk tombol kapsul (*Pill Button*) berteks 'Keluar'. Warna latar merah muda lembut yang berubah jadi merah solid menyala saat disentuh.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-4" title="Logout Model 4">
+                            <span>Keluar</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODEL 5 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 5: Secure Lock</span>
+                        <span class="badge">Enterprise</span>
+                    </div>
+                    <p class="desc">Ikon gembok terbuka dengan tanda panah (*Secure Sign Out*). Memberikan rasa aman dan profesionalitas tinggi bahwa sesi kasir diakhiri dengan aman.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-5" title="Logout Model 5">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path><polyline points="15 8 17 6 19 8"></polyline></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODEL 6 -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <span class="title">Model 6: Red Glow Zoom</span>
+                        <span class="badge">Minimalist</span>
+                    </div>
+                    <p class="desc">Ikon sudah berwarna merah secara *default*. Saat di-hover, ikon membesarkan diri (*scale up*) dengan pancaran cahaya *drop-shadow* merah di belakangnya.</p>
+                </div>
+                <div>
+                    <div class="demo-box">
+                        <div class="user-info">
+                            <div class="avatar">SF</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9em;">Sukabumi Flasher</div>
+                                <div style="font-size: 0.75em; color: var(--gray);">Manajer</div>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" class="model-6" title="Logout Model 6">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h5"></path><polyline points="17 16 21 12 17 8"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
