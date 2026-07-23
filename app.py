@@ -536,22 +536,49 @@ def kirim_laporan_telegram(path_gambar, jenis="TUTUP"):
             ('8604967039:AAFbBMb5sMGulDDbGKMAvLsL4Q9uc_cTQvk', '-1003742654600') # Fallback grup Akuntan
         ]
         
+        import time
         path_lengkap = os.path.join('static', 'nota_digital', path_gambar)
+        
+        # Tambahkan retry mechanism karena di Windows kadang file gambar masih dikunci (locked) oleh Html2Image / Chrome
+        for attempt in range(5):
+            if os.path.exists(path_lengkap):
+                try:
+                    with open(path_lengkap, 'ab'): # Test open for appending to check if locked
+                        pass
+                    break # Berhasil akses file tanpa lock
+                except IOError:
+                    time.sleep(1) # File masih dikunci, tunggu
+            else:
+                time.sleep(1)
         
         for tok, cid in targets:
             if not tok or not cid: continue
             url = f"https://api.telegram.org/bot{tok}/sendPhoto"
             try:
+                # 1. Coba kirim Foto / Screenshot
                 with open(path_lengkap, 'rb') as img_file:
                     payload = {'chat_id': cid, 'caption': pesan, 'parse_mode': 'Markdown'}
                     files = {'photo': img_file}
                     response = requests.post(url, data=payload, files=files, timeout=15)
                     if response.status_code == 200:
-                        print(f"[OK] Telegram {jenis} ke {cid} Sukses!")
+                        print(f"[OK] Telegram {jenis} ke {cid} Sukses (Gambar)!")
                     else:
                         print(f"[ERROR] Telegram {jenis} ke {cid} Error: {response.text}")
-            except Exception as e:
-                print(f"[ERROR] Telegram {jenis} ke {cid} Gagal: {e}")
+                        raise Exception("Telegram API menolak gambar atau request error.")
+            except Exception as e_img:
+                print(f"[WARNING] Gagal kirim gambar ke {cid}, beralih ke Fallback Teks. Error: {e_img}")
+                # 2. Jalur Darurat: Kirim Teks Murni (Fallback)
+                url_text = f"https://api.telegram.org/bot{tok}/sendMessage"
+                try:
+                    pesan_darurat = f"⚠️ *[TEXT FALLBACK MODE]*\n_Sistem gagal merender gambar, ini adalah pesan otomatis darurat._\n\n{pesan}"
+                    payload_text = {'chat_id': cid, 'text': pesan_darurat, 'parse_mode': 'Markdown'}
+                    resp_txt = requests.post(url_text, data=payload_text, timeout=15)
+                    if resp_txt.status_code == 200:
+                        print(f"[OK] Telegram {jenis} ke {cid} Sukses (Teks Fallback)!")
+                    else:
+                        print(f"[ERROR] Telegram Fallback ke {cid} Error: {resp_txt.text}")
+                except Exception as e_txt:
+                    print(f"[ERROR] Telegram Fallback ke {cid} Gagal Total: {e_txt}")
 
 
 # --- GLOBAL ERROR HANDLER ---
