@@ -667,6 +667,7 @@
         </div>
 
         <form id="addUserForm" action="/add_user" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-horizontal-grid">
                 <div class="form-group">
                     <label class="form-label">Username</label>
@@ -804,13 +805,16 @@
                             <div class="action-dropdown">
                                 <button type="button" class="btn-action" onclick="toggleDropdown(event, {{ user.id }})">⋮</button>
                                 <div class="dropdown-content" id="dropdown-{{ user.id }}">
-                                    <div class="dropdown-item" onclick="openEditModal({{ user.id }}, '{{ user.username }}', '{{ user.nama_lengkap or user.username }}', '{{ user.role }}')">✏ Edit User</div>
-                                    <div class="dropdown-item" onclick="openResetModal({{ user.id }}, '{{ user.username }}')">🔑 Reset Password</div>
-                                    <a class="dropdown-item" href="/toggle_status/{{ user.id }}">
-                                        {% if user_status != 'Nonaktif' %}🚫 Nonaktifkan{% else %}🟢 Aktifkan{% endif %}
-                                    </a>
+                                    <div class="dropdown-item" onclick='openEditModal({{ user.id|tojson }}, {{ user.username|tojson }}, {{ (user.nama_lengkap or user.username)|tojson }}, {{ user.role|tojson }})'>✏ Edit User</div>
+                                    <div class="dropdown-item" onclick='openResetModal({{ user.id|tojson }}, {{ user.username|tojson }})'>🔑 Reset Password</div>
+                                    <form action="/toggle_status/{{ user.id }}" method="post" style="margin:0;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="dropdown-item" style="width:100%; border:0; background:none; text-align:left;">
+                                            {% if user_status != 'Nonaktif' %}🚫 Nonaktifkan{% else %}🟢 Aktifkan{% endif %}
+                                        </button>
+                                    </form>
                                     {% if user.id != 1 %}
-                                    <div class="dropdown-item danger" onclick="confirmDeleteRow({{ user.id }}, '{{ user.username }}')">🗑 Hapus User</div>
+                                    <div class="dropdown-item danger" onclick='confirmDeleteRow({{ user.id|tojson }}, {{ user.username|tojson }})'>🗑 Hapus User</div>
                                     {% else %}
                                     <div class="dropdown-item danger" onclick="alert('Admin utama tidak bisa dihapus!')">🗑 Hapus User</div>
                                     {% endif %}
@@ -830,6 +834,7 @@
     <div class="modal-box">
         <h3 style="font-size: 1.25em; font-weight:800; margin-bottom:12px;">✏️ Edit Data & Kewenangan User</h3>
         <form id="editUserForm" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-bottom:15px;">
                 <label class="form-label">Username</label>
                 <input type="text" class="form-input" id="editUsername" disabled style="background:#f1f5f9; color:#94a3b8;">
@@ -862,10 +867,11 @@
             Atur ulang password untuk akun <strong id="resetTargetName" style="color:var(--primary);"></strong>.
         </p>
         <form id="resetPwForm" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-bottom:20px;">
                 <label class="form-label">Password Baru</label>
                 <div class="input-wrapper">
-                    <input type="password" class="form-input" name="password" id="resetPasswordInput" placeholder="Minimal 6 karakter" required>
+                    <input type="password" class="form-input" name="password" id="resetPasswordInput" placeholder="Minimal 8 karakter" minlength="8" required>
                     <button type="button" class="btn-toggle-pw" onclick="togglePassword('resetPasswordInput', this)">👁</button>
                 </div>
             </div>
@@ -963,7 +969,16 @@
 
     function confirmDeleteRow(id, username) {
         if (confirm('Yakin ingin menghapus permanen akun user "' + username + '"?')) {
-            window.location.href = '/delete_user/' + id;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/delete_user/' + id;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_csrf_token';
+            csrf.value = {{ csrf_token()|tojson }};
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 </script>

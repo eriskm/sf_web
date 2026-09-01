@@ -35,7 +35,7 @@
         }
 
         /* KHUSUS BOT TELEGRAM (Menyembunyikan bagian atas agar fokus ke Buku Kas) */
-        {% if request.args.get('bot') == 'SF_RAHASIA_NEGARA' %}
+        {% if internal_access %}
         .sidebar, .topbar, .hero-grid, .quick-actions, .charts-area, .card-keuangan { display: none !important; }
         .main-content { margin-left: 0 !important; }
         .content-body { padding: 20px !important; }
@@ -43,6 +43,9 @@
         {% endif %}
     </style>
 </head>
+    <script>
+        const csrfToken = {{ csrf_token()|tojson }};
+    </script>
 <body>
     {% set total_beban = g_hari + o_hari %}
     {% set laba_bersih = total_laba_kotor - total_beban %}
@@ -120,9 +123,12 @@
                 <div class="font-bold" style="font-size: 0.9em; color: var(--dark);">{{ session['user'] }}</div>
                 <div style="font-size: 0.75em; color: var(--gray);">{{ role_label }}</div>
             </div>
-            <a href="/logout" class="btn-logout-power" title="Keluar Sesi (Logout)">
+            <form action="/logout" method="post" style="margin:0;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-logout-power" title="Keluar Sesi (Logout)" style="border:0; cursor:pointer;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-            </a>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -319,7 +325,7 @@
                                 {% if kurang > 0 %}
                                   Kurang <span style="color: #ef4444;">Rp {{ "{:,}".format(kurang) }}</span> lagi
                                 {% else %}
-                                  <span style="color: #10B981;">Target Tercapai! ??</span>
+                                  <span style="color: #10B981;">Target Tercapai!</span>
                                 {% endif %}
                             </div>
                     </div>
@@ -577,7 +583,7 @@
             </div>
 
             <!-- ORIGINAL DATA TRANSAKSI TABLE AREA -->
-            {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}    <div id="tabel-transaksi-data" class="table-container" style="margin-top: 30px;">
+            {% if not internal_access %}    <div id="tabel-transaksi-data" class="table-container" style="margin-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <h3 style="margin: 0; font-size: 1.2em;">📱 Data Unit Masuk (Transaksi)</h3>
@@ -618,38 +624,38 @@
         <tbody>
             {% set total_laba = [0] %}
             {% for s in servis %}
-                {% if s['Status'] == 'Cash' and s['Laba Kotor'] %}
-                {% if total_laba.append(total_laba.pop() + s['Laba Kotor']) %}{% endif %}
+                {% if s['status'] == 'Cash' and s['laba_kotor'] %}
+                {% if total_laba.append(total_laba.pop() + s['laba_kotor']) %}{% endif %}
             {% endif %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ s['Tanggal Masuk'] }}</td>
-                <td>{{ s['Device'] }}</td>
+                <td>{{ s['tanggal_masuk'] }}</td>
+                <td>{{ s['device'] }}</td>
                 <td>
-                    <b>{{ s['Nama User'] }}</b><br>
-                    <small style="color: #25D366;">{{ s['No. WA'] or '-' }}</small>
+                    <b>{{ s['nama_user'] }}</b><br>
+                    <small style="color: #25D366;">{{ s['no_wa'] or '-' }}</small>
                 </td>
                 <td>
-                    <span class="status-pill {% if s['Status'] == 'Cash' %}pill-cash
-                                {% elif s['Status'] == 'Analisa' %}pill-analisa
-                                {% elif s['Status'] == 'Konfirmasi' %}pill-konfirmasi
-                                {% elif s['Status'] == 'Wait Part' %}pill-wait
-                                {% elif s['Status'] == 'Repair' %}pill-repair
-                                {% elif s['Status'] == 'Done' %}pill-done
-                                {% elif s['Status'] == 'Failed' %}pill-cancel
-                                {% elif s['Status'] == 'Garansi' %}pill-done
-                                {% elif s['Status'] == 'Refund' %}pill-refund
-                                {% elif s['Status'] == 'Cancel' %}pill-cancel
+                    <span class="status-pill {% if s['status'] == 'Cash' %}pill-cash
+                                {% elif s['status'] == 'Analisa' %}pill-analisa
+                                {% elif s['status'] == 'Konfirmasi' %}pill-konfirmasi
+                                {% elif s['status'] == 'Wait Part' %}pill-wait
+                                {% elif s['status'] == 'Repair' %}pill-repair
+                                {% elif s['status'] == 'Done' %}pill-done
+                                {% elif s['status'] == 'Failed' %}pill-cancel
+                                {% elif s['status'] == 'Garansi' %}pill-done
+                                {% elif s['status'] == 'Refund' %}pill-refund
+                                {% elif s['status'] == 'Cancel' %}pill-cancel
                                 {% endif %}">
-                        <span class="dot"></span>{{ s['Status'] }}
+                        <span class="dot"></span>{{ s['status'] }}
                     </span>
                 </td>
-                <td style="font-size: 0.85em; color: #555;">{{ s['Analisa Kerusakan'] or '-' }}</td>
-                <td style="font-size: 0.85em; color: #007bff; font-weight: bold;">{{ s['Tindakan Perbaikan'] or '-' }}</td>
-                <td style="font-size: 0.85em; color: #666;">{{ s['Teknisi'] or '-' }}</td>
+                <td style="font-size: 0.85em; color: #555;">{{ s['analisa_kerusakan'] or '-' }}</td>
+                <td style="font-size: 0.85em; color: #007bff; font-weight: bold;">{{ s['tindakan_perbaikan'] or '-' }}</td>
+                <td style="font-size: 0.85em; color: #666;">{{ s['teknisi'] or '-' }}</td>
                 <td style="font-weight: bold;">
-                    {% if s['Status'] == 'Cash' %}
-                        <span style="color: green;">Rp {{ "{:,}".format(s['Laba Kotor'] or 0) }}</span>
+                    {% if s['status'] == 'Cash' %}
+                        <span style="color: green;">Rp {{ "{:,}".format(s['laba_kotor'] or 0) }}</span>
                     {% else %}
                         <span style="color: gray; font-weight: normal;">Rp 0</span>
                     {% endif %}
@@ -663,11 +669,12 @@
                         </a>
                         
                         {% if session['role'] == 'admin' %}
-                        <a href="/delete/{{ s['id'] }}" onclick="return confirm('Yakin mau hapus data {{ s['Device'] }}?')" title="Hapus">
+                        <form action="/delete/{{ s['id'] }}" method="post" onsubmit="return confirm('Yakin mau hapus data servis ini?')" style="display:inline;">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <button class="btn-icon btn-icon-red">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                             </button>
-                        </a>
+                        </form>
                         {% endif %}
                     </div>
                 </td>
@@ -678,21 +685,21 @@
 
     <div class="pagination-pills">
         {% if current_page > 1 %}
-            <a href="{{ url_for('dashboard', page=current_page-1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">« Prev</a>
+            <a href="{{ url_for('dashboard.dashboard', page=current_page-1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">« Prev</a>
         {% endif %}
 
         {% set start_page = [1, current_page - 2]|max %}
         {% set end_page = [total_pages, current_page + 2]|min %}
         
         {% if start_page > 1 %}
-            <a href="{{ url_for('dashboard', page=1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">1</a>
+            <a href="{{ url_for('dashboard.dashboard', page=1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">1</a>
             {% if start_page > 2 %}
                 <span class="page-pill dots">...</span>
             {% endif %}
         {% endif %}
 
         {% for p in range(start_page, end_page + 1) %}
-            <a href="{{ url_for('dashboard', page=p, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill {{ 'active' if p == current_page else '' }}">
+            <a href="{{ url_for('dashboard.dashboard', page=p, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill {{ 'active' if p == current_page else '' }}">
                 {{ p }}
             </a>
         {% endfor %}
@@ -701,11 +708,11 @@
             {% if end_page < total_pages - 1 %}
                 <span class="page-pill dots">...</span>
             {% endif %}
-            <a href="{{ url_for('dashboard', page=total_pages, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">{{ total_pages }}</a>
+            <a href="{{ url_for('dashboard.dashboard', page=total_pages, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">{{ total_pages }}</a>
         {% endif %}
 
         {% if current_page < total_pages %}
-            <a href="{{ url_for('dashboard', page=current_page+1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">Next »</a>
+            <a href="{{ url_for('dashboard.dashboard', page=current_page+1, tgl=tgl_aktif, q=q_aktif) }}#tabel-transaksi-data" class="page-pill">Next »</a>
         {% endif %}
     </div>
     </div>
@@ -728,11 +735,14 @@
                     </thead>
                     <tbody>
                         {% for h in history_kas %}
-                        <tr style="border-bottom: 1px solid #eee; {{ 'background: #e8f5e9; font-weight: bold;' if h.highlight }}">
+                        <tr style="border-bottom: 1px solid #eee; {{ 'background: #e8f5e9; font-weight: bold;' if h.get('highlight') }}">
                             <td style="padding: 10px;">
                                 {{ h.uraian }}
-                                {% if h.manual %}
-                                <a href="/hapus_tambahan/{{ h.id }}" style="color:red; text-decoration:none; font-size: 1.2em; margin-left: 5px;">×</a>
+                                {% if h.get('manual') %}
+                                <form action="/hapus_tambahan/{{ h.id }}" method="post" style="display:inline;" onsubmit="return confirm('Hapus transaksi tambahan ini?')">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" style="border:0; background:none; color:red; font-size:1.2em; cursor:pointer;">×</button>
+                                </form>
                                 {% endif %}
                             </td>
                             <td align="right" style="color: green;">{{ "Rp {:,}".format(h.debit) if h.debit > 0 else '-' }}</td>
@@ -743,8 +753,9 @@
                     </tbody>
                 </table>
 
-                {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+                {% if not internal_access %}
                 <form action="/tambah_tambahan" method="post" style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <select name="jenis" class="modern-input" style="font-weight: bold;">
                         <option value="Keluar">Keluar</option>
                         <option value="Masuk">Masuk</option>
@@ -780,7 +791,7 @@
             </div>
         </div>
 
-        {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+        {% if not internal_access %}
         <!-- Tombol Tutup Buku kita sembunyikan atau gabungkan jadi satu alur -->
         {% if 'tutup_buku' in session.get('permissions', '') %}
         <button onclick="bukaPopupKas()" class="btn-modern btn-success-gradient" style="padding: 12px 24px; font-size: 1em; margin-top: 15px;">
@@ -791,7 +802,7 @@
     </div>
 
     
-    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+    {% if not internal_access %}
     <!-- ======================= SECTION GARANSI ======================= -->
     <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 30px;">
         
@@ -821,7 +832,7 @@
                 </datalist>
                 <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
                 {% if q_garansi %}
-                    <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="btn-modern btn-reset">✖ Reset</a>
+                    <a href="{{ url_for('dashboard.dashboard', p_pelanggan=p_pelanggan, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="btn-modern btn-reset">✖ Reset</a>
                 {% endif %}
             </form>
         </div>
@@ -853,11 +864,11 @@
         </table>
         <div class="pagination-pills">
             {% if p_garansi > 1 %}
-                <a href="{{ url_for('dashboard', p_garansi=p_garansi-1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">« Prev</a>
+                <a href="{{ url_for('dashboard.dashboard', p_garansi=p_garansi-1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">« Prev</a>
             {% endif %}
             <span class="page-pill active">Halaman {{ p_garansi }} dari {{ total_p_garansi }}</span>
             {% if p_garansi < total_p_garansi %}
-                <a href="{{ url_for('dashboard', p_garansi=p_garansi+1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">Next »</a>
+                <a href="{{ url_for('dashboard.dashboard', p_garansi=p_garansi+1, p_pelanggan=p_pelanggan, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-garansi" class="page-pill">Next »</a>
             {% endif %}
         </div>
         </div>
@@ -881,7 +892,7 @@
                 </datalist>
                 <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
                 {% if q_pelanggan %}
-                    <a href="{{ url_for('dashboard', p_garansi=p_garansi, q_garansi=q_garansi) }}#tabel-pelanggan" class="btn-modern btn-reset">✖ Reset</a>
+                    <a href="{{ url_for('dashboard.dashboard', p_garansi=p_garansi, q_garansi=q_garansi) }}#tabel-pelanggan" class="btn-modern btn-reset">✖ Reset</a>
                 {% endif %}
             </form>
         </div>
@@ -913,11 +924,11 @@
         </table>
         <div class="pagination-pills">
             {% if p_pelanggan > 1 %}
-                <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan-1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">« Prev</a>
+                <a href="{{ url_for('dashboard.dashboard', p_pelanggan=p_pelanggan-1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">« Prev</a>
             {% endif %}
             <span class="page-pill active">Halaman {{ p_pelanggan }} dari {{ total_p_pelanggan }}</span>
             {% if p_pelanggan < total_p_pelanggan %}
-                <a href="{{ url_for('dashboard', p_pelanggan=p_pelanggan+1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">Next »</a>
+                <a href="{{ url_for('dashboard.dashboard', p_pelanggan=p_pelanggan+1, p_garansi=p_garansi, q_garansi=q_garansi, q_pelanggan=q_pelanggan) }}#tabel-pelanggan" class="page-pill">Next »</a>
             {% endif %}
         </div>
         </div>
@@ -968,7 +979,7 @@
                 </datalist>
                 <button type="submit" class="btn-modern btn-primary-gradient">🔍 Cari</button>
                 {% if q_sparepart %}
-                    <a href="{{ url_for('dashboard') }}#tabel-sparepart" class="btn-modern btn-reset">✖ Reset</a>
+                    <a href="{{ url_for('dashboard.dashboard') }}#tabel-sparepart" class="btn-modern btn-reset">✖ Reset</a>
                 {% endif %}
             </form>
         </div>
@@ -1001,10 +1012,13 @@
                     <td style="text-align: right; font-size: 0.85em; font-weight: bold; color: #27ae60;">{{ "{:,}".format(s['harga_jual'] or 0) }}</td>
                     <td style="text-align: center; white-space: nowrap;">
                         {% if 'sparepart' in session.get('permissions', '') %}
-                            <button onclick="bukaPopupSparepart('{{ s['id_sparepart'] }}', '{{ s['tanggal_masuk'] }}', '{{ s['kategori'] }}', '{{ s['merek'] }}', '{{ s['jenis_barang'] }}', '{{ s['jenis_device'] }}', '{{ s['qty'] }}', '{{ s['harga_beli'] }}', '{{ s['harga_jual'] }}')" class="btn-icon btn-icon-blue" title="Edit">✏️</button>
+                            <button onclick='bukaPopupSparepart({{ s.id_sparepart|tojson }}, {{ s.tanggal_masuk|tojson }}, {{ s.kategori|tojson }}, {{ s.merek|tojson }}, {{ s.jenis_barang|tojson }}, {{ s.jenis_device|tojson }}, {{ s.qty|tojson }}, {{ s.harga_beli|tojson }}, {{ s.harga_jual|tojson }})' class="btn-icon btn-icon-blue" title="Edit">✏️</button>
                         {% endif %}
-                        {% if 'servis' in session.get('permissions', '') %}
-                            <a href="/delete_sparepart/{{ s['id_sparepart'] }}" onclick="return confirm('Hapus sparepart ini?')" style="text-decoration:none;"><button class="btn-icon btn-icon-red" title="Hapus">🗑️</button></a>
+                        {% if session.get('role') == 'admin' %}
+                            <form action="/delete_sparepart/{{ s['id_sparepart'] }}" method="post" style="display:inline;" onsubmit="return confirm('Hapus sparepart ini?')">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-icon btn-icon-red" title="Hapus">🗑️</button>
+                            </form>
                         {% endif %}
                     </td>
                 </tr>
@@ -1015,11 +1029,11 @@
         </table>
         <div class="pagination-pills">
             {% if p_sparepart > 1 %}
-                <a href="{{ url_for('dashboard', p_sparepart=p_sparepart-1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">« Prev</a>
+                <a href="{{ url_for('dashboard.dashboard', p_sparepart=p_sparepart-1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">« Prev</a>
             {% endif %}
             <span class="page-pill active">Halaman {{ p_sparepart }} dari {{ total_p_sparepart }}</span>
             {% if p_sparepart < total_p_sparepart %}
-                <a href="{{ url_for('dashboard', p_sparepart=p_sparepart+1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">Next »</a>
+                <a href="{{ url_for('dashboard.dashboard', p_sparepart=p_sparepart+1, q_sparepart=q_sparepart) }}#tabel-sparepart" class="page-pill">Next »</a>
             {% endif %}
         </div>
         </div>
@@ -1057,6 +1071,7 @@
                 <button class="modal-close-btn" onclick="tutupPopupSparepart()">&times;</button>
             </div>
             <form action="/simpan_sparepart" method="post" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="id_sparepart" id="sp_id">
                 
                 <div style="display:flex; gap:15px;">
@@ -1400,7 +1415,7 @@
         }
     }
 
-    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+    {% if not internal_access %}
 
     // Diagram / Daftar Tren Kerusakan Minggu Ini
     const listContainer = document.getElementById('kerusakanListContainer');
@@ -1720,13 +1735,13 @@ function kirimDataKas() {
           let loader = document.createElement('div');
           loader.id = 'fullScreenLoader';
           loader.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-family:Poppins,sans-serif;';
-          loader.innerHTML = '<div style="font-size:2em;margin-bottom:20px;">dY?~</div><h2>Sedang Memproses Tutup Kas...</h2><p>Mohon jangan menutup atau me-refresh halaman ini.<br>Proses ini memakan waktu sekitar 15-20 detik.</p>';
+          loader.innerHTML = '<div style="font-size:2em;margin-bottom:20px;">Memproses...</div><h2>Sedang Memproses Tutup Kas...</h2><p>Mohon jangan menutup atau me-refresh halaman ini.<br>Proses ini memakan waktu sekitar 15-20 detik.</p>';
           document.body.appendChild(loader);
 
 
         // 1. Ambil screenshot kondisi akhir hari ini (Tutup Buku) & kirim Telegram
         // Menggunakan .catch() dan .finally() agar jika Telegram error, DB tetap dieksekusi
-        fetch('/telegram_tutup_buku', { method: 'POST' })
+        fetch('/telegram_tutup_buku', { method: 'POST', headers: { 'X-CSRF-Token': csrfToken } })
         .catch(e => {
             console.warn("Peringatan: Telegram Tutup Buku error, namun eksekusi DB tetap dilanjutkan.", e);
         })
@@ -1734,8 +1749,8 @@ function kirimDataKas() {
             // 2. Eksekusi semua logika database (mindahin arsip, hapus data lama, set kas baru)
             fetch('/eksekusi_db', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ uang_fisik: uangFisik, total_saldo: totalSaldo })
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                body: JSON.stringify({ uang_fisik: uangFisik })
             })
             .then(response => {
                 if(!response.ok) throw new Error("Gagal eksekusi database");
@@ -1744,7 +1759,7 @@ function kirimDataKas() {
             .then(msgDB => {
                 window.msgDB = msgDB;
                 // 3. Ambil screenshot kondisi awal besok (Buka Buku) & kirim Telegram
-                return fetch('/telegram_buka_buku', { method: 'POST' })
+                return fetch('/telegram_buka_buku', { method: 'POST', headers: { 'X-CSRF-Token': csrfToken } })
                     .catch(e => console.warn("Peringatan: Telegram Buka Buku error.", e));
             })
             .then(() => {
@@ -1797,7 +1812,7 @@ document.addEventListener('submit', function() {
     });
 });
 </script>
-    {% if request.args.get('bot') != 'SF_RAHASIA_NEGARA' %}
+    {% if not internal_access %}
     {% endif %}
 
     {% if request.args.get('wa_done') %}
@@ -1912,6 +1927,7 @@ document.addEventListener('submit', function() {
                 <button class="modal-close-btn" onclick="document.getElementById('modalFotoProfil').style.display='none'">&times;</button>
             </div>
             <form id="formFotoProfil" onsubmit="uploadFotoProfil(event)">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group" style="text-align: center; margin-bottom: 20px;">
                     <label for="fotoProfilInput" style="cursor: pointer; display: inline-block;">
                         <img id="previewFotoProfil" src="{{ avatar_img }}" alt="Preview" style="width: 120px; height: 120px; border-radius: 50%; border: 3px dashed var(--border); object-fit: cover; margin-bottom: 15px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
@@ -1955,6 +1971,7 @@ document.addEventListener('submit', function() {
         try {
             const response = await fetch('/upload_foto_profil', {
                 method: 'POST',
+                headers: { 'X-CSRF-Token': csrfToken },
                 body: formData
             });
             const data = await response.json();

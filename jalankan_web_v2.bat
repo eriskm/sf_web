@@ -1,15 +1,15 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title AIS GENESIS - SYSTEM UPDATER
+title SF WEB APP - V2 (MySQL Native)
 if not exist ".venv\Scripts\python.exe" (
     echo [ERROR] Virtual environment belum tersedia. Jalankan SETUP_PC_BARU.bat.
     pause
     exit /b 1
 )
-echo Memeriksa pembaruan sistem...
-".venv\Scripts\python.exe" GENESIS_UPDATER_CLIENT.py
+echo Menjalankan server SF WEB V2...
+".venv\Scripts\python.exe" app_v2.py
 set "EXIT_CODE=%ERRORLEVEL%"
-echo Updater selesai dengan exit code %EXIT_CODE%.
+echo Server berhenti dengan exit code %EXIT_CODE%.
 pause
 exit /b %EXIT_CODE%

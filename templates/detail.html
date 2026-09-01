@@ -124,18 +124,19 @@
     <div class="top-header">
         <h1>
             <span>⚙️ UPDATE DATA SERVIS #{{ s['id'] }}</span>
-            <span class="subtitle">{{ s['Device'] }} — {{ s['Nama User'] }}</span>
+            <span class="subtitle">{{ s['device'] }} — {{ s['nama_user'] }}</span>
         </h1>
         <div style="display: flex; align-items: center; gap: 12px;">
             <div class="badge-status" id="badgeStatusText">
                 <span style="width:7px; height:7px; background:#2563EB; border-radius:50%; display:inline-block;" id="badgeStatusDot"></span>
-                STATUS: {{ s['Status'] or 'ANALISA' }}
+                STATUS: {{ s['status'] or 'ANALISA' }}
             </div>
             <a href="/dashboard" class="btn-back">← Kembali ke Dashboard</a>
         </div>
     </div>
 
     <form action="/update/{{ s['id'] }}" method="post" id="formUpdateUnit">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="master-grid">
             
             <!-- KOLOM KIRI (Data Pelanggan & Teknis) -->
@@ -151,22 +152,22 @@
                     <div class="form-row-2">
                         <div>
                             <label>Nama Pelanggan / Konsumen (F2)</label>
-                            <input type="text" class="form-input" id="nama_user" name="nama_user" value="{{ s['Nama User'] }}" required>
+                            <input type="text" class="form-input" id="nama_user" name="nama_user" value="{{ s['nama_user'] }}" required>
                         </div>
                         <div>
                             <label>Nomor WhatsApp (Aktif)</label>
-                            <input type="text" class="form-input" name="no_wa" value="{{ s['No. WA'] }}">
+                            <input type="text" class="form-input" name="no_wa" value="{{ s['no_wa'] }}">
                         </div>
                     </div>
 
                     <div class="form-row-2">
                         <div>
                             <label>Tipe Device / HP (F4)</label>
-                            <input type="text" class="form-input" id="device" name="device" value="{{ s['Device'] }}" required>
+                            <input type="text" class="form-input" id="device" name="device" value="{{ s['device'] }}" required>
                         </div>
                         <div>
                             <label>Password / Pola Kunci Layar</label>
-                            <input type="text" class="form-input" name="password_hp" value="{{ s['Password'] or s['PassWord'] or '' }}">
+                            <input type="text" class="form-input" name="password_hp" value="{{ s['password'] or '' }}">
                         </div>
                     </div>
                 </div>
@@ -180,12 +181,12 @@
 
                     <div class="form-row-1">
                         <label>Analisa Kerusakan / Keluhan Awal Konsumen</label>
-                        <textarea class="form-textarea" name="analisa" rows="2" placeholder="Tuliskan keluhan atau analisa kerusakan...">{{ s['Analisa Kerusakan'] }}</textarea>
+                        <textarea class="form-textarea" name="analisa" rows="2" placeholder="Tuliskan keluhan atau analisa kerusakan...">{{ s['analisa_kerusakan'] }}</textarea>
                     </div>
 
                     <div class="form-row-1">
                         <label>Tindakan Perbaikan Teknis yang Dilakukan</label>
-                        <textarea class="form-textarea" name="tindakan" id="tindakan" rows="3" style="background:#FFFFFF; border-color:#93C5FD;" placeholder="Tuliskan tindakan perbaikan yang dilakukan oleh teknisi..." oninput="updatePreview()">{{ s['Tindakan Perbaikan'] }}</textarea>
+                        <textarea class="form-textarea" name="tindakan" id="tindakan" rows="3" style="background:#FFFFFF; border-color:#93C5FD;" placeholder="Tuliskan tindakan perbaikan yang dilakukan oleh teknisi..." oninput="updatePreview()">{{ s['tindakan_perbaikan'] }}</textarea>
                     </div>
 
                     <div class="form-row-1">
@@ -193,10 +194,10 @@
                         <select class="form-select" name="teknisi" style="font-weight:700; color:#1E40AF;">
                             <option value="-">- Pilih / Ubah Teknisi -</option>
                             {% for tek in daftar_teknisi %}
-                            <option value="{{ tek }}" {{ 'selected' if s['Teknisi'] == tek }}>{{ tek }}</option>
+                            <option value="{{ tek }}" {{ 'selected' if s['teknisi'] == tek }}>{{ tek }}</option>
                             {% endfor %}
-                            {% if s['Teknisi'] and s['Teknisi'] != '-' and s['Teknisi'] not in daftar_teknisi %}
-                            <option value="{{ s['Teknisi'] }}" selected>{{ s['Teknisi'] }}</option>
+                            {% if s['teknisi'] and s['teknisi'] != '-' and s['teknisi'] not in daftar_teknisi %}
+                            <option value="{{ s['teknisi'] }}" selected>{{ s['teknisi'] }}</option>
                             {% endif %}
                         </select>
                     </div>
@@ -245,56 +246,56 @@
                     <div class="form-row-2">
                         <div>
                             <label>Estimasi Biaya Awal (Rp)</label>
-                            <input type="number" class="form-input highlight-input-yellow" name="estimasi" value="{{ s['Estimasi Biaya'] }}">
+                            <input type="number" class="form-input highlight-input-yellow" name="estimasi" value="{{ s['estimasi_biaya'] }}">
                         </div>
                         <div>
                             <label>DP (Deposit Awal) (Rp)</label>
-                            <input type="number" class="form-input highlight-input-blue" name="dp" value="{{ s['DP'] }}">
+                            <input type="number" class="form-input highlight-input-blue" name="dp" value="{{ s['dp'] }}">
                         </div>
                     </div>
 
                     <div class="form-row-1">
                         <label style="color:#059669; font-size:0.9em;">💵 Harga Jual Final (Total Biaya Konsumen)</label>
-                        <input type="number" class="form-input highlight-input-green" name="harga_jual" id="harga_jual" value="{{ s['Harga Jual'] or 0 }}" {% if session.get('role') == 'teknisi' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
+                        <input type="number" class="form-input highlight-input-green" name="harga_jual" id="harga_jual" value="{{ s['harga_jual'] or 0 }}" {% if session.get('role') not in ['admin', 'kasir'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
                     </div>
 
                     <div class="form-row-3" style="margin-top:12px;">
                         <div>
-                            <label>Modal Part (Rp) {% if session.get('role') in ['kasir', 'teknisi'] %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
-                            <input type="number" class="form-input" name="modal_part" id="modal_part" value="{{ s['Modal Part'] if s['Modal Part'] is not none else '' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
+                            <label>Modal Part (Rp) {% if session.get('role') != 'admin' %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
+                            <input type="number" class="form-input" name="modal_part" id="modal_part" value="{{ s['modal_part'] if s['modal_part'] is not none else '' }}" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="hitungJasaOtomatis(); updatePreview()"{% endif %}>
                         </div>
                         <div>
                             <label style="color:#2563EB;">Setor Part ke:</label>
-                            <input type="text" class="form-input" id="tujuan_part" placeholder="Toko / Owner" value="Toko / Owner" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                            <input type="text" class="form-input" id="tujuan_part" placeholder="Toko / Owner" value="Toko / Owner" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
                         </div>
                     </div>
 
                     <div class="form-row-3">
                         <div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                                <label style="margin:0;">Modal Jasa (Rp) {% if session.get('role') in ['kasir', 'teknisi'] %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
-                                <select id="persen_jasa" {% if session.get('role') in ['kasir', 'teknisi'] %}disabled style="background:#0f172a; color:#94a3b8; border-color:#334155; font-size:0.72em; padding:1px 4px; border-radius:4px; font-weight:700;"{% else %}onchange="hitungJasaOtomatis()" style="font-size:0.72em; padding:1px 4px; border-radius:4px; border:1px solid #CBD5E1; font-weight:700; color:#1D4ED8;"{% endif %}>
+                                <label style="margin:0;">Modal Jasa (Rp) {% if session.get('role') != 'admin' %}<span style="font-size:0.75em; color:#ef4444;">[🔒 Terkunci]</span>{% endif %}</label>
+                                <select id="persen_jasa" {% if session.get('role') != 'admin' %}disabled style="background:#0f172a; color:#94a3b8; border-color:#334155; font-size:0.72em; padding:1px 4px; border-radius:4px; font-weight:700;"{% else %}onchange="hitungJasaOtomatis()" style="font-size:0.72em; padding:1px 4px; border-radius:4px; border:1px solid #CBD5E1; font-weight:700; color:#1D4ED8;"{% endif %}>
                                     <option value="manual">Manual</option>
                                     <option value="40">Bagi 40%</option>
                                     <option value="50">Bagi 50%</option>
                                 </select>
                             </div>
-                            <input type="number" class="form-input" name="modal_jasa" id="modal_jasa" value="{{ s['Modal Jasa'] if s['Modal Jasa'] is not none else '' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="document.getElementById('persen_jasa').value='manual'; updatePreview()"{% endif %}>
+                            <input type="number" class="form-input" name="modal_jasa" id="modal_jasa" value="{{ s['modal_jasa'] if s['modal_jasa'] is not none else '' }}" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="document.getElementById('persen_jasa').value='manual'; updatePreview()"{% endif %}>
                         </div>
                         <div>
                             <label style="color:#2563EB;">Setor Jasa ke:</label>
-                            <input type="text" class="form-input" id="tujuan_jasa" placeholder="Teknisi" value="{{ s['Teknisi'] if s['Teknisi'] and s['Teknisi'] != '-' else 'Teknisi' }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                            <input type="text" class="form-input" id="tujuan_jasa" placeholder="Teknisi" value="{{ s['teknisi'] if s['teknisi'] and s['teknisi'] != '-' else 'Teknisi' }}" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
                         </div>
                     </div>
 
                     <div class="form-row-3">
                         <div>
                             <label>Lain-lain (Rp)</label>
-                            <input type="number" class="form-input" name="lain_lain" id="lain_lain" value="{{ s['Lain-lain'] or 0 }}" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                            <input type="number" class="form-input" name="lain_lain" id="lain_lain" value="{{ s['lain_lain'] or 0 }}" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
                         </div>
                         <div>
                             <label style="color:#2563EB;">Setor Lainnya ke:</label>
-                            <input type="text" class="form-input" id="tujuan_lain" placeholder="Kasir" value="Kasir" {% if session.get('role') in ['kasir', 'teknisi'] %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
+                            <input type="text" class="form-input" id="tujuan_lain" placeholder="Kasir" value="Kasir" {% if session.get('role') != 'admin' %}readonly style="background:#0f172a; color:#94a3b8; cursor:not-allowed; border-color:#334155;"{% else %}oninput="updatePreview()"{% endif %}>
                         </div>
                     </div>
                 </div>
@@ -310,14 +311,14 @@
                     <select class="form-select" name="status" id="statusSelect" onchange="toggleBox()" style="font-size:1em; font-weight:800; color:#1D4ED8; padding:12px; background:#EFF6FF; border-color:#93C5FD;">
                         {% set semua_status = ['Analisa', 'Konfirmasi', 'Wait Part', 'Repair', 'Done', 'Cash', 'Garansi', 'Selesai Klaim', 'Garansi Void', 'Cancel', 'Failed', 'Refund'] %}
                         {% for stat in semua_status %}
-                            {% if session.get('role') == 'kasir' and stat == 'Cash' and s['Status'] not in ['Done', 'Cash'] %}
+                            {% if session.get('role') == 'kasir' and stat == 'Cash' and s['status'] not in ['Done', 'Cash'] %}
                                 <!-- Sembunyikan opsi Cash jika Kasir membuka unit yang belum berstatus Done/Cash -->
-                            {% elif session.get('role') == 'kasir' and stat == 'Selesai Klaim' and s['Status'] not in ['Done', 'Garansi', 'Klaim Garansi', 'Selesai Klaim'] %}
+                            {% elif session.get('role') == 'kasir' and stat == 'Selesai Klaim' and s['status'] not in ['Done', 'Garansi', 'Klaim Garansi', 'Selesai Klaim'] %}
                                 <!-- Sembunyikan opsi Selesai Klaim jika Kasir membuka unit yang belum berstatus Done/Garansi -->
-                            {% elif session.get('role') == 'teknisi' and stat in ['Cash', 'Garansi', 'Selesai Klaim', 'Refund'] %}
+                            {% elif session.get('role') not in ['admin', 'kasir'] and stat in ['Cash', 'Garansi', 'Selesai Klaim', 'Refund'] %}
                                 <!-- Sembunyikan opsi closing finansial untuk Teknisi -->
                             {% else %}
-                                <option value="{{ stat }}" {{ 'selected' if s['Status'] == stat }}>{{ stat }}</option>
+                                <option value="{{ stat }}" {{ 'selected' if s['status'] == stat }}>{{ stat }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -442,7 +443,7 @@
     }
 
     function getPesanSetoran() {
-        const val_device = "{{ s['Device'] }}";
+        const val_device = "{{ s['device'] }}";
         const val_tindakan = document.getElementsByName('tindakan')[0].value || "-";
         
         const num_jual = parseInt(document.getElementById('harga_jual').value) || 0;

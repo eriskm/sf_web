@@ -27,7 +27,7 @@
     
     <div class="text-center">
         <div class="header bold">SUKABUMI FLASHER</div>
-        {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}
+        {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}
         <div class="bold">NOTA PENERIMAAN KLAIM GARANSI</div>
         {% else %}
         <div class="bold">NOTA PENERIMAAN SERVICE</div>
@@ -48,15 +48,15 @@
     </div>
     <div class="row">
         <span>Nama:</span>
-        <span class="bold text-right">{{ s['Nama User'] }}</span>
+        <span class="bold text-right">{{ s['nama_user'] }}</span>
     </div>
     <div class="row">
         <span>Unit:</span>
-        <span class="bold text-right">{{ s['Device'] }}</span>
+        <span class="bold text-right">{{ s['device'] }}</span>
     </div>
     <div class="row">
         <span>Keluhan:</span>
-        <span class="bold text-right">{{ s['Keluhan'] or s['Analisa Kerusakan'] or s['Tindakan Perbaikan'] or '-' }}</span>
+        <span class="bold text-right">{{ s['analisa_kerusakan'] or s['tindakan_perbaikan'] or '-' }}</span>
     </div>
     {% if 'kelengkapan' in s.keys() and s['kelengkapan'] and s['kelengkapan'] != '-' %}
     <div class="row">
@@ -74,7 +74,7 @@
     <div class="line"></div>
 
     <div class="text-center" style="font-size: 10px;">
-        {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}
+        {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}
         UNIT DITERIMA KEMBALI<br>
         UNTUK KLAIM GARANSI
         {% else %}

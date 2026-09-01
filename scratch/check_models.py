@@ -2,7 +2,7 @@ import google.generativeai as genai
 import sys
 
 def check_models():
-    api_key = 'AIzaSyA_jkWl87Ahd3n-aVYAVq7zfjoOGU12GEg'
+    api_key = 'REDACTED_GOOGLE_API_KEY'
     genai.configure(api_key=api_key)
     try:
         models = [m.name for m in genai.list_models()]

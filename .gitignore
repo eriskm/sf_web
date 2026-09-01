@@ -25,3 +25,6 @@ logs/
 
 # Static / uploads if any
 # (add specific paths if you want to ignore user uploads)
+
+# Temporary directories
+scratch/

@@ -322,7 +322,7 @@
         try {
             const response = await fetch('/robot_ais/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
                 body: JSON.stringify({ message: text })
             });
             const data = await response.json();

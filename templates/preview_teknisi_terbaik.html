@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Preview Teknisi Terbaik{% endblock %}
+
+{% block content %}
+<main style="max-width:760px; margin:50px auto; padding:24px;">
+    <section style="background:white; border-radius:18px; padding:36px; text-align:center; box-shadow:var(--shadow-lg);">
+        <div style="font-size:3rem;">🏆</div>
+        <h1 style="margin:12px 0;">Teknisi Terbaik</h1>
+        <p style="color:var(--text-secondary);">Template preview penghargaan teknisi. Data performa dapat dihubungkan setelah indikator penilaian disepakati.</p>
+        <div style="margin:28px auto; padding:22px; max-width:420px; border:2px dashed var(--border-color); border-radius:12px;">
+            <strong>Nama Teknisi</strong><br>
+            <span>Jumlah servis • Kecepatan • Kualitas</span>
+        </div>
+        <a href="{{ url_for('dashboard.dashboard') }}" style="color:var(--primary); font-weight:700;">Kembali ke Dashboard</a>
+    </section>
+</main>
+{% endblock %}

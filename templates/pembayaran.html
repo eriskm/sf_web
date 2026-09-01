@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Pembayaran Unit{% endblock %}
+
+{% block head %}
+<style>
+    .payment-card { max-width: 620px; margin: 40px auto; padding: 28px; background: white; border-radius: 16px; box-shadow: var(--shadow-lg); }
+    .payment-card h1 { margin-bottom: 8px; }
+    .unit-summary { padding: 16px; margin: 20px 0; background: var(--primary-light); border-radius: 10px; }
+    .field { margin: 16px 0; }
+    .field label { display: block; margin-bottom: 7px; font-weight: 700; }
+    .field input, .field select { width: 100%; padding: 11px; border: 1px solid var(--border-color); border-radius: 8px; }
+    .actions { display: flex; gap: 10px; margin-top: 24px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 11px 18px; border: 0; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 700; }
+    .btn-primary { color: white; background: var(--primary); }
+    .btn-secondary { color: var(--text-primary); background: #e2e8f0; }
+    #message { margin-top: 16px; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="payment-card">
+    <h1>Konfirmasi Pembayaran</h1>
+    <p>Pastikan nominal dan metode pembayaran sesuai bukti transaksi.</p>
+
+    <section class="unit-summary">
+        <strong>{{ unit['nama_user'] }}</strong><br>
+        {{ unit['device'] }} — Status: {{ unit['status'] }}
+    </section>
+
+    <form id="paymentForm" action="{{ url_for('keuangan.proses_bayar') }}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="servis_id" value="{{ unit['id'] }}">
+        <div class="field">
+            <label for="nominal">Nominal pembayaran</label>
+            <input id="nominal" name="nominal" type="number" min="1" value="{{ [sisa_tagihan, 1]|max }}" required>
+        </div>
+        <div class="field">
+            <label for="metode">Metode</label>
+            <select id="metode" name="metode" required>
+                <option value="Cash">Cash</option>
+                <option value="Transfer">Transfer</option>
+                <option value="QRIS">QRIS</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="bukti_bayar">Bukti bayar (opsional)</label>
+            <input id="bukti_bayar" name="bukti_bayar" type="file" accept="image/jpeg,image/png,image/gif">
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Simpan Pembayaran</button>
+            <a class="btn btn-secondary" href="{{ url_for('dashboard.dashboard') }}">Batal</a>
+        </div>
+        <div id="message" role="status"></div>
+    </form>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('paymentForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const message = document.getElementById('message');
+    const response = await fetch(this.action, { method: 'POST', body: new FormData(this) });
+    const payload = await response.json().catch(() => ({ message: 'Respons server tidak valid.' }));
+    if (!response.ok) {
+        message.style.color = '#dc2626';
+        message.textContent = payload.message || payload.error || 'Pembayaran gagal disimpan.';
+        return;
+    }
+    message.style.color = '#059669';
+    message.textContent = payload.message;
+    setTimeout(() => { window.location.href = '{{ url_for("dashboard.dashboard") }}'; }, 700);
+});
+</script>
+{% endblock %}

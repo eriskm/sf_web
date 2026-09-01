@@ -43,20 +43,20 @@
 
     <div class="row">
         <span>Nama:</span>
-        <span class="bold text-right">{{ s['Nama User'] }}</span>
+        <span class="bold text-right">{{ s['nama_user'] }}</span>
     </div>
     <div class="row">
         <span>Unit:</span>
-        <span class="bold text-right">{{ s['Device'] }}</span>
+        <span class="bold text-right">{{ s['device'] }}</span>
     </div>
     <div class="row">
         <span>Perbaikan:</span>
-        <span class="bold text-right">{{ s['Tindakan Perbaikan'] or '-' }}</span>
+        <span class="bold text-right">{{ s['tindakan_perbaikan'] or '-' }}</span>
     </div>
     
     <div class="row" style="margin-top: 5px; font-size: 12px;">
         <span class="bold">TOTAL:</span>
-        <span class="bold text-right">Rp {{ "{:,}".format(s['Harga Jual'] or 0) }}</span>
+        <span class="bold text-right">Rp {{ "{:,}".format(s['harga_jual'] or 0) }}</span>
     </div>
 
     <div class="line"></div>

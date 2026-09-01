@@ -1,15 +1,13 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title AIS GENESIS - SYSTEM UPDATER
+title [SF_WEB] BACKUP DATABASE MYSQL
 if not exist ".venv\Scripts\python.exe" (
     echo [ERROR] Virtual environment belum tersedia. Jalankan SETUP_PC_BARU.bat.
     pause
     exit /b 1
 )
-echo Memeriksa pembaruan sistem...
-".venv\Scripts\python.exe" GENESIS_UPDATER_CLIENT.py
+".venv\Scripts\python.exe" export_db.py
 set "EXIT_CODE=%ERRORLEVEL%"
-echo Updater selesai dengan exit code %EXIT_CODE%.
 pause
 exit /b %EXIT_CODE%

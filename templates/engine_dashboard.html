@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}AIS Engine{% endblock %}
+
+{% block head %}
+<style>
+    .engine { max-width: 1050px; margin: 36px auto; padding: 0 18px; }
+    .engine header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+    .card { padding: 20px; background: white; border-radius: 14px; box-shadow: var(--shadow-md); }
+    .label { color: var(--text-secondary); font-size: .85rem; font-weight: 700; text-transform: uppercase; }
+    .value { margin-top: 8px; font-size: 1.5rem; font-weight: 800; }
+    .allocation { margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+    .back { color: var(--primary); text-decoration: none; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="engine">
+    <header>
+        <div><h1>AIS Engine</h1><p>Ringkasan kalkulasi operasional hari ini.</p></div>
+        <a class="back" href="{{ url_for('dashboard.dashboard') }}">Kembali ke Dashboard</a>
+    </header>
+    <section class="grid">
+        <article class="card"><div class="label">Laba Kotor</div><div class="value">Rp {{ "{:,.0f}".format(data.laba_kotor) }}</div></article>
+        <article class="card"><div class="label">Transaksi Tambahan</div><div class="value">Rp {{ "{:,.0f}".format(data.tambahan) }}</div></article>
+        <article class="card"><div class="label">Beban</div><div class="value">Rp {{ "{:,.0f}".format(data.beban) }}</div></article>
+        <article class="card"><div class="label">Laba Bersih</div><div class="value">Rp {{ "{:,.0f}".format(data.laba_bersih) }}</div></article>
+    </section>
+    <section class="card allocation">
+        <h2>Alokasi Bagi Hasil</h2>
+        <table>
+            <thead><tr><th>Pos</th><th>Nominal</th></tr></thead>
+            <tbody>
+                {% for name, amount in bagi_hasil.items() %}
+                <tr><td>{{ name|replace('_', ' ')|title }}</td><td>Rp {{ "{:,.0f}".format(amount) }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <section class="card allocation">
+        <h2>Milestone: {{ milestone.status }}</h2>
+        <p>Laba kotor Rp {{ "{:,.0f}".format(milestone.laba_kotor) }} dari total beban Rp {{ "{:,.0f}".format(milestone.total_beban) }}.</p>
+    </section>
+</main>
+{% endblock %}

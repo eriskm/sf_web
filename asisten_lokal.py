@@ -1,81 +1,66 @@
-import requests
-import json
-import subprocess
+"""Asisten terminal lokal berbasis Ollama, tanpa eksekusi perintah sistem."""
+
+from __future__ import annotations
+
 import os
-import platform
 
-# Konfigurasi
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen2.5:1.5b"  # Pake Qwen karena pinter dan kenceng
+import requests
+from dotenv import load_dotenv
 
-def nanya_ollama(prompt):
-    system_prompt = """
-    Anda adalah asisten Windows yang ahli. Tugas Anda adalah menerjemahkan perintah pengguna menjadi satu baris perintah POWERSHELL.
-    Berikan HANYA kode perintahnya saja, tanpa penjelasan, tanpa tanda backtick, tanpa kata-kata lain.
-    Contoh:
-    User: Buka notepad
-    AI: start-process notepad
-    
-    User: Cek sisa disk
-    AI: Get-PSDrive C | Select-Object Used, Free
-    """
-    
+load_dotenv()
+
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
+MODEL_NAME = os.getenv("OLLAMA_ASSISTANT_MODEL", "qwen2.5:1.5b")
+MAX_PROMPT_LENGTH = 2_000
+
+
+def nanya_ollama(prompt: str) -> str:
+    """Kirim pertanyaan ke model lokal dan kembalikan jawaban teks saja."""
+    question = (prompt or "").strip()
+    if not question:
+        return "Pertanyaan masih kosong."
+    if len(question) > MAX_PROMPT_LENGTH:
+        return f"Pertanyaan terlalu panjang (maksimal {MAX_PROMPT_LENGTH} karakter)."
+
+    system_prompt = (
+        "Anda adalah asisten operasional Sukabumi Flasher. "
+        "Jawab dalam Bahasa Indonesia secara ringkas dan aman. "
+        "Jangan menghasilkan atau menjalankan perintah shell, PowerShell, SQL mutasi, "
+        "atau instruksi yang dapat mengubah sistem."
+    )
     payload = {
         "model": MODEL_NAME,
-        "prompt": f"{system_prompt}\n\nUser: {prompt}\nAI:",
-        "stream": False
+        "prompt": f"{system_prompt}\n\nPengguna: {question}\nAsisten:",
+        "stream": False,
     }
-    
     try:
-        response = requests.post(OLLAMA_URL, json=payload)
-        return response.json()['response'].strip()
-    except Exception as e:
-        return f"Error: {e}"
+        response = requests.post(OLLAMA_URL, json=payload, timeout=(5, 60))
+        response.raise_for_status()
+        answer = str(response.json().get("response") or "").strip()
+        return answer or "Model lokal tidak mengembalikan jawaban."
+    except (requests.RequestException, ValueError):
+        return "Asisten lokal tidak dapat dihubungi. Pastikan Ollama sedang berjalan."
 
-def jalankan_perintah(cmd):
-    print(f"\n[AI Menyarankan]: {cmd}")
-    konfirmasi = input("Jalankan perintah ini? (y/n): ").lower()
-    
-    if konfirmasi == 'y':
-        try:
-            # Jalankan di PowerShell
-            result = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True)
-            if result.stdout:
-                print("\n[Hasil]:")
-                print(result.stdout)
-            if result.stderr:
-                print("\n[Error]:")
-                print(result.stderr)
-        except Exception as e:
-            print(f"Gagal mengeksekusi: {e}")
-    else:
-        print("Perintah dibatalkan.")
 
-def main():
-    print("="*50)
-    print(" ASISTEN LOKAL SUKABUMI (OLLAMA BRIDGE) ")
-    print("="*50)
-    print(f"Menggunakan Model: {MODEL_NAME}")
+def main() -> None:
+    print("=" * 50)
+    print(" ASISTEN LOKAL SUKABUMI (MODE CHAT AMAN) ")
+    print("=" * 50)
+    print(f"Menggunakan model: {MODEL_NAME}")
+    print("Asisten ini tidak dapat menjalankan perintah sistem.")
     print("Ketik 'keluar' untuk berhenti.\n")
-    
+
     while True:
-        user_input = input("Mau nyuruh apa bro? > ")
-        
-        if user_input.lower() in ['keluar', 'exit', 'quit']:
+        try:
+            user_input = input("Tanya apa, Bro? > ")
+        except (EOFError, KeyboardInterrupt):
+            print()
             break
-            
-        if not user_input.strip():
-            continue
-            
-        print("Berpikir...")
-        cmd_ai = nanya_ollama(user_input)
-        
-        if cmd_ai.startswith("Error:"):
-            print(cmd_ai)
-            print("Pastiin Ollama ente sudah nyala ya bro!")
-            continue
-            
-        jalankan_perintah(cmd_ai)
+        if user_input.strip().lower() in {"keluar", "exit", "quit"}:
+            break
+        if user_input.strip():
+            print(nanya_ollama(user_input))
+
 
 if __name__ == "__main__":
     main()

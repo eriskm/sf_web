@@ -1,8 +1,0 @@
-with open('templates/dashboard.html', 'r', encoding='utf-8') as f:
-    lines = f.readlines()
-
-if '<line_number>:' in lines[0]:
-    lines = lines[1:]
-
-with open('templates/dashboard.html', 'w', encoding='utf-8') as f:
-    f.write(''.join(lines))

@@ -249,6 +249,7 @@
         <!-- LEFT COLUMN: FORM SECTIONS -->
         <div>
             <form action="/tambah" method="post" id="form_input">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 
                 <!-- SECTION 1: DATA KONSUMEN -->
                 <div class="section-card" onclick="setStep(1)">

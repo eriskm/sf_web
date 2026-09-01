@@ -1,39 +1,64 @@
+"""Pencarian stok sparepart read-only untuk asisten lokal."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
 import pymysql
+from dotenv import load_dotenv
 
-def search_sparepart_local(query: str):
-    \"\"\"
-    Mencari stok sparepart di database lokal Sukabumi Flasher.
-    Gunakan fungsi ini jika user menanyakan ketersediaan barang atau harga di toko.
-    Argumen 'query' bisa berupa merk, tipe HP, atau jenis barang (misal: 'LCD Oppo A5').
-    \"\"\"
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
+
+def search_sparepart_local(query: str) -> str:
+    """Cari maksimal lima sparepart berdasarkan merek, barang, atau device."""
+    keyword = (query or "").strip()
+    if not keyword:
+        return "Masukkan nama sparepart atau tipe device yang ingin dicari."
+    if len(keyword) > 100:
+        return "Kata pencarian terlalu panjang (maksimal 100 karakter)."
+
+    connection = None
     try:
-        db = pymysql.connect(
-            host='127.0.0.1', 
-            user='root', 
-            password='', 
-            database='db_ais_systems',
-            cursorclass=pymysql.cursors.DictCursor
+        connection = pymysql.connect(
+            host=os.getenv("MYSQL_HOST", "127.0.0.1"),
+            user=os.getenv("MYSQL_USER", "root"),
+            password=os.getenv("MYSQL_PASSWORD", ""),
+            database=os.getenv("MYSQL_DB", "db_ais_systems"),
+            charset="utf8mb4",
+            cursorclass=pymysql.cursors.DictCursor,
+            connect_timeout=5,
+            read_timeout=10,
+            autocommit=True,
         )
-        cursor = db.cursor()
-        
-        search_term = f"%{query}%"
-        sql = \"\"\"
-        SELECT kategori, merek, jenis_barang, jenis_device, qty, harga_jual 
-        FROM data_sparepart 
-        WHERE merek LIKE %s OR jenis_barang LIKE %s OR jenis_device LIKE %s
-        LIMIT 5
-        \"\"\"
-        cursor.execute(sql, (search_term, search_term, search_term))
-        results = cursor.fetchall()
-        db.close()
+        term = f"%{keyword}%"
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT kategori, merek, jenis_barang, jenis_device, qty, harga_jual
+                FROM data_sparepart
+                WHERE merek LIKE %s OR jenis_barang LIKE %s OR jenis_device LIKE %s
+                LIMIT 5
+                """,
+                (term, term, term),
+            )
+            results = cursor.fetchall()
+    except pymysql.MySQLError:
+        return "Gagal mengakses database stok. Silakan coba lagi atau hubungi admin."
+    finally:
+        if connection is not None:
+            connection.close()
 
-        if not results:
-            return "Maaf Bro, sparepart tersebut ngga ketemu di stok gudang lokal."
-        
-        teks = "📦 **HASIL CEK STOK GUDANG SF:**\n--------------------------\n"
-        for r in results:
-            teks += f"• {r['merek']} {r['jenis_barang']} ({r['jenis_device']}): {r['qty']} pcs | Harga: Rp {r['harga_jual']:,}\n"
-        
-        return teks
-    except Exception as e:
-        return f"❌ Gagal akses database lokal: {str(e)}"
+    if not results:
+        return "Sparepart tersebut tidak ditemukan di stok gudang lokal."
+
+    lines = ["HASIL CEK STOK GUDANG SF:", "--------------------------"]
+    for row in results:
+        price = int(row.get("harga_jual") or 0)
+        lines.append(
+            f"- {row.get('merek') or '-'} {row.get('jenis_barang') or '-'} "
+            f"({row.get('jenis_device') or '-'}): {row.get('qty') or 0} pcs | "
+            f"Harga: Rp {price:,}"
+        )
+    return "\n".join(lines)

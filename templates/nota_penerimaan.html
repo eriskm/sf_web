@@ -166,7 +166,7 @@
                 </div>
                 <div class="contact-row">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    {{ s['Tanggal Masuk'] or s['Tgl Keluar'] }}
+                    {{ s['tanggal_masuk'] or s['updated_at'] or '-' }}
                 </div>
                 <div class="contact-row">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -179,7 +179,7 @@
     <div class="content">
         <!-- Left Column -->
         <div>
-            {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}
+            {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}
             <div class="page-title" style="color: #ef4444;">NOTA <span>PENERIMAAN</span> KLAIM GARANSI</div>
             {% else %}
             <div class="page-title">NOTA <span>PENERIMAAN</span> SERVICE</div>
@@ -196,7 +196,7 @@
                 <div class="card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
                 <div class="card-info">
                     <div class="card-label">PELANGGAN</div>
-                    <div class="card-value">{{ s['Nama User'] }}</div>
+                    <div class="card-value">{{ s['nama_user'] }}</div>
                 </div>
             </div>
 
@@ -205,7 +205,7 @@
                 <div class="card-info device-card-content">
                     <div class="device-info-main">
                         <div class="card-label">DEVICE</div>
-                        <div class="card-value">{{ s['Device'] }}</div>
+                        <div class="card-value">{{ s['device'] }}</div>
                     </div>
                     <div class="device-details-box">
                         <div class="device-img-placeholder">
@@ -223,7 +223,7 @@
                 <div class="card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
                 <div class="card-info">
                     <div class="card-label">KELUHAN / DIAGNOSA</div>
-                    <div class="card-value">{{ s['Keluhan'] or s['Analisa Kerusakan'] or s['Tindakan Perbaikan'] or '-' }}</div>
+                    <div class="card-value">{{ s['analisa_kerusakan'] or s['tindakan_perbaikan'] or '-' }}</div>
                 </div>
             </div>
 
@@ -249,7 +249,7 @@
             <div class="proof-card">
                 <div class="proof-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
                 <div class="proof-text">
-                    {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}
+                    {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}
                     <h3 style="color: #ef4444;">BUKTI RETUR / KLAIM<br><span style="color: #b91c1c;">GARANSI TOKO</span></h3>
                     <p>Pengecekan/perbaikan ulang<br>dalam masa garansi toko.</p>
                     {% else %}
@@ -263,9 +263,9 @@
                 <div class="arrow-head" style="margin-right:0;">&#x25B6;</div> <span style="margin: 0 10px; font-size:11px;">STATUS SERVICE</span> <div class="line"></div>
             </div>
 
-            <div class="status-badge" {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}style="background:#7c3aed;"{% endif %}>
-                <div class="status-badge-icon" {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}style="color:#7c3aed;"{% endif %}><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
-                {% if s['Status'] in ['Garansi', 'Klaim Garansi'] %}
+            <div class="status-badge" {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}style="background:#7c3aed;"{% endif %}>
+                <div class="status-badge-icon" {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}style="color:#7c3aed;"{% endif %}><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+                {% if s['status'] in ['Garansi', 'Klaim Garansi'] %}
                 KLAIM GARANSI
                 {% else %}
                 DITERIMA
@@ -275,7 +275,7 @@
             <div class="receive-date">
                 Diterima pada:
                 <div class="receive-date-row">
-                    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ s['Tanggal Masuk'] or s['Tgl Keluar'] }}</div>
+                    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ s['tanggal_masuk'] or s['updated_at'] or '-' }}</div>
                     <span style="color:#d1d5db; margin:0 -5px;">|</span>
                     <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {{ jam_cetak }}</div>
                 </div>

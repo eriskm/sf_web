@@ -20,6 +20,7 @@
         <h3>Pengaturan Beban Harian</h3>
         
         <form action="/tambah_beban" method="post" style="display: flex; gap: 10px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <select name="kategori" required>
                 <option value="Gaji">Sektor Gaji</option>
                 <option value="Operasional">Sektor Operasional</option>
@@ -45,9 +46,12 @@
                     <td>{{ b['nama_beban'] }}</td>
                     <td><b>{{ "{:,}".format(b['nilai']) }}</b></td>
                     <td>
-                        <a href="#" onclick="editBeban('{{ b['id'] }}', '{{ b['nama_beban'] }}', '{{ b['nilai'] }}')" style="color: blue; text-decoration: none; margin-right: 10px;">[Edit]</a>
+                        <a href="#" onclick='editBeban({{ b.id|tojson }}, {{ b.nama_beban|tojson }}, {{ b.nilai|tojson }})' style="color: blue; text-decoration: none; margin-right: 10px;">[Edit]</a>
                         
-                        <a href="/hapus_beban/{{ b['id'] }}" onclick="return confirm('Hapus beban ini?')" style="color: red; text-decoration: none;">[Hapus]</a>
+                        <form action="/hapus_beban/{{ b['id'] }}" method="post" style="display:inline;" onsubmit="return confirm('Hapus beban ini?')">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" style="display:inline; width:auto; margin:0; padding:0; border:0; background:none; color:red;">[Hapus]</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -72,6 +76,12 @@ function editBeban(id, namaLama, nilaiLama) {
         
         let inputNama = document.createElement('input');
         inputNama.name = 'nama_beban';
+
+        let inputCsrf = document.createElement('input');
+        inputCsrf.type = 'hidden';
+        inputCsrf.name = '_csrf_token';
+        inputCsrf.value = {{ csrf_token()|tojson }};
+        form.appendChild(inputCsrf);
         inputNama.value = namaBaru;
         form.appendChild(inputNama);
         

@@ -1,71 +1,95 @@
-from flask import Flask, render_template, request, jsonify
-import requests
-import subprocess
 import os
 
-app = Flask(__name__)
+import requests
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
 
-# Konfigurasi
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen2.5:1.5b"
+from utils import csrf_token, validate_csrf_request
+
+
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', '').strip()
+if not app.secret_key:
+    raise RuntimeError('FLASK_SECRET_KEY wajib diisi di environment/.env.')
+
+OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://127.0.0.1:11434/api/generate')
+MODEL_NAME = os.getenv('OLLAMA_ASSISTANT_MODEL', 'qwen2.5:1.5b')
+
+
+@app.before_request
+def enforce_csrf():
+    validate_csrf_request()
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+    response.headers.setdefault('Referrer-Policy', 'no-referrer')
+    return response
+
+
+app.jinja_env.globals['csrf_token'] = csrf_token
+
 
 @app.route('/')
 def index():
     return render_template('asisten.html', model=MODEL_NAME)
 
+
 @app.route('/ask', methods=['POST'])
 def ask():
-    user_input = request.json.get('prompt')
-    
-    system_prompt = """
-    Anda adalah asisten Windows yang ahli bernama AIS Technologies AI.
-    Tugas Anda adalah menerjemahkan perintah pengguna menjadi satu baris perintah POWERSHELL.
-    
-    ATURAN KHUSUS:
-    - Jika perintah adalah aksi sistem, awali WAJIB dengan 'EXEC:'
-    - Contoh Buka Web: EXEC:start-process "https://www.google.com"
-    - Contoh Buka Aplikasi: EXEC:start-process notepad
-    - Contoh Tutup Aplikasi: EXEC:stop-process -name notepad -ErrorAction SilentlyContinue
-    
-    Jika hanya sapaan atau obrolan biasa, jawablah dengan ramah tanpa awalan EXEC:.
-    """
-    
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": f"{system_prompt}\n\nUser: {user_input}\nAI:",
-        "stream": False
+    payload = request.get_json(silent=True) or {}
+    user_input = str(payload.get('prompt') or '').strip()
+    if not user_input:
+        return jsonify({'status': 'error', 'message': 'Pesan tidak boleh kosong.'}), 400
+    if len(user_input) > 2000:
+        return jsonify({'status': 'error', 'message': 'Pesan terlalu panjang.'}), 400
+
+    system_prompt = (
+        'Anda adalah AIS Technologies AI, asisten percakapan operasional. '
+        'Berikan jawaban singkat dan aman. Jangan membuat, menyarankan, atau '
+        'menjalankan perintah shell, PowerShell, perubahan file, maupun aksi sistem.'
+    )
+    ollama_payload = {
+        'model': MODEL_NAME,
+        'prompt': f'{system_prompt}\n\nUser: {user_input}\nAI:',
+        'stream': False,
     }
-    
+
     try:
-        response = requests.post(OLLAMA_URL, json=payload)
-        ai_response = response.json()['response'].strip()
-        
-        is_command = ai_response.startswith("EXEC:")
-        command = ai_response.replace("EXEC:", "").strip() if is_command else None
-        text = ai_response if not is_command else f"Saya akan membantu Anda menjalankan perintah: {command}"
-        
+        response = requests.post(
+            OLLAMA_URL,
+            json=ollama_payload,
+            timeout=(3, 60),
+        )
+        response.raise_for_status()
+        ai_response = str(response.json().get('response') or '').strip()
+        if not ai_response:
+            raise ValueError('Respons model kosong.')
         return jsonify({
-            "status": "success",
-            "text": text,
-            "is_command": is_command,
-            "command": command
+            'status': 'success',
+            'text': ai_response,
+            'is_command': False,
+            'command': None,
         })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+    except (requests.RequestException, ValueError, KeyError) as exc:
+        return jsonify({
+            'status': 'error',
+            'message': 'Asisten lokal tidak tersedia. Pastikan Ollama sedang berjalan.',
+        }), 503
+
 
 @app.route('/execute', methods=['POST'])
-def execute():
-    command = request.json.get('command')
-    try:
-        result = subprocess.run(["powershell", "-Command", command], capture_output=True, text=True)
-        return jsonify({
-            "status": "success",
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+def execute_disabled():
+    return jsonify({
+        'status': 'error',
+        'message': 'Eksekusi perintah sistem dinonaktifkan untuk keamanan.',
+    }), 410
+
 
 if __name__ == '__main__':
-    print(f"Asisten Web berjalan di http://127.0.0.1:5000")
-    app.run(debug=True, port=5000)
+    print('Asisten Web berjalan di http://127.0.0.1:5050')
+    app.run(host='127.0.0.1', port=5050, debug=False)
